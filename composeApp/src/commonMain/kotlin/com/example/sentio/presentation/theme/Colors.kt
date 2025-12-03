@@ -25,13 +25,13 @@ object SentioColors {
     
     /** Card backgrounds with subtle transparency */
     val BgCard = Color(0xFF162B26)
-    
-    /** Search bar and input backgrounds */
-    val SearchBarBg = Color(0xFF1A3530)
-    
+
     /** Selected/Active item background */
-    val BgSelected = Color(0xFF1E3D36)
+    val BgSelected = Color(0xFF254642)
     
+    /** Selected item border - bright cyan */
+    val BorderSelected = Color(0xFF1FDBC8)
+
     /** Code block background */
     val BgCode = Color(0xFF0A1614)
 
@@ -82,7 +82,7 @@ object SentioColors {
     
     /** Primary border - cards, inputs */
     val BorderPrimary = Color(0xFF1F3D35)
-    
+
     /** Secondary border - subtle dividers */
     val BorderSecondary = Color(0xFF2A4F45)
     

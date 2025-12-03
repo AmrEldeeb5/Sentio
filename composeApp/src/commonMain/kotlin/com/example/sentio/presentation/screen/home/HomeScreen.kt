@@ -1,8 +1,17 @@
 package com.example.sentio.presentation.screen.home
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.hoverable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsHoveredAsState
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -11,10 +20,13 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
@@ -23,16 +35,21 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.filled.Edit
+import androidx.compose.ui.graphics.SolidColor
 import com.example.sentio.domain.models.Note
 import com.example.sentio.presentation.state.HomeUiEvent
-import com.example.sentio.presentation.theme.searchBarBg
+import com.example.sentio.presentation.theme.bgSelected
+import com.example.sentio.presentation.theme.borderSelected
 import com.example.sentio.presentation.viewmodel.HomeViewModel
 import org.koin.compose.viewmodel.koinViewModel
+
 
 @Composable
 fun HomeScreen(
@@ -44,27 +61,28 @@ fun HomeScreen(
     val searchQuery by viewModel.searchQuery.collectAsState()
     val selectedNoteId by viewModel.selectedNoteId.collectAsState()
     
-    // Find the selected note for preview
     val selectedNote = notes.find { it.id == selectedNoteId }
 
     Row(modifier = Modifier.fillMaxSize()) {
-        // Sidebar
         Sidebar(
             notes = notes,
             searchQuery = searchQuery,
             selectedNoteId = selectedNoteId,
             onSearchQueryChange = { viewModel.onEvent(HomeUiEvent.SearchQueryChanged(it)) },
             onNoteSelect = { viewModel.onEvent(HomeUiEvent.SelectNote(it)) },
-            onNoteDoubleClick = onNoteDoubleClick, // Navigate to full editor
+            onNoteDoubleClick = onNoteDoubleClick,
             onCreateNote = { viewModel.onEvent(HomeUiEvent.CreateNote) },
-            modifier = Modifier.width(270.dp).fillMaxHeight()
+            onDeleteNote = { noteId -> viewModel.onEvent(HomeUiEvent.DeleteNote(noteId)) },
+            modifier = Modifier.width(320.dp).fillMaxHeight()
         )
-        VerticalDivider(modifier = Modifier.width(1.dp).fillMaxHeight())
 
-        // Main content area
-        // - No selection: Show placeholder
-        // - Single click: Show read-only preview
-        // - Double click: Navigates to EditorScreen (handled by onNoteDoubleClick)
+        // Divider
+        VerticalDivider(
+            modifier = Modifier.width(1.dp).fillMaxHeight(),
+            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)
+        )
+
+        // Main content
         if (selectedNote != null) {
             NotePreview(
                 note = selectedNote,
@@ -76,6 +94,7 @@ fun HomeScreen(
     }
 }
 
+
 @Composable
 private fun Sidebar(
     notes: List<Note>,
@@ -85,49 +104,91 @@ private fun Sidebar(
     onNoteSelect: (String) -> Unit,
     onNoteDoubleClick: (String) -> Unit,
     onCreateNote: () -> Unit,
+    onDeleteNote: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
     Surface(
         modifier = modifier,
-        color = MaterialTheme.colorScheme.background
+        color = MaterialTheme.colorScheme.background,
     ) {
         Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp)
+            modifier = Modifier.fillMaxSize()
         ) {
-            // Header - no extra padding needed, part of main padding
-            WorkspaceHeader()
-
-            HorizontalDivider(modifier = Modifier.height(16.dp).fillMaxWidth())
-
-            // Search bar
-            SearchBarWithCreate(
-                searchQuery = searchQuery,
-                onSearchQueryChange = onSearchQueryChange,
-                onCreateNote = onCreateNote
+            // Header
+            WorkspaceHeader(
+                modifier = Modifier.padding(16.dp)
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
+            // Divider
+            HorizontalDivider(
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f),
+                thickness = 1.dp
+            )
 
-            // Cluster toggle
-            ClusterToggle()
+            // Search & Actions
+            SearchAndActions(
+                searchQuery = searchQuery,
+                onSearchQueryChange = onSearchQueryChange,
+                onCreateNote = onCreateNote,
+                modifier = Modifier.padding(16.dp)
+            )
 
-            Spacer(modifier = Modifier.height(20.dp))
+            // Divider
+            HorizontalDivider(
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f),
+                thickness = 1.dp
+            )
 
-            // Notes list with groups
+            // Toolbar
+            Toolbar(
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)
+            )
+
+            // Divider
+            HorizontalDivider(
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f),
+                thickness = 1.dp
+            )
+
+            // AI Cluster Panel
+            ClusterPanel(
+                modifier = Modifier.padding(16.dp)
+            )
+
+            // Divider
+            HorizontalDivider(
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f),
+                thickness = 1.dp
+            )
+
+            // Notes List
+            val filteredNotes = notes.filter { note ->
+                note.title.contains(searchQuery, ignoreCase = true) ||
+                note.preview().contains(searchQuery, ignoreCase = true)
+            }.sortedByDescending { it.updatedAt }
+
             NotesList(
-                notes = notes,
+                notes = filteredNotes,
                 selectedNoteId = selectedNoteId,
                 onNoteSelect = onNoteSelect,
                 onNoteDoubleClick = onNoteDoubleClick,
-                modifier = Modifier.weight(1f)
+                onDeleteNote = onDeleteNote,
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(horizontal = 8.dp, vertical = 8.dp)
             )
 
-            // Footer with count
+            // Divider
+            HorizontalDivider(
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f),
+                thickness = 1.dp
+            )
+
+            // Footer
             NotesFooter(
                 noteCount = notes.size,
-                selectedCount = if (selectedNoteId != null) 1 else 0
+                selectedCount = if (selectedNoteId != null) 1 else 0,
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)
             )
         }
     }
@@ -140,21 +201,30 @@ private fun WorkspaceHeader(modifier: Modifier = Modifier) {
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        // Profile icon
+        // Profile avatar
         Surface(
             modifier = Modifier.size(40.dp),
-            shape = MaterialTheme.shapes.medium,
-            color = MaterialTheme.colorScheme.primaryContainer
+            shape = CircleShape,
+            color = MaterialTheme.colorScheme.surfaceVariant,
+            border = BorderStroke(1.dp, MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f))
         ) {
             Box(contentAlignment = Alignment.Center) {
-                Text("S", style = MaterialTheme.typography.titleMedium)
+                Text(
+                    text = "S",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Medium,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
             }
         }
 
-        Column {
+        Column(
+            verticalArrangement = Arrangement.spacedBy(2.dp)
+        ) {
             Text(
                 text = "Sentio Workspace",
-                style = MaterialTheme.typography.titleMedium,
+                style = MaterialTheme.typography.bodyMedium,
+                fontWeight = FontWeight.Medium,
                 color = MaterialTheme.colorScheme.onSurface
             )
             Text(
@@ -167,7 +237,7 @@ private fun WorkspaceHeader(modifier: Modifier = Modifier) {
 }
 
 @Composable
-private fun SearchBarWithCreate(
+private fun SearchAndActions(
     searchQuery: String,
     onSearchQueryChange: (String) -> Unit,
     onCreateNote: () -> Unit,
@@ -176,20 +246,60 @@ private fun SearchBarWithCreate(
     Row(
         modifier = modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(12.dp)
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        CustomSearchBar(
-            value = searchQuery,
-            onValueChange = onSearchQueryChange,
-            modifier = Modifier.weight(1f)
-        )
-
-
+        // Search Bar
         Surface(
             modifier = Modifier
-                .size(52.dp)
+                .weight(1f)
+                .height(40.dp),
+            shape = RoundedCornerShape(10.dp),
+            color = MaterialTheme.colorScheme.surfaceVariant
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 12.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Search,
+                    contentDescription = "Search",
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.size(18.dp)
+                )
+                
+
+                BasicTextField(
+                    value = searchQuery,
+                    onValueChange = onSearchQueryChange,
+                    modifier = Modifier.weight(1f),
+                    singleLine = true,
+                    textStyle = MaterialTheme.typography.bodyMedium.copy(
+                        color = MaterialTheme.colorScheme.bgSelected
+                    ),
+                    cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
+                    decorationBox = { innerTextField ->
+                        if (searchQuery.isEmpty()) {
+                            Text(
+                                text = "Search notes...",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                        innerTextField()
+                    }
+                )
+            }
+        }
+
+        // Add Button
+        Surface(
+            modifier = Modifier
+                .size(40.dp)
                 .clickable(onClick = onCreateNote),
-            shape = RoundedCornerShape(18.dp),
+            shape = RoundedCornerShape(10.dp),
             color = MaterialTheme.colorScheme.primary
         ) {
             Box(contentAlignment = Alignment.Center) {
@@ -197,7 +307,7 @@ private fun SearchBarWithCreate(
                     imageVector = Icons.Default.Add,
                     contentDescription = "Create note",
                     tint = MaterialTheme.colorScheme.onPrimary,
-                    modifier = Modifier.size(24.dp)
+                    modifier = Modifier.size(20.dp)
                 )
             }
         }
@@ -205,47 +315,338 @@ private fun SearchBarWithCreate(
 }
 
 @Composable
-private fun CustomSearchBar(
-    value: String,
-    onValueChange: (String) -> Unit,
-    modifier: Modifier = Modifier
-) {
-    TextField(
-        value = value,
-        onValueChange = onValueChange,
-        modifier = modifier.height(52.dp),
-        placeholder = {
+private fun Toolbar(modifier: Modifier = Modifier) {
+    Row(
+        modifier = modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(4.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        IconButton(
+            onClick = { /* Sort */ },
+            modifier = Modifier.size(36.dp)
+        ) {
             Text(
-                text = "Search notes...",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                text = "↕",
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
-        },
-        leadingIcon = {
-            Icon(
-                imageVector = Icons.Default.Search,
-                contentDescription = "Search",
-                tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.size(20.dp)
+        }
+
+        IconButton(
+            onClick = { /* View */ },
+            modifier = Modifier.size(36.dp)
+        ) {
+            Text(
+                text = "☰",
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
-        },
-        singleLine = true,
-        textStyle = MaterialTheme.typography.bodyMedium.copy(
-            color = MaterialTheme.colorScheme.onSurface
-        ),
-        shape = CircleShape,
-        colors = TextFieldDefaults.colors(
-            focusedContainerColor = MaterialTheme.colorScheme.searchBarBg,
-            unfocusedContainerColor = MaterialTheme.colorScheme.searchBarBg,
-            disabledContainerColor = MaterialTheme.colorScheme.searchBarBg,
-            focusedIndicatorColor = Color.Transparent,
-            unfocusedIndicatorColor = Color.Transparent,
-            disabledIndicatorColor = Color.Transparent,
-            cursorColor = MaterialTheme.colorScheme.primary,
-        )
-    )
+        }
+
+        IconButton(
+            onClick = { /* Filter */ },
+            modifier = Modifier.size(36.dp)
+        ) {
+            Text(
+                text = "🏷",
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+    }
 }
 
+@Composable
+private fun ClusterPanel(modifier: Modifier = Modifier) {
+    Surface(
+        modifier = modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(12.dp),
+        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.onSurface.copy(alpha = 0.05f))
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(12.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(
+                verticalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    Text(
+                        text = "✨",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                    Text(
+                        text = "Cluster by Topic",
+                        style = MaterialTheme.typography.bodySmall,
+                        fontWeight = FontWeight.Medium,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                }
+                Text(
+                    text = "Let AI organize your notes.",
+                    style = MaterialTheme.typography.labelSmall,
+                    fontSize = 11.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+
+            // Custom Toggle Switch
+            CustomSwitch(
+                checked = true,
+                onCheckedChange = { }
+            )
+        }
+    }
+}
+
+@Composable
+private fun CustomSwitch(
+    checked: Boolean,
+    onCheckedChange: (Boolean) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Surface(
+        modifier = modifier
+            .width(44.dp)
+            .height(26.dp)
+            .clickable { onCheckedChange(!checked) },
+        shape = RoundedCornerShape(13.dp),
+        color = if (checked) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant
+    ) {
+        Box(
+            modifier = Modifier.padding(3.dp),
+            contentAlignment = if (checked) Alignment.CenterEnd else Alignment.CenterStart
+        ) {
+            Surface(
+                modifier = Modifier.size(20.dp),
+                shape = CircleShape,
+                color = Color.White
+            ) {}
+        }
+    }
+}
+
+@Composable
+private fun NotesList(
+    notes: List<Note>,
+    selectedNoteId: String?,
+    onNoteSelect: (String) -> Unit,
+    onNoteDoubleClick: (String) -> Unit,
+    onDeleteNote: (String) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    LazyColumn(
+        modifier = modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(4.dp)
+    ) {
+        if (notes.isEmpty()) {
+            item {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "No notes found.",
+                        style = MaterialTheme.typography.bodySmall,
+                        fontSize = 12.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+        } else {
+            items(
+                items = notes,
+                key = { it.id }
+            ) { note ->
+                NoteCard(
+                    note = note,
+                    isActive = selectedNoteId == note.id,
+                    onClick = { onNoteSelect(note.id) },
+                    onDoubleClick = { onNoteDoubleClick(note.id) },
+                    onDelete = { onDeleteNote(note.id) }
+                )
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+private fun NoteCard(
+    note: Note,
+    isActive: Boolean,
+    onClick: () -> Unit,
+    onDoubleClick: () -> Unit,
+    onDelete: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val interactionSource = remember { MutableInteractionSource() }
+    val isHovered by interactionSource.collectIsHoveredAsState()
+
+    Surface(
+        modifier = modifier
+            .fillMaxWidth()
+            .combinedClickable(
+                onClick = onClick,
+                onDoubleClick = onDoubleClick,
+                interactionSource = interactionSource,
+                indication = null
+            )
+            .hoverable(interactionSource = interactionSource),
+        shape = RoundedCornerShape(10.dp),
+        color = when {
+            isActive -> MaterialTheme.colorScheme.bgSelected
+            isHovered -> MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+            else -> Color.Transparent
+        },
+        border = if (isActive) BorderStroke(1.dp, MaterialTheme.colorScheme.borderSelected) else null
+    ) {
+        Box {
+            // Note Content
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(12.dp),
+                verticalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                Text(
+                    text = note.title,
+                    style = MaterialTheme.typography.bodySmall,
+                    fontWeight = FontWeight.Medium,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.padding(end = 80.dp) // Space for action buttons
+                )
+
+                Text(
+                    text = note.preview(),
+                    style = MaterialTheme.typography.labelSmall,
+                    fontSize = 12.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.padding(end = 16.dp)
+                )
+            }
+
+            // Hover Actions
+            AnimatedVisibility(
+                visible = isHovered,
+                enter = fadeIn(),
+                exit = fadeOut(),
+                modifier = Modifier.align(Alignment.TopEnd)
+            ) {
+                Row(
+                    modifier = Modifier.padding(8.dp),
+                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    // Pin Button
+                    HoverActionButton(
+                        text = "📌",
+                        contentDescription = "Pin",
+                        onClick = { /* TODO: Pin note */ }
+                    )
+
+                    // Delete Button
+                    HoverActionButton(
+                        text = "🗑",
+                        contentDescription = "Delete",
+                        onClick = { onDelete() },
+                        isDestructive = true
+                    )
+
+                    // AI Button
+                    HoverActionButton(
+                        text = "✨",
+                        contentDescription = "Ask AI",
+                        onClick = { /* TODO: AI action */ },
+                        isPrimary = true
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun HoverActionButton(
+    text: String,
+    contentDescription: String,
+    onClick: () -> Unit,
+    isDestructive: Boolean = false,
+    isPrimary: Boolean = false,
+    modifier: Modifier = Modifier
+) {
+    Surface(
+        modifier = modifier
+            .size(24.dp)
+            .clickable(onClick = onClick),
+        shape = RoundedCornerShape(6.dp),
+        color = Color.Black.copy(alpha = 0.4f)
+    ) {
+        Box(contentAlignment = Alignment.Center) {
+            Text(
+                text = text,
+                style = MaterialTheme.typography.bodySmall,
+                fontSize = 14.sp,
+                color = when {
+                    isPrimary -> MaterialTheme.colorScheme.primary
+                    isDestructive -> MaterialTheme.colorScheme.error
+                    else -> Color.White
+                }
+            )
+        }
+    }
+}
+
+@Composable
+private fun NotesFooter(
+    noteCount: Int,
+    selectedCount: Int,
+    modifier: Modifier = Modifier
+) {
+    Row(
+        modifier = modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            text = "$noteCount notes",
+            style = MaterialTheme.typography.labelSmall,
+            fontSize = 12.sp,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+
+        if (selectedCount > 0) {
+            Text(
+                text = "$selectedCount selected",
+                style = MaterialTheme.typography.labelSmall,
+                fontSize = 12.sp,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        } else {
+            Text(
+                text = "No selection",
+                style = MaterialTheme.typography.labelSmall,
+                fontSize = 12.sp,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+    }
+}
+
+// Remove old components below
 @Composable
 private fun ClusterToggle(modifier: Modifier = Modifier) {
     Row(
@@ -301,8 +702,10 @@ private fun CompactNoteItem(
                     onDoubleTap = { onDoubleClick() }
                 )
             },
-        color = if (isSelected) MaterialTheme.colorScheme.searchBarBg else MaterialTheme.colorScheme.surface,
-        shape = MaterialTheme.shapes.small
+        color = if (isSelected) MaterialTheme.colorScheme.bgSelected else MaterialTheme.colorScheme.surface,
+        shape = MaterialTheme.shapes.small,
+        border = if (isSelected) BorderStroke(1.dp, MaterialTheme.colorScheme.borderSelected) else null,
+        tonalElevation = if (isSelected) 1.dp else 0.dp
     ) {
         Column(
             modifier = Modifier.padding(horizontal = 12.dp, vertical = 10.dp)

@@ -86,8 +86,11 @@ fun SentioTheme(
 /**
  * Extension properties to access custom Sentio colors from MaterialTheme
  */
-val ColorScheme.searchBarBg: androidx.compose.ui.graphics.Color
-    get() = SentioColors.SearchBarBg
+val ColorScheme.bgSelected: androidx.compose.ui.graphics.Color
+    get() = SentioColors.BgSelected
+
+val ColorScheme.borderSelected: androidx.compose.ui.graphics.Color
+    get() = SentioColors.BorderSelected
 
 val ColorScheme.cardBg: androidx.compose.ui.graphics.Color
     get() = SentioColors.BgCard

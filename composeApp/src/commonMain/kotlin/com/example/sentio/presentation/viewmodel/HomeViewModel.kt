@@ -27,7 +27,6 @@ class HomeViewModel(
     private val _searchQuery = MutableStateFlow("")
     val searchQuery: StateFlow<String> = _searchQuery.asStateFlow()
 
-    /** Currently selected note (single click - highlighted in sidebar, shows preview) */
     private val _selectedNoteId = MutableStateFlow<String?>(null)
     val selectedNoteId: StateFlow<String?> = _selectedNoteId.asStateFlow()
 
@@ -69,12 +68,12 @@ class HomeViewModel(
         when (event) {
             is HomeUiEvent.SearchQueryChanged -> updateSearchQuery(event.query)
             is HomeUiEvent.ClearSearch -> clearSearch()
-            is HomeUiEvent.SelectNote -> selectNote(event.noteId)
-            is HomeUiEvent.OpenNote -> openNote(event.noteId)
-            is HomeUiEvent.CloseNote -> closeNote()
             is HomeUiEvent.DeleteNote -> deleteNote(event.noteId)
             is HomeUiEvent.CreateNote -> createNote()
             is HomeUiEvent.Refresh -> refresh()
+            is HomeUiEvent.OpenNote -> openNote(event.noteId)
+            is HomeUiEvent.SelectNote -> selectNote(event.noteId)
+            HomeUiEvent.CloseNote -> closeNote()
         }
     }
 
@@ -110,31 +109,27 @@ class HomeViewModel(
         _searchQuery.value = ""
     }
 
-    /**
-     * Single click - select note (highlight in sidebar, show preview)
-     */
-    private fun selectNote(noteId: String) {
-        _selectedNoteId.value = noteId
-    }
-
-    /**
-     * Double click - navigation to editor is handled by the UI layer
-     * This is just for any additional logic if needed
-     */
-    private fun openNote(noteId: String) {
-        _selectedNoteId.value = noteId
-        // Navigation is handled by onNoteDoubleClick callback in HomeScreen
-    }
-
-    /**
-     * Clear selection (optional - when navigating away)
-     */
-    private fun closeNote() {
-        // No-op for now, selection persists
+    private fun navigateToNote(noteId: String) {
+        viewModelScope.launch {
+            _selectedNoteId.value = noteId
+            _effects.send(HomeUiEffect.NavigateToEditor(noteId))
+        }
     }
 
     private fun refresh() {
         _uiState.value = HomeUiState.Loading
         // Notes will auto-refresh via Flow
+    }
+
+    private fun openNote(noteId: String) {
+        _selectedNoteId.value = noteId
+    }
+
+    private fun selectNote(noteId: String) {
+        _selectedNoteId.value = noteId
+    }
+
+    private fun closeNote() {
+        _selectedNoteId.value = null
     }
 }
