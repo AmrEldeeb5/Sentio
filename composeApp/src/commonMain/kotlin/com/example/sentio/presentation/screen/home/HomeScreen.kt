@@ -1,6 +1,9 @@
 package com.example.sentio.presentation.screen.home
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.BorderStroke
@@ -8,7 +11,6 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
-import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.hoverable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsHoveredAsState
@@ -20,7 +22,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -34,7 +35,6 @@ import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -63,33 +63,39 @@ fun HomeScreen(
     
     val selectedNote = notes.find { it.id == selectedNoteId }
 
-    Row(modifier = Modifier.fillMaxSize()) {
-        Sidebar(
-            notes = notes,
-            searchQuery = searchQuery,
-            selectedNoteId = selectedNoteId,
-            onSearchQueryChange = { viewModel.onEvent(HomeUiEvent.SearchQueryChanged(it)) },
-            onNoteSelect = { viewModel.onEvent(HomeUiEvent.SelectNote(it)) },
-            onNoteDoubleClick = onNoteDoubleClick,
-            onCreateNote = { viewModel.onEvent(HomeUiEvent.CreateNote) },
-            onDeleteNote = { noteId -> viewModel.onEvent(HomeUiEvent.DeleteNote(noteId)) },
-            modifier = Modifier.width(320.dp).fillMaxHeight()
-        )
+    BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
+        // Adaptive sidebar: 25% of screen width, clamped between 280-400dp
+        val sidebarWidth = with(this) { (maxWidth * 0.25f).coerceIn(280.dp, 400.dp) }
 
-        // Divider
-        VerticalDivider(
-            modifier = Modifier.width(1.dp).fillMaxHeight(),
-            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)
-        )
-
-        // Main content
-        if (selectedNote != null) {
-            NotePreview(
-                note = selectedNote,
-                onEditClick = { onNoteDoubleClick(selectedNote.id) }
+        Row(modifier = Modifier.fillMaxSize()) {
+            Sidebar(
+                notes = notes,
+                searchQuery = searchQuery,
+                selectedNoteId = selectedNoteId,
+                onSearchQueryChange = { viewModel.onEvent(HomeUiEvent.SearchQueryChanged(it)) },
+                onNoteSelect = { viewModel.onEvent(HomeUiEvent.SelectNote(it)) },
+                onNoteDoubleClick = onNoteDoubleClick,
+                onCreateNote = { viewModel.onEvent(HomeUiEvent.CreateNote) },
+                onDeleteNote = { noteId -> viewModel.onEvent(HomeUiEvent.DeleteNote(noteId)) },
+                modifier = Modifier.width(sidebarWidth).fillMaxHeight()
             )
-        } else {
-            MainContentPlaceholder()
+
+            // Divider
+            VerticalDivider(
+                modifier = Modifier.width(1.dp).fillMaxHeight(),
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)
+            )
+
+            // Main content
+            if (selectedNote != null) {
+                NotePreview(
+                    note = selectedNote,
+                    onEditClick = { onNoteDoubleClick(selectedNote.id) },
+                    modifier = Modifier.weight(1f)
+                )
+            } else {
+                MainContentPlaceholder(modifier = Modifier.weight(1f))
+            }
         }
     }
 }
@@ -254,7 +260,7 @@ private fun SearchAndActions(
                 .weight(1f)
                 .height(40.dp),
             shape = RoundedCornerShape(10.dp),
-            color = MaterialTheme.colorScheme.surfaceVariant
+            color = MaterialTheme.colorScheme.bgSelected
         ) {
             Row(
                 modifier = Modifier
@@ -277,7 +283,7 @@ private fun SearchAndActions(
                     modifier = Modifier.weight(1f),
                     singleLine = true,
                     textStyle = MaterialTheme.typography.bodyMedium.copy(
-                        color = MaterialTheme.colorScheme.bgSelected
+                        color = MaterialTheme.colorScheme.onSurface
                     ),
                     cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
                     decorationBox = { innerTextField ->
@@ -493,6 +499,27 @@ private fun NoteCard(
     val interactionSource = remember { MutableInteractionSource() }
     val isHovered by interactionSource.collectIsHoveredAsState()
 
+    // Smooth 150ms animations for hover/selection states
+    val animatedElevation by animateDpAsState(
+        targetValue = when {
+            isActive -> 6.dp
+            isHovered -> 4.dp
+            else -> 0.dp
+        },
+        animationSpec = tween(durationMillis = 150),
+        label = "cardElevation"
+    )
+    
+    val animatedColor by animateColorAsState(
+        targetValue = when {
+            isActive -> MaterialTheme.colorScheme.bgSelected
+            isHovered -> MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f) // +2% brightness on hover
+            else -> Color.Transparent
+        },
+        animationSpec = tween(durationMillis = 150),
+        label = "cardColor"
+    )
+
     Surface(
         modifier = modifier
             .fillMaxWidth()
@@ -504,11 +531,8 @@ private fun NoteCard(
             )
             .hoverable(interactionSource = interactionSource),
         shape = RoundedCornerShape(10.dp),
-        color = when {
-            isActive -> MaterialTheme.colorScheme.bgSelected
-            isHovered -> MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
-            else -> Color.Transparent
-        },
+        color = animatedColor,
+        shadowElevation = animatedElevation,
         border = if (isActive) BorderStroke(1.dp, MaterialTheme.colorScheme.borderSelected) else null
     ) {
         Box {
@@ -554,14 +578,12 @@ private fun NoteCard(
                     // Pin Button
                     HoverActionButton(
                         text = "📌",
-                        contentDescription = "Pin",
                         onClick = { /* TODO: Pin note */ }
                     )
 
                     // Delete Button
                     HoverActionButton(
                         text = "🗑",
-                        contentDescription = "Delete",
                         onClick = { onDelete() },
                         isDestructive = true
                     )
@@ -569,7 +591,6 @@ private fun NoteCard(
                     // AI Button
                     HoverActionButton(
                         text = "✨",
-                        contentDescription = "Ask AI",
                         onClick = { /* TODO: AI action */ },
                         isPrimary = true
                     )
@@ -582,11 +603,10 @@ private fun NoteCard(
 @Composable
 private fun HoverActionButton(
     text: String,
-    contentDescription: String,
     onClick: () -> Unit,
+    modifier: Modifier = Modifier,
     isDestructive: Boolean = false,
-    isPrimary: Boolean = false,
-    modifier: Modifier = Modifier
+    isPrimary: Boolean = false
 ) {
     Surface(
         modifier = modifier
@@ -646,183 +666,6 @@ private fun NotesFooter(
     }
 }
 
-// Remove old components below
-@Composable
-private fun ClusterToggle(modifier: Modifier = Modifier) {
-    Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(vertical = 8.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Column {
-            Text(
-                text = "Cluster by Topic",
-                style = MaterialTheme.typography.titleSmall,
-                color = MaterialTheme.colorScheme.onSurface
-            )
-            Text(
-                text = "Let AI organize your notes.",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        }
-
-        Switch(
-            checked = true,
-            onCheckedChange = { }
-        )
-    }
-}
-
-@Composable
-private fun GroupHeader(title: String) {
-    Text(
-        text = title,
-        style = MaterialTheme.typography.labelSmall,
-        color = MaterialTheme.colorScheme.onSurfaceVariant,
-        modifier = Modifier.padding(vertical = 8.dp, horizontal = 4.dp)
-    )
-}
-
-@Composable
-private fun CompactNoteItem(
-    note: Note,
-    onSelect: () -> Unit,
-    onDoubleClick: () -> Unit,
-    isSelected: Boolean = false
-) {
-    Surface(
-        modifier = Modifier
-            .fillMaxWidth()
-            .pointerInput(Unit) {
-                detectTapGestures(
-                    onTap = { onSelect() },
-                    onDoubleTap = { onDoubleClick() }
-                )
-            },
-        color = if (isSelected) MaterialTheme.colorScheme.bgSelected else MaterialTheme.colorScheme.surface,
-        shape = MaterialTheme.shapes.small,
-        border = if (isSelected) BorderStroke(1.dp, MaterialTheme.colorScheme.borderSelected) else null,
-        tonalElevation = if (isSelected) 1.dp else 0.dp
-    ) {
-        Column(
-            modifier = Modifier.padding(horizontal = 12.dp, vertical = 10.dp)
-        ) {
-            Text(
-                text = note.title,
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurface,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
-            )
-            
-            if (note.content.isNotBlank()) {
-                Spacer(modifier = Modifier.height(2.dp))
-                Text(
-                    text = note.preview(),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun NotesFooter(
-    noteCount: Int,
-    selectedCount: Int
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(top = 16.dp),
-        horizontalArrangement = Arrangement.SpaceBetween
-    ) {
-        Text(
-            text = "$noteCount notes",
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
-
-        if (selectedCount > 0) {
-            Text(
-                text = "$selectedCount selected",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        }
-    }
-}
-
-
-@Composable
-private fun NotesList(
-    notes: List<Note>,
-    selectedNoteId: String?,
-    onNoteSelect: (String) -> Unit,
-    onNoteDoubleClick: (String) -> Unit,
-    modifier: Modifier = Modifier
-) {
-    LazyColumn(
-        modifier = modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(4.dp) // Tighter spacing
-    ) {
-        // Group headers
-        item {
-            GroupHeader("PROJECT PHOENIX UPDATES")
-        }
-
-        items(notes.filter { /* filter by group */ true }) { note ->
-            CompactNoteItem(
-                note = note,
-                onSelect = { onNoteSelect(note.id) },
-                onDoubleClick = { onNoteDoubleClick(note.id) },
-                isSelected = note.id == selectedNoteId
-            )
-        }
-
-        item {
-            Spacer(modifier = Modifier.height(16.dp))
-            GroupHeader("AI RESEARCH NOTES")
-        }
-
-        // More groups...
-    }
-}
-
-@Composable
-private fun EmptyState(onCreateNote: () -> Unit) {
-    Column(
-        modifier = Modifier.fillMaxSize().padding(32.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ) {
-        Text(
-            text = "Welcome to Sentio",
-            style = MaterialTheme.typography.displayLarge,
-            color = MaterialTheme.colorScheme.primary
-        )
-        
-        Spacer(modifier = Modifier.height(16.dp))
-        
-        Text(
-            text = "Your unified developer operating system",
-            style = MaterialTheme.typography.titleLarge,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
-        
-        Spacer(modifier = Modifier.height(32.dp))
-        
-        Button(onClick = onCreateNote) {
-            Text("Create Your First Note")
-        }
-    }
-}
 
 /**
  * Read-only preview of a note (shown when single-clicked)
@@ -950,7 +793,7 @@ fun Modifier.dashedBorder(
 @Composable
 private fun MainContentPlaceholder(modifier: Modifier = Modifier) {
     Box(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
             .padding(24.dp)
