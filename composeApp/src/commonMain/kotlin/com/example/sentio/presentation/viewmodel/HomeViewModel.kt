@@ -27,6 +27,9 @@ class HomeViewModel(
     private val _searchQuery = MutableStateFlow("")
     val searchQuery: StateFlow<String> = _searchQuery.asStateFlow()
 
+    private val _selectedNoteId = MutableStateFlow<String?>(null)
+    val selectedNoteId: StateFlow<String?> = _selectedNoteId.asStateFlow()
+
     private val _effects = Channel<HomeUiEffect>(Channel.BUFFERED)
     val effects: Flow<HomeUiEffect> = _effects.receiveAsFlow()
 
@@ -106,6 +109,7 @@ class HomeViewModel(
 
     private fun navigateToNote(noteId: String) {
         viewModelScope.launch {
+            _selectedNoteId.value = noteId
             _effects.send(HomeUiEffect.NavigateToEditor(noteId))
         }
     }

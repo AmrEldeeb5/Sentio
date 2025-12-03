@@ -24,7 +24,8 @@ sealed class HomeUiState {
         val notes: List<Note> = emptyList(),
         val pinnedNotes: List<Note> = emptyList(),
         val searchQuery: String = "",
-        val isSearching: Boolean = false
+        val isSearching: Boolean = false,
+        val selectedNoteId: String? = null
     ) : HomeUiState()
 
     /**

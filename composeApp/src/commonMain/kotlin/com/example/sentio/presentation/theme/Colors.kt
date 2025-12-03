@@ -3,57 +3,238 @@ package com.example.sentio.presentation.theme
 import androidx.compose.ui.graphics.Color
 
 /**
- * Sentio color palette - Dark theme optimized for developers.
+ * Sentio color palette - Dark teal theme matching the UI mockups.
+ * Beautiful dark green/teal aesthetic with bright cyan accents.
  */
 object SentioColors {
-    // Backgrounds
-    val BgPrimary = Color(0xFF0A1612)
+    // ══════════════════════════════════════════════════════════════
+    // BACKGROUNDS - Dark Teal/Green Palette
+    // ══════════════════════════════════════════════════════════════
+    
+    /** Darkest background - main app background */
+    val BgPrimary = Color(0xFF0D1B1A)
+    
+    /** Secondary background - sidebar, panels */
     val BgSecondary = Color(0xFF0F1F1A)
+    
+    /** Tertiary background - cards, elevated surfaces */
     val BgTertiary = Color(0xFF152922)
-    val BgElevated = Color(0xFF1A2F27)
+    
+    /** Elevated surfaces - hover states, active cards */
+    val BgElevated = Color(0xFF1A3530)
+    
+    /** Card backgrounds with subtle transparency */
+    val BgCard = Color(0xFF162B26)
+    
+    /** Search bar and input backgrounds */
+    val SearchBarBg = Color(0xFF1A3530)
+    
+    /** Selected/Active item background */
+    val BgSelected = Color(0xFF1E3D36)
+    
+    /** Code block background */
+    val BgCode = Color(0xFF0A1614)
 
-    // Accents
+    // ══════════════════════════════════════════════════════════════
+    // ACCENT COLORS - Bright Cyan/Teal
+    // ══════════════════════════════════════════════════════════════
+    
+    /** Primary accent - buttons, links, active states */
     val AccentPrimary = Color(0xFF3DD68C)
+    
+    /** Secondary accent - hover states */
     val AccentSecondary = Color(0xFF2FB874)
-    val AccentAI = Color(0xFF667EEA)
-    val AccentAISecondary = Color(0xFF764BA2)
+    
+    /** Tertiary accent - subtle highlights */
+    val AccentTertiary = Color(0xFF25A066)
+    
+    /** AI-specific accent - AI features, suggestions */
+    val AccentAI = Color(0xFF2DD4BF)
+    
+    /** AI glow effect */
+    val AccentAIGlow = Color(0xFF2DD4BF).copy(alpha = 0.2f)
+    
+    /** Highlight color for text selection, AI suggestions */
+    val Highlight = Color(0xFF2DD4BF).copy(alpha = 0.3f)
 
-    // Text
-    val TextPrimary = Color(0xFFE0E6E3)
-    val TextSecondary = Color(0xFF8B9D94)
-    val TextTertiary = Color(0xFF566B61)
-    val TextDisabled = Color(0xFF3A4F45)
+    // ══════════════════════════════════════════════════════════════
+    // TEXT COLORS
+    // ══════════════════════════════════════════════════════════════
+    
+    /** Primary text - headings, important content */
+    val TextPrimary = Color(0xFFE8F0ED)
+    
+    /** Secondary text - body text, descriptions */
+    val TextSecondary = Color(0xFFA3B8B0)
+    
+    /** Tertiary text - timestamps, hints, placeholders */
+    val TextTertiary = Color(0xFF6B8A7D)
+    
+    /** Disabled text */
+    val TextDisabled = Color(0xFF4A6358)
+    
+    /** Link text color */
+    val TextLink = AccentPrimary
 
-    // Semantic
-    val Success = Color(0xFF3DD68C)
-    val Warning = Color(0xFFFFC107)
-    val Error = Color(0xFFFF5252)
-    val Info = Color(0xFF667EEA)
-
-    // Borders
-    val BorderPrimary = Color(0xFF1F3530)
-    val BorderSecondary = Color(0xFF2A4A40)
+    // ══════════════════════════════════════════════════════════════
+    // BORDER COLORS
+    // ══════════════════════════════════════════════════════════════
+    
+    /** Primary border - cards, inputs */
+    val BorderPrimary = Color(0xFF1F3D35)
+    
+    /** Secondary border - subtle dividers */
+    val BorderSecondary = Color(0xFF2A4F45)
+    
+    /** Focus border - focused inputs */
     val BorderFocus = AccentPrimary
+    
+    /** Dashed border for drop zones */
+    val BorderDashed = Color(0xFF3D5A50)
 
-    // Overlays
-    val Overlay = Color(0x800A1612)
-    val OverlayLight = Color(0x400A1612)
+    // ══════════════════════════════════════════════════════════════
+    // SEMANTIC COLORS
+    // ══════════════════════════════════════════════════════════════
+    
+    /** Success - completed tasks, saved states */
+    val Success = Color(0xFF3DD68C)
+    
+    /** Warning - due soon, attention needed */
+    val Warning = Color(0xFFFFC107)
+    
+    /** Error - overdue, failed states */
+    val Error = Color(0xFFFF6B6B)
+    
+    /** Info - informational messages */
+    val Info = Color(0xFF2DD4BF)
 
-    // Card backgrounds
-    val CardBg = Color(0x0DFFFFFF)
-    val CardBgHover = Color(0x1AFFFFFF)
-    val CardBgActive = Color(0x26FFFFFF)
+    // ══════════════════════════════════════════════════════════════
+    // PRIORITY COLORS (for tasks/kanban)
+    // ══════════════════════════════════════════════════════════════
+    
+    /** High priority - red dot */
+    val PriorityHigh = Color(0xFFFF6B6B)
+    
+    /** Medium priority - yellow dot */
+    val PriorityMedium = Color(0xFFFFC107)
+    
+    /** Low priority - blue dot */
+    val PriorityLow = Color(0xFF4ECDC4)
+    
+    /** No priority - gray dot */
+    val PriorityNone = Color(0xFF6B8A7D)
 
-    // AI specific
-    val AIGradientStart = AccentAI
-    val AIGradientEnd = AccentAISecondary
+    // ══════════════════════════════════════════════════════════════
+    // TAG COLORS
+    // ══════════════════════════════════════════════════════════════
+    
+    val TagResearch = Color(0xFF4ECDC4)
+    val TagUIDesign = Color(0xFFFF6B9D)
+    val TagBackend = Color(0xFF3DD68C)
+    val TagMarketing = Color(0xFFFFB347)
+    val TagAnalysis = Color(0xFF9B59B6)
+    val TagHighEffort = Color(0xFFE74C3C)
 
-    // Syntax highlighting
+    // ══════════════════════════════════════════════════════════════
+    // OVERLAYS & MODALS
+    // ══════════════════════════════════════════════════════════════
+    
+    /** Modal overlay - 50% opacity */
+    val ModalOverlay = Color(0x800D1B1A)
+    
+    /** Light overlay - 25% opacity */
+    val OverlayLight = Color(0x400D1B1A)
+
+    // ══════════════════════════════════════════════════════════════
+    // BUTTON COLORS
+    // ══════════════════════════════════════════════════════════════
+    
+    /** Primary button background */
+    val ButtonPrimary = AccentPrimary
+    
+    /** Primary button text */
+    val ButtonPrimaryText = Color(0xFF0D1B1A)
+    
+    /** Secondary button background */
+    val ButtonSecondary = Color(0xFF1A3530)
+    
+    /** Secondary button text */
+    val ButtonSecondaryText = TextPrimary
+    
+    /** Ghost button (transparent) */
+    val ButtonGhost = Color.Transparent
+    
+    /** Ghost button text */
+    val ButtonGhostText = AccentPrimary
+
+    // ══════════════════════════════════════════════════════════════
+    // SIDEBAR COLORS
+    // ══════════════════════════════════════════════════════════════
+    
+    /** Sidebar background */
+    val SidebarBg = BgSecondary
+    
+    /** Sidebar item hover */
+    val SidebarItemHover = Color(0xFF1A3530)
+    
+    /** Sidebar item active */
+    val SidebarItemActive = AccentPrimary
+    
+    /** Sidebar section header */
+    val SidebarSectionHeader = TextTertiary
+
+    // ══════════════════════════════════════════════════════════════
+    // EDITOR COLORS
+    // ══════════════════════════════════════════════════════════════
+    
+    /** Editor background */
+    val EditorBg = BgPrimary
+    
+    /** Editor cursor */
+    val EditorCursor = AccentPrimary
+    
+    /** Editor selection */
+    val EditorSelection = AccentPrimary.copy(alpha = 0.3f)
+    
+    /** Editor line highlight */
+    val EditorLineHighlight = Color(0xFF152922)
+
+    // ══════════════════════════════════════════════════════════════
+    // SYNTAX HIGHLIGHTING
+    // ══════════════════════════════════════════════════════════════
+    
     val SyntaxKeyword = Color(0xFFFF79C6)
     val SyntaxString = Color(0xFFF1FA8C)
-    val SyntaxComment = Color(0xFF6272A4)
-    val SyntaxFunction = Color(0xFF50FA7B)
+    val SyntaxComment = Color(0xFF6B8A7D)
+    val SyntaxFunction = Color(0xFF3DD68C)
     val SyntaxNumber = Color(0xFFBD93F9)
+    val SyntaxOperator = Color(0xFFFF6B6B)
+    val SyntaxVariable = Color(0xFF8BE9FD)
+    val SyntaxType = Color(0xFF4ECDC4)
+
+    // ══════════════════════════════════════════════════════════════
+    // TIMER COLORS (for task timers)
+    // ══════════════════════════════════════════════════════════════
+    
+    val TimerBg = Color(0xFF2DD4BF).copy(alpha = 0.15f)
+    val TimerText = Color(0xFF2DD4BF)
+    val TimerActive = Color(0xFF3DD68C)
+
+    // ══════════════════════════════════════════════════════════════
+    // SWITCH/TOGGLE COLORS
+    // ══════════════════════════════════════════════════════════════
+    
+    val SwitchTrackOn = AccentPrimary
+    val SwitchTrackOff = Color(0xFF2A4F45)
+    val SwitchThumb = Color(0xFFE8F0ED)
+
+    // ══════════════════════════════════════════════════════════════
+    // SCROLLBAR COLORS
+    // ══════════════════════════════════════════════════════════════
+    
+    val ScrollbarTrack = Color.Transparent
+    val ScrollbarThumb = Color(0xFF2A4F45)
+    val ScrollbarThumbHover = Color(0xFF3D5A50)
 }
 
 /**
@@ -71,5 +252,12 @@ val AccentGradient = GradientColors(
 
 val AIGradient = GradientColors(
     start = SentioColors.AccentAI,
-    end = SentioColors.AccentAISecondary
+    end = Color(0xFF764BA2)
 )
+
+val CardGradient = GradientColors(
+    start = SentioColors.BgCard,
+    end = SentioColors.BgTertiary
+)
+
+
