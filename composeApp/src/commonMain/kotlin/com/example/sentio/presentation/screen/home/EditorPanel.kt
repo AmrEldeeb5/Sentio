@@ -58,6 +58,7 @@ fun EditorPanel(
     onContentChange: (String) -> Unit,
     onTogglePin: () -> Unit,
     onDelete: () -> Unit,
+    onStatusChange: (com.example.sentio.domain.models.NoteStatus) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     // Track formatting state for toolbar callbacks
@@ -65,6 +66,7 @@ fun EditorPanel(
     var formatItalicTrigger by remember { mutableStateOf(0) }
     var formatCodeTrigger by remember { mutableStateOf(0) }
     var formatLinkTrigger by remember { mutableStateOf(0) }
+    var isPreviewMode by remember { mutableStateOf(false) }
 
     Box(
         modifier = modifier
@@ -103,8 +105,12 @@ fun EditorPanel(
             // Toolbar with pin/delete and formatting
             EditorToolbar(
                 isPinned = selectedNote?.isPinned ?: false,
+                noteStatus = selectedNote?.status ?: com.example.sentio.domain.models.NoteStatus.NONE,
+                isPreviewMode = isPreviewMode,
+                onTogglePreview = { isPreviewMode = !isPreviewMode },
                 onTogglePin = onTogglePin,
                 onDelete = onDelete,
+                onStatusChange = onStatusChange,
                 hasNote = selectedNote != null,
                 onBold = { formatBoldTrigger++ },
                 onItalic = { formatItalicTrigger++ },
@@ -125,22 +131,26 @@ fun EditorPanel(
 
                     // Breadcrumbs
                     Breadcrumbs(
-                        projectName = "Project X",
-                        folderName = folder?.name ?: "Design Docs",
+                        projectName = "Sentio",
+                        folderName = folder?.name ?: "Uncategorized",
                         noteName = selectedNote.title.ifBlank { "Untitled" }
                     )
 
-                    // Editor Content (editable)
-                    EditableEditorContent(
-                        note = selectedNote,
-                        onTitleChange = onTitleChange,
-                        onContentChange = onContentChange,
-                        onToggleSlashMenu = onToggleSlashMenu,
-                        formatBoldTrigger = formatBoldTrigger,
-                        formatItalicTrigger = formatItalicTrigger,
-                        formatCodeTrigger = formatCodeTrigger,
-                        formatLinkTrigger = formatLinkTrigger
-                    )
+                    // Editor Content (editable or preview)
+                    if (isPreviewMode) {
+                        MarkdownPreviewContent(note = selectedNote)
+                    } else {
+                        EditableEditorContent(
+                            note = selectedNote,
+                            onTitleChange = onTitleChange,
+                            onContentChange = onContentChange,
+                            onToggleSlashMenu = onToggleSlashMenu,
+                            formatBoldTrigger = formatBoldTrigger,
+                            formatItalicTrigger = formatItalicTrigger,
+                            formatCodeTrigger = formatCodeTrigger,
+                            formatLinkTrigger = formatLinkTrigger
+                        )
+                    }
                 } else {
                     // Empty State
                     Box(
@@ -179,8 +189,12 @@ fun EditorPanel(
 @Composable
 fun EditorToolbar(
     isPinned: Boolean = false,
+    noteStatus: com.example.sentio.domain.models.NoteStatus = com.example.sentio.domain.models.NoteStatus.NONE,
+    isPreviewMode: Boolean = false,
+    onTogglePreview: () -> Unit = {},
     onTogglePin: () -> Unit = {},
     onDelete: () -> Unit = {},
+    onStatusChange: (com.example.sentio.domain.models.NoteStatus) -> Unit = {},
     hasNote: Boolean = false,
     onBold: () -> Unit = {},
     onItalic: () -> Unit = {},
@@ -188,6 +202,7 @@ fun EditorToolbar(
     onLink: () -> Unit = {},
     onSlashMenu: () -> Unit = {}
 ) {
+    var showStatusMenu by remember { mutableStateOf(false) }
     Surface(
         modifier = Modifier
             .fillMaxWidth()
@@ -217,12 +232,58 @@ fun EditorToolbar(
                 )
 
                 ToolbarButton("✨", isActive = true, isPrimary = true, onClick = onSlashMenu, tooltip = "Commands (Ctrl+/)")
+                
+                // Divider
+                Box(
+                    modifier = Modifier
+                        .width(1.dp)
+                        .height(16.dp)
+                        .background(SentioColors.BorderPrimary)
+                )
+                
+                // Preview toggle
+                ToolbarButton(
+                    text = if (isPreviewMode) "✏️" else "👁",
+                    isActive = isPreviewMode,
+                    onClick = onTogglePreview,
+                    tooltip = if (isPreviewMode) "Edit Mode" else "Preview Mode"
+                )
                 ToolbarButton("⋯")
             }
 
-            // Right: Pin, Delete, Settings
-            Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+            // Right: Status, Pin, Delete, Settings
+            Row(horizontalArrangement = Arrangement.spacedBy(4.dp), verticalAlignment = Alignment.CenterVertically) {
                 if (hasNote) {
+                    // Status selector
+                    Box {
+                        NoteStatusSelector(
+                            currentStatus = noteStatus,
+                            onClick = { showStatusMenu = true }
+                        )
+                        androidx.compose.material3.DropdownMenu(
+                            expanded = showStatusMenu,
+                            onDismissRequest = { showStatusMenu = false }
+                        ) {
+                            com.example.sentio.domain.models.NoteStatus.entries.forEach { status ->
+                                androidx.compose.material3.DropdownMenuItem(
+                                    text = {
+                                        Row(
+                                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                            verticalAlignment = Alignment.CenterVertically
+                                        ) {
+                                            Text(getStatusIcon(status), fontSize = 14.sp)
+                                            Text(getStatusLabel(status), fontSize = 13.sp)
+                                        }
+                                    },
+                                    onClick = {
+                                        onStatusChange(status)
+                                        showStatusMenu = false
+                                    }
+                                )
+                            }
+                        }
+                    }
+
                     ToolbarButton(
                         text = if (isPinned) "📌" else "📍",
                         isActive = isPinned,
@@ -254,46 +315,106 @@ fun ToolbarButton(
     val interactionSource = remember { MutableInteractionSource() }
     val isHovered by interactionSource.collectIsHoveredAsState()
 
-    Box {
-        Surface(
-            modifier = Modifier
-                .size(32.dp)
-                .clickable(interactionSource = interactionSource, indication = null, onClick = onClick)
-                .hoverable(interactionSource),
-            shape = RoundedCornerShape(6.dp),
-            color = if (isActive || isHovered) SentioColors.BgElevated.copy(alpha = 0.5f) else Color.Transparent
-        ) {
-            Box(contentAlignment = Alignment.Center) {
-                Text(
-                    text,
-                    fontSize = 14.sp,
-                    fontWeight = if (isBold) FontWeight.Bold else FontWeight.Normal,
-                    color = when {
-                        isPrimary -> SentioColors.AccentAI
-                        isActive -> Color.White
-                        else -> SentioColors.TextTertiary
-                    }
-                )
-            }
+    // Fixed size box - tooltip rendered in popup layer
+    Surface(
+        modifier = Modifier
+            .size(32.dp)
+            .clickable(interactionSource = interactionSource, indication = null, onClick = onClick)
+            .hoverable(interactionSource),
+        shape = RoundedCornerShape(6.dp),
+        color = if (isActive || isHovered) SentioColors.BgElevated.copy(alpha = 0.5f) else Color.Transparent
+    ) {
+        Box(contentAlignment = Alignment.Center) {
+            Text(
+                text,
+                fontSize = 14.sp,
+                fontWeight = if (isBold) FontWeight.Bold else FontWeight.Normal,
+                color = when {
+                    isPrimary -> SentioColors.AccentAI
+                    isActive -> Color.White
+                    else -> SentioColors.TextTertiary
+                }
+            )
         }
-        
-        // Tooltip on hover
-        if (isHovered && tooltip.isNotEmpty()) {
+    }
+    
+    // Tooltip in popup layer - doesn't affect layout
+    if (isHovered && tooltip.isNotEmpty()) {
+        androidx.compose.ui.window.Popup(
+            alignment = Alignment.TopCenter,
+            offset = androidx.compose.ui.unit.IntOffset(0, 36)
+        ) {
             Surface(
-                modifier = Modifier
-                    .align(Alignment.BottomCenter)
-                    .offset(y = 36.dp),
                 shape = RoundedCornerShape(4.dp),
-                color = SentioColors.BgElevated,
-                shadowElevation = 4.dp
+                color = Color(0xFF1A1A1A),
+                shadowElevation = 8.dp
             ) {
                 Text(
                     tooltip,
                     fontSize = 11.sp,
-                    color = SentioColors.TextSecondary,
+                    color = Color.White,
                     modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
                 )
             }
+        }
+    }
+}
+
+// Status helper functions
+fun getStatusIcon(status: com.example.sentio.domain.models.NoteStatus): String = when (status) {
+    com.example.sentio.domain.models.NoteStatus.NONE -> "○"
+    com.example.sentio.domain.models.NoteStatus.IN_PROGRESS -> "⏳"
+    com.example.sentio.domain.models.NoteStatus.COMPLETED -> "✓"
+    com.example.sentio.domain.models.NoteStatus.ON_HOLD -> "⏸"
+    com.example.sentio.domain.models.NoteStatus.ARCHIVED -> "📦"
+}
+
+fun getStatusLabel(status: com.example.sentio.domain.models.NoteStatus): String = when (status) {
+    com.example.sentio.domain.models.NoteStatus.NONE -> "No Status"
+    com.example.sentio.domain.models.NoteStatus.IN_PROGRESS -> "In Progress"
+    com.example.sentio.domain.models.NoteStatus.COMPLETED -> "Completed"
+    com.example.sentio.domain.models.NoteStatus.ON_HOLD -> "On Hold"
+    com.example.sentio.domain.models.NoteStatus.ARCHIVED -> "Archived"
+}
+
+fun getStatusColor(status: com.example.sentio.domain.models.NoteStatus): Color = when (status) {
+    com.example.sentio.domain.models.NoteStatus.NONE -> SentioColors.TextTertiary
+    com.example.sentio.domain.models.NoteStatus.IN_PROGRESS -> Color(0xFF38BDF8)
+    com.example.sentio.domain.models.NoteStatus.COMPLETED -> Color(0xFF34D399)
+    com.example.sentio.domain.models.NoteStatus.ON_HOLD -> Color(0xFFFBBF24)
+    com.example.sentio.domain.models.NoteStatus.ARCHIVED -> Color(0xFF9CA3AF)
+}
+
+@Composable
+fun NoteStatusSelector(
+    currentStatus: com.example.sentio.domain.models.NoteStatus,
+    onClick: () -> Unit
+) {
+    val interactionSource = remember { MutableInteractionSource() }
+    val isHovered by interactionSource.collectIsHoveredAsState()
+    val statusColor = getStatusColor(currentStatus)
+
+    Surface(
+        modifier = Modifier
+            .clickable(interactionSource = interactionSource, indication = null, onClick = onClick)
+            .hoverable(interactionSource),
+        shape = RoundedCornerShape(6.dp),
+        color = if (isHovered) statusColor.copy(alpha = 0.15f) else statusColor.copy(alpha = 0.1f),
+        border = BorderStroke(1.dp, statusColor.copy(alpha = 0.3f))
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(4.dp)
+        ) {
+            Text(getStatusIcon(currentStatus), fontSize = 12.sp, color = statusColor)
+            Text(
+                getStatusLabel(currentStatus),
+                fontSize = 11.sp,
+                color = statusColor,
+                fontWeight = FontWeight.Medium
+            )
+            Text("▼", fontSize = 8.sp, color = statusColor.copy(alpha = 0.6f))
         }
     }
 }
@@ -492,6 +613,32 @@ fun EditableEditorContent(
                     innerTextField()
                 }
             }
+        )
+    }
+}
+
+@Composable
+fun MarkdownPreviewContent(note: Note) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 48.dp)
+            .padding(bottom = 128.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        // Title
+        Text(
+            note.title.ifBlank { "Untitled" },
+            fontSize = 30.sp,
+            fontWeight = FontWeight.Bold,
+            color = Color.White,
+            lineHeight = 40.sp
+        )
+
+        // Rendered markdown content
+        com.example.sentio.presentation.components.MarkdownRenderer(
+            content = note.content,
+            modifier = Modifier.fillMaxWidth()
         )
     }
 }

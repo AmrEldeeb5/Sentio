@@ -28,7 +28,6 @@ import org.koin.compose.viewmodel.koinViewModel
  */
 @Composable
 fun HomeScreen(
-    onNoteDoubleClick: (String) -> Unit,
     viewModel: HomeViewModel = koinViewModel()
 ) {
     val notes by viewModel.notes.collectAsState()
@@ -41,12 +40,14 @@ fun HomeScreen(
     val selectedNote = notes.find { it.id == selectedNoteId }
     var showSlashMenu by remember { mutableStateOf(false) }
     var showContextSidebar by remember { mutableStateOf(true) }
+    var projectName by remember { mutableStateOf("My Workspace") }
+    var focusMode by remember { mutableStateOf(false) }
 
-    // Handle navigation effects
+    // Handle effects (snackbar, errors)
     LaunchedEffect(Unit) {
         viewModel.effects.collect { effect ->
             when (effect) {
-                is HomeUiEffect.NavigateToEditor -> onNoteDoubleClick(effect.noteId)
+                is HomeUiEffect.NavigateToEditor -> { /* No longer navigating - editing in place */ }
                 is HomeUiEffect.ShowSnackbar -> { /* TODO: Show snackbar */ }
                 is HomeUiEffect.ShowError -> { /* TODO: Show error */ }
             }
@@ -54,27 +55,50 @@ fun HomeScreen(
     }
 
     Column(modifier = Modifier.fillMaxSize().background(SentioColors.BgPrimary)) {
-        // Top Bar
-        TopBar(
-            showContextSidebar = showContextSidebar,
-            onToggleContextSidebar = { showContextSidebar = !showContextSidebar }
-        )
+        // Top Bar (hidden in focus mode)
+        AnimatedVisibility(
+            visible = !focusMode,
+            enter = fadeIn() + androidx.compose.animation.expandVertically(),
+            exit = fadeOut() + androidx.compose.animation.shrinkVertically()
+        ) {
+            TopBar(
+                showContextSidebar = showContextSidebar,
+                onToggleContextSidebar = { showContextSidebar = !showContextSidebar }
+            )
+        }
 
         // Main Content Row
         Row(modifier = Modifier.fillMaxSize().weight(1f)) {
-            // Left: AI Toolbelt Sidebar
-            AIToolbeltSidebar()
+            // Left: AI Toolbelt Sidebar (hidden in focus mode)
+            AnimatedVisibility(
+                visible = !focusMode,
+                enter = slideInHorizontally(initialOffsetX = { -it }) + fadeIn(),
+                exit = slideOutHorizontally(targetOffsetX = { -it }) + fadeOut()
+            ) {
+                AIToolbeltSidebar()
+            }
 
-            // File Explorer Panel
-            FileExplorerPanel(
-                folders = folders,
-                notes = notes,
-                expandedFolderIds = expandedFolderIds,
-                selectedNoteId = selectedNoteId,
-                onToggleFolder = { viewModel.onEvent(HomeUiEvent.ToggleFolder(it)) },
-                onNoteSelect = { viewModel.onEvent(HomeUiEvent.SelectNote(it)) },
-                onCreateFolder = { viewModel.onEvent(HomeUiEvent.CreateFolder(it)) }
-            )
+            // File Explorer Panel (hidden in focus mode)
+            AnimatedVisibility(
+                visible = !focusMode,
+                enter = slideInHorizontally(initialOffsetX = { -it }) + fadeIn(),
+                exit = slideOutHorizontally(targetOffsetX = { -it }) + fadeOut()
+            ) {
+                FileExplorerPanel(
+                    folders = folders,
+                    notes = notes,
+                    expandedFolderIds = expandedFolderIds,
+                    selectedNoteId = selectedNoteId,
+                    projectName = projectName,
+                    onProjectNameChange = { projectName = it },
+                    onToggleFolder = { viewModel.onEvent(HomeUiEvent.ToggleFolder(it)) },
+                    onNoteSelect = { viewModel.onEvent(HomeUiEvent.SelectNote(it)) },
+                    onCreateFolder = { viewModel.onEvent(HomeUiEvent.CreateFolder(it)) },
+                    onRenameFolder = { id, name -> viewModel.onEvent(HomeUiEvent.RenameFolder(id, name)) },
+                    onDeleteFolder = { viewModel.onEvent(HomeUiEvent.DeleteFolder(it)) },
+                    onMoveNoteToFolder = { noteId, folderId -> viewModel.onEvent(HomeUiEvent.MoveNoteToFolder(noteId, folderId)) }
+                )
+            }
 
             // Center: Editor Panel
             EditorPanel(
@@ -93,6 +117,9 @@ fun HomeScreen(
                 },
                 onDelete = {
                     selectedNote?.let { viewModel.onEvent(HomeUiEvent.DeleteNote(it.id)) }
+                },
+                onStatusChange = { status ->
+                    selectedNote?.let { viewModel.onEvent(HomeUiEvent.UpdateNoteStatus(it.id, status)) }
                 },
                 modifier = Modifier.weight(1f)
             )

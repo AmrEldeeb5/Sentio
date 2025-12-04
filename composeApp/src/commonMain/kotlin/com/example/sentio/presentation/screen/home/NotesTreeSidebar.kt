@@ -385,18 +385,62 @@ fun TreeNoteCard(
                 modifier = Modifier.padding(start = 22.dp)
             )
 
-            // Tags
-            if (note.tags.isNotEmpty()) {
-                Row(
-                    modifier = Modifier.padding(start = 22.dp, top = 4.dp),
-                    horizontalArrangement = Arrangement.spacedBy(6.dp)
-                ) {
-                    note.tags.take(2).forEach { tag ->
-                        TreeTagBadge(tag)
-                    }
+            // Status badge and Tags
+            Row(
+                modifier = Modifier.padding(start = 22.dp, top = 4.dp),
+                horizontalArrangement = Arrangement.spacedBy(6.dp)
+            ) {
+                // Status badge
+                if (note.status != com.example.sentio.domain.models.NoteStatus.NONE) {
+                    TreeNoteStatusBadge(note.status)
+                }
+                // Tags
+                note.tags.take(2).forEach { tag ->
+                    TreeTagBadge(tag)
                 }
             }
         }
+    }
+}
+
+@Composable
+fun TreeNoteStatusBadge(status: com.example.sentio.domain.models.NoteStatus) {
+    val (bgColor, textColor, label) = when (status) {
+        com.example.sentio.domain.models.NoteStatus.IN_PROGRESS -> Triple(
+            Color(0xFF0EA5E9).copy(alpha = 0.15f),
+            Color(0xFF38BDF8),
+            "In Progress"
+        )
+        com.example.sentio.domain.models.NoteStatus.COMPLETED -> Triple(
+            Color(0xFF10B981).copy(alpha = 0.15f),
+            Color(0xFF34D399),
+            "Completed"
+        )
+        com.example.sentio.domain.models.NoteStatus.ON_HOLD -> Triple(
+            Color(0xFFF59E0B).copy(alpha = 0.15f),
+            Color(0xFFFBBF24),
+            "On Hold"
+        )
+        com.example.sentio.domain.models.NoteStatus.ARCHIVED -> Triple(
+            Color(0xFF6B7280).copy(alpha = 0.15f),
+            Color(0xFF9CA3AF),
+            "Archived"
+        )
+        else -> return
+    }
+
+    Surface(
+        shape = RoundedCornerShape(4.dp),
+        color = bgColor,
+        border = BorderStroke(1.dp, textColor.copy(alpha = 0.3f))
+    ) {
+        Text(
+            label,
+            fontSize = 9.sp,
+            color = textColor,
+            fontWeight = FontWeight.Medium,
+            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+        )
     }
 }
 

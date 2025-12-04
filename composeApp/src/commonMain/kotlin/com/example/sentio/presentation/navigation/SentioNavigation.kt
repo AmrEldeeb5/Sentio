@@ -21,12 +21,8 @@ fun SentioNavigation(
         startDestination = Screen.Home
     ) {
         composable<Screen.Home> {
-            HomeScreen(
-                onNoteDoubleClick = { noteId ->
-                    // Navigate to full editor screen
-                    navController.navigate(Screen.Editor(noteId))
-                }
-            )
+            // All editing happens in the main screen - no navigation needed
+            HomeScreen()
         }
 
         composable<Screen.Editor> { backStackEntry ->

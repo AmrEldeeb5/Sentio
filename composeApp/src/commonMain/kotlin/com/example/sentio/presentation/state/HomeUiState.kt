@@ -69,6 +69,16 @@ sealed class HomeUiEvent {
     data class UpdateNoteContent(val noteId: String, val content: String) : HomeUiEvent()
     data class SaveNote(val noteId: String) : HomeUiEvent()
     data class ToggleNotePin(val noteId: String) : HomeUiEvent()
+    
+    // Folder management
+    data class RenameFolder(val folderId: String, val newName: String) : HomeUiEvent()
+    data class DeleteFolder(val folderId: String) : HomeUiEvent()
+    
+    // Note status
+    data class UpdateNoteStatus(val noteId: String, val status: com.example.sentio.domain.models.NoteStatus) : HomeUiEvent()
+    
+    // Drag & drop - move note to folder
+    data class MoveNoteToFolder(val noteId: String, val folderId: String?) : HomeUiEvent()
 }
 
 /**

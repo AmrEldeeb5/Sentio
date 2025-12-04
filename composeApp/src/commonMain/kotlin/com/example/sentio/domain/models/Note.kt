@@ -6,6 +6,18 @@ import kotlinx.datetime.Instant
 import kotlinx.serialization.Serializable
 
 /**
+ * Note status enum for tracking progress
+ */
+@Serializable
+enum class NoteStatus {
+    NONE,
+    IN_PROGRESS,
+    COMPLETED,
+    ON_HOLD,
+    ARCHIVED
+}
+
+/**
  * Core domain model for a note in Sentio.
  * Represents a single document with markdown content, metadata, and relationships.
  */
@@ -19,7 +31,8 @@ data class Note(
     val createdAt: Instant = Clock.System.now(),
     val updatedAt: Instant = Clock.System.now(),
     val isPinned: Boolean = false,
-    val isFavorite: Boolean = false
+    val isFavorite: Boolean = false,
+    val status: NoteStatus = NoteStatus.NONE
 ) {
     /**
      * Returns the word count of the content

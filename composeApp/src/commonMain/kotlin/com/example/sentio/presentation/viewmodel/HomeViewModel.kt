@@ -100,6 +100,13 @@ class HomeViewModel(
             is HomeUiEvent.UpdateNoteContent -> updateNoteContent(event.noteId, event.content)
             is HomeUiEvent.SaveNote -> saveNote(event.noteId)
             is HomeUiEvent.ToggleNotePin -> toggleNotePin(event.noteId)
+            // Folder management
+            is HomeUiEvent.RenameFolder -> renameFolder(event.folderId, event.newName)
+            is HomeUiEvent.DeleteFolder -> deleteFolder(event.folderId)
+            // Note status
+            is HomeUiEvent.UpdateNoteStatus -> updateNoteStatus(event.noteId, event.status)
+            // Drag & drop
+            is HomeUiEvent.MoveNoteToFolder -> moveNoteToFolder(event.noteId, event.folderId)
         }
     }
 
@@ -177,6 +184,10 @@ class HomeViewModel(
         viewModelScope.launch {
             noteUseCases.delete(noteId)
                 .onSuccess {
+                    // Clear selection if deleted note was selected
+                    if (_selectedNoteId.value == noteId) {
+                        _selectedNoteId.value = null
+                    }
                     _effects.send(HomeUiEffect.ShowSnackbar("Note deleted"))
                 }
                 .onFailure { error ->
@@ -215,5 +226,34 @@ class HomeViewModel(
 
     private fun closeNote() {
         _selectedNoteId.value = null
+    }
+
+    private fun renameFolder(folderId: String, newName: String) {
+        viewModelScope.launch {
+            val folder = folders.value.find { it.id == folderId } ?: return@launch
+            folderRepository.updateFolder(folder.copy(name = newName))
+        }
+    }
+
+    private fun deleteFolder(folderId: String) {
+        viewModelScope.launch {
+            folderRepository.deleteFolder(folderId)
+            _effects.send(HomeUiEffect.ShowSnackbar("Folder deleted"))
+        }
+    }
+
+    private fun updateNoteStatus(noteId: String, status: com.example.sentio.domain.models.NoteStatus) {
+        viewModelScope.launch {
+            val note = noteRepository.getNoteById(noteId) ?: return@launch
+            noteRepository.updateNote(note.copy(status = status, updatedAt = kotlinx.datetime.Clock.System.now()))
+        }
+    }
+
+    private fun moveNoteToFolder(noteId: String, folderId: String?) {
+        viewModelScope.launch {
+            val note = noteRepository.getNoteById(noteId) ?: return@launch
+            noteRepository.updateNote(note.copy(folderId = folderId, updatedAt = kotlinx.datetime.Clock.System.now()))
+            _effects.send(HomeUiEffect.ShowSnackbar("Note moved"))
+        }
     }
 }
