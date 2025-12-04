@@ -1,5 +1,6 @@
 package com.example.sentio.presentation.state
 
+import com.example.sentio.domain.models.Folder
 import com.example.sentio.domain.models.Note
 
 /**
@@ -23,6 +24,8 @@ sealed class HomeUiState {
     data class Success(
         val notes: List<Note> = emptyList(),
         val pinnedNotes: List<Note> = emptyList(),
+        val folders: List<Folder> = emptyList(),
+        val expandedFolderIds: Set<String> = emptySet(),
         val searchQuery: String = "",
         val isSearching: Boolean = false,
         /** Currently selected note (single click - highlighted in sidebar) */
@@ -54,7 +57,18 @@ sealed class HomeUiEvent {
     data object CloseNote : HomeUiEvent()
     data class DeleteNote(val noteId: String) : HomeUiEvent()
     data object CreateNote : HomeUiEvent()
+    data class CreateFolder(val name: String) : HomeUiEvent()
+    /** Toggle folder expansion */
+    data class ToggleFolder(val folderId: String) : HomeUiEvent()
+    /** Toggle pinned section expansion */
+    data object TogglePinnedSection : HomeUiEvent()
     data object Refresh : HomeUiEvent()
+    
+    // Editor events (for inline editing)
+    data class UpdateNoteTitle(val noteId: String, val title: String) : HomeUiEvent()
+    data class UpdateNoteContent(val noteId: String, val content: String) : HomeUiEvent()
+    data class SaveNote(val noteId: String) : HomeUiEvent()
+    data class ToggleNotePin(val noteId: String) : HomeUiEvent()
 }
 
 /**

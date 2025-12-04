@@ -41,6 +41,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -460,7 +461,9 @@ private fun EditorMainContent(
                 wordCount = note.wordCount(),
                 isSaving = isSaving,
                 hasUnsavedChanges = hasUnsavedChanges,
-                lastSavedAt = lastSavedAt
+                lastSavedAt = lastSavedAt,
+                createdAt = note.createdAt,
+                updatedAt = note.updatedAt
             )
         }
 
@@ -507,21 +510,32 @@ private fun EditorPane(
     folderPath: List<Folder>?,
     modifier: Modifier = Modifier
 ) {
-    var titleValue by remember(note.title) { 
-        mutableStateOf(TextFieldValue(note.title)) 
+    // Use note.id as key so TextFieldValue is only recreated when loading a different note
+    var titleValue by remember(note.id) { 
+        mutableStateOf(TextFieldValue(note.title, TextRange(note.title.length))) 
     }
-    var contentValue by remember(note.content) { 
-        mutableStateOf(TextFieldValue(note.content)) 
+    var contentValue by remember(note.id) { 
+        mutableStateOf(TextFieldValue(note.content, TextRange(note.content.length))) 
     }
     var showLinkDialog by remember { mutableStateOf(false) }
     val focusRequester = remember { FocusRequester() }
 
-    // Auto-save with debouncing
+    // Only notify ViewModel of changes, don't auto-save here to avoid cursor reset
+    LaunchedEffect(titleValue.text) {
+        if (titleValue.text != note.title) {
+            onTitleChange(titleValue.text)
+        }
+    }
+    
+    LaunchedEffect(contentValue.text) {
+        if (contentValue.text != note.content) {
+            onContentChange(contentValue.text)
+        }
+    }
+    
+    // Debounced auto-save
     LaunchedEffect(titleValue.text, contentValue.text) {
-        if (titleValue.text != note.title) onTitleChange(titleValue.text)
-        if (contentValue.text != note.content) onContentChange(contentValue.text)
-        
-        kotlinx.coroutines.delay(1500)
+        kotlinx.coroutines.delay(2000)
         onSave()
     }
 
@@ -953,7 +967,9 @@ private fun EditorFooter(
     wordCount: Int,
     isSaving: Boolean,
     hasUnsavedChanges: Boolean,
-    lastSavedAt: Long?
+    lastSavedAt: Long?,
+    createdAt: kotlinx.datetime.Instant,
+    updatedAt: kotlinx.datetime.Instant
 ) {
     Surface(
         color = SentioColors.BgSecondary,
@@ -966,11 +982,31 @@ private fun EditorFooter(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Left - Word count and reading time
+            // Left - Dates, Word count and reading time
             Row(
                 horizontalArrangement = Arrangement.spacedBy(16.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
+                Text(
+                    text = "Created: ${formatDate(createdAt)}",
+                    color = SentioColors.TextTertiary,
+                    fontSize = 12.sp
+                )
+                Text(
+                    text = "•",
+                    color = SentioColors.TextTertiary.copy(alpha = 0.5f),
+                    fontSize = 12.sp
+                )
+                Text(
+                    text = "Updated: ${formatDate(updatedAt)}",
+                    color = SentioColors.TextTertiary,
+                    fontSize = 12.sp
+                )
+                Text(
+                    text = "•",
+                    color = SentioColors.TextTertiary.copy(alpha = 0.5f),
+                    fontSize = 12.sp
+                )
                 Text(
                     text = "$wordCount words",
                     color = SentioColors.TextTertiary,
@@ -1073,12 +1109,11 @@ private fun RightSidebar(
         }
     }
     
-    // Recent notes (last 5, excluding current)
+    // All notes sorted by updatedAt (excluding current and pinned)
     val recentNotes = remember(filteredNotes, currentNoteId) {
         filteredNotes
             .filter { it.id != currentNoteId && !it.isPinned }
             .sortedByDescending { it.updatedAt }
-            .take(5)
     }
     
     // Filtered pinned notes (excluding current)
@@ -1374,6 +1409,25 @@ private fun ErrorState(
                 }
             }
         }
+    }
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// DATE FORMATTING
+// ══════════════════════════════════════════════════════════════════════════════
+
+private fun formatDate(instant: kotlinx.datetime.Instant): String {
+    val now = kotlinx.datetime.Clock.System.now()
+    val duration = now - instant
+    
+    return when {
+        duration.inWholeMinutes < 1 -> "Just now"
+        duration.inWholeMinutes < 60 -> "${duration.inWholeMinutes}m ago"
+        duration.inWholeHours < 24 -> "${duration.inWholeHours}h ago"
+        duration.inWholeDays < 7 -> "${duration.inWholeDays}d ago"
+        duration.inWholeDays < 30 -> "${duration.inWholeDays / 7}w ago"
+        duration.inWholeDays < 365 -> "${duration.inWholeDays / 30}mo ago"
+        else -> "${duration.inWholeDays / 365}y ago"
     }
 }
 
