@@ -1,4 +1,4 @@
-package com.example.klarity
+package com.example.sentio
 
 class JVMPlatform: Platform {
     override val name: String = "Java ${System.getProperty("java.version")}"

@@ -1,12 +1,12 @@
-package com.example.klarity.presentation.viewmodel
+package com.example.sentio.presentation.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.klarity.domain.repositories.NoteRepository
-import com.example.klarity.domain.usecase.NoteUseCases
-import com.example.klarity.presentation.state.EditorUiEffect
-import com.example.klarity.presentation.state.EditorUiEvent
-import com.example.klarity.presentation.state.EditorUiState
+import com.example.sentio.domain.repositories.NoteRepository
+import com.example.sentio.domain.usecase.NoteUseCases
+import com.example.sentio.presentation.state.EditorUiEffect
+import com.example.sentio.presentation.state.EditorUiEvent
+import com.example.sentio.presentation.state.EditorUiState
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch

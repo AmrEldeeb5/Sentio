@@ -1,4 +1,4 @@
-package com.example.klarity.presentation.screen.editor
+package com.example.sentio.presentation.screen.editor
 
 import androidx.compose.animation.*
 import androidx.compose.animation.core.animateDpAsState
@@ -45,13 +45,13 @@ import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.klarity.domain.models.Folder
-import com.example.klarity.domain.models.Note
-import com.example.klarity.presentation.state.EditorUiEvent
-import com.example.klarity.presentation.state.EditorUiState
-import com.example.klarity.presentation.state.EditorViewMode
-import com.example.klarity.presentation.theme.KlarityColors
-import com.example.klarity.presentation.viewmodel.EditorViewModel
+import com.example.sentio.domain.models.Folder
+import com.example.sentio.domain.models.Note
+import com.example.sentio.presentation.state.EditorUiEvent
+import com.example.sentio.presentation.state.EditorUiState
+import com.example.sentio.presentation.state.EditorViewMode
+import com.example.sentio.presentation.theme.KlarityColors
+import com.example.sentio.presentation.viewmodel.EditorViewModel
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable

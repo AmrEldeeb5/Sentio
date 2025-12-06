@@ -1,8 +1,8 @@
-package com.example.klarity.domain.usecase
+package com.example.sentio.domain.usecase
 
 import com.benasher44.uuid.uuid4
-import com.example.klarity.domain.models.Note
-import com.example.klarity.domain.repositories.NoteRepository
+import com.example.sentio.domain.models.Note
+import com.example.sentio.domain.repositories.NoteRepository
 import kotlinx.datetime.Clock
 
 /**

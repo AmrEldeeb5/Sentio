@@ -1,7 +1,7 @@
-package com.example.klarity.domain.usecase
+package com.example.sentio.domain.usecase
 
-import com.example.klarity.domain.models.Note
-import com.example.klarity.domain.repositories.NoteRepository
+import com.example.sentio.domain.models.Note
+import com.example.sentio.domain.repositories.NoteRepository
 import kotlinx.coroutines.flow.Flow
 
 class SearchNotesUseCase(

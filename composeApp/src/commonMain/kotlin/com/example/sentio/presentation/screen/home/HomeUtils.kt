@@ -1,4 +1,4 @@
-package com.example.klarity.presentation.screen.home
+package com.example.sentio.presentation.screen.home
 
 import kotlinx.datetime.Instant
 import kotlinx.datetime.Clock

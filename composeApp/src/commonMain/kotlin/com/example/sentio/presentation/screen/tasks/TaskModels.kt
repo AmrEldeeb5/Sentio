@@ -1,4 +1,4 @@
-package com.example.klarity.presentation.screen.tasks
+package com.example.sentio.presentation.screen.tasks
 
 import androidx.compose.ui.graphics.Color
 import kotlinx.datetime.Instant

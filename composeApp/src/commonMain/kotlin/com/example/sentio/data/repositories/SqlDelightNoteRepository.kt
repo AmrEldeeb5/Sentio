@@ -1,13 +1,13 @@
-package com.example.klarity.data.repositories
+package com.example.sentio.data.repositories
 
 import app.cash.sqldelight.coroutines.asFlow
 import app.cash.sqldelight.coroutines.mapToList
-import com.example.klarity.data.mapper.toDomain
-import com.example.klarity.data.mapper.toEntity
-import com.example.klarity.data.util.DispatcherProvider
-import com.example.klarity.db.KlarityDatabase
-import com.example.klarity.domain.models.Note
-import com.example.klarity.domain.repositories.NoteRepository
+import com.example.sentio.data.mapper.toDomain
+import com.example.sentio.data.mapper.toEntity
+import com.example.sentio.data.util.DispatcherProvider
+import com.example.sentio.db.KlarityDatabase
+import com.example.sentio.domain.models.Note
+import com.example.sentio.domain.repositories.NoteRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map

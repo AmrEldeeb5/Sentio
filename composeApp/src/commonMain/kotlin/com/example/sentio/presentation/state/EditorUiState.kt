@@ -1,6 +1,6 @@
-package com.example.klarity.presentation.state
+package com.example.sentio.presentation.state
 
-import com.example.klarity.domain.models.Note
+import com.example.sentio.domain.models.Note
 
 /**
  * Sealed class representing the UI state for the Editor screen.

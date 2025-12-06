@@ -1,6 +1,6 @@
-package com.example.klarity.domain.repositories
+package com.example.sentio.domain.repositories
 
-import com.example.klarity.domain.models.Tag
+import com.example.sentio.domain.models.Tag
 import kotlinx.coroutines.flow.Flow
 
 interface TagRepository {

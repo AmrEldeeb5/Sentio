@@ -1,16 +1,16 @@
-package com.example.klarity.presentation.viewmodel
+package com.example.sentio.presentation.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.klarity.domain.models.Folder
-import com.example.klarity.domain.models.Note
-import NoteStatus
-import com.example.klarity.domain.repositories.FolderRepository
-import com.example.klarity.domain.repositories.NoteRepository
-import com.example.klarity.domain.usecase.NoteUseCases
-import com.example.klarity.presentation.state.HomeUiEffect
-import com.example.klarity.presentation.state.HomeUiEvent
-import com.example.klarity.presentation.state.HomeUiState
+import com.example.sentio.domain.models.Folder
+import com.example.sentio.domain.models.Note
+import com.example.sentio.domain.models.NoteStatus
+import com.example.sentio.domain.repositories.FolderRepository
+import com.example.sentio.domain.repositories.NoteRepository
+import com.example.sentio.domain.usecase.NoteUseCases
+import com.example.sentio.presentation.state.HomeUiEffect
+import com.example.sentio.presentation.state.HomeUiEvent
+import com.example.sentio.presentation.state.HomeUiState
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch

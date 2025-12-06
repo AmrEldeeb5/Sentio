@@ -1,8 +1,8 @@
-package com.example.klarity
+package com.example.sentio
 
 import androidx.compose.runtime.Composable
-import com.example.klarity.presentation.navigation.KlarityNavigation
-import com.example.klarity.presentation.theme.KlarityTheme
+import com.example.sentio.presentation.navigation.KlarityNavigation
+import com.example.sentio.presentation.theme.KlarityTheme
 import org.koin.compose.KoinContext
 
 @Composable

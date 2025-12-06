@@ -1,8 +1,8 @@
-package com.example.klarity.di
+package com.example.sentio.di
 
 import app.cash.sqldelight.db.SqlDriver
 import app.cash.sqldelight.driver.jdbc.sqlite.JdbcSqliteDriver
-import com.example.klarity.db.KlarityDatabase
+import com.example.sentio.db.KlarityDatabase
 import org.koin.core.module.Module
 import org.koin.dsl.module
 import java.io.File

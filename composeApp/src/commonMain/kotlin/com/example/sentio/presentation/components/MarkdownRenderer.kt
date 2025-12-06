@@ -1,4 +1,4 @@
-package com.example.klarity.presentation.components
+package com.example.sentio.presentation.components
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -19,7 +19,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.klarity.presentation.theme.KlarityColors
+import com.example.sentio.presentation.theme.KlarityColors
 
 /**
  * Markdown Renderer - Renders markdown content with syntax highlighting

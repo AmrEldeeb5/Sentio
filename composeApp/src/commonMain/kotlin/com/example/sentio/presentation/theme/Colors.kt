@@ -1,4 +1,4 @@
-package com.example.klarity.presentation.theme
+package com.example.sentio.presentation.theme
 
 import androidx.compose.ui.graphics.Color
 

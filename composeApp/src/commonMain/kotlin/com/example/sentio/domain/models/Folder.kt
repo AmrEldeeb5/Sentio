@@ -1,4 +1,4 @@
-package com.example.klarity.domain.models
+package com.example.sentio.domain.models
 
 import kotlinx.datetime.Instant
 import kotlinx.serialization.Serializable

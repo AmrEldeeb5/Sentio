@@ -1,4 +1,4 @@
-package com.example.klarity.presentation.screen.tasks
+package com.example.sentio.presentation.screen.tasks
 
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
@@ -27,7 +27,7 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
-import com.example.klarity.presentation.theme.KlarityColors
+import com.example.sentio.presentation.theme.KlarityColors
 import kotlinx.datetime.*
 import kotlin.math.roundToInt
 

@@ -1,4 +1,4 @@
-package com.example.klarity.presentation.state
+package com.example.sentio.presentation.state
 
 /**
  * Base sealed class for common UI states across all screens.

@@ -1,4 +1,4 @@
-package com.example.klarity.presentation.screen.home
+package com.example.sentio.presentation.screen.home
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
@@ -35,10 +35,10 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.klarity.domain.models.Folder
-import com.example.klarity.domain.models.Note
-import com.example.klarity.domain.models.NoteStatus
-import com.example.klarity.presentation.theme.KlarityColors
+import com.example.sentio.domain.models.Folder
+import com.example.sentio.domain.models.Note
+import com.example.sentio.domain.models.NoteStatus
+import com.example.sentio.presentation.theme.KlarityColors
 
 /**
  * Editor Panel - Main content area for editing notes
@@ -627,7 +627,7 @@ fun MarkdownPreviewContent(note: Note) {
         )
 
         // Rendered markdown content
-        com.example.klarity.presentation.components.MarkdownRenderer(
+        com.example.sentio.presentation.components.MarkdownRenderer(
             content = note.content,
             modifier = Modifier.fillMaxWidth()
         )

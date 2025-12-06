@@ -1,4 +1,4 @@
-package com.example.klarity.presentation.screen.home
+package com.example.sentio.presentation.screen.home
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
@@ -18,7 +18,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.klarity.presentation.theme.KlarityColors
+import com.example.sentio.presentation.theme.KlarityColors
 
 /**
  * Common UI components used across the home screen

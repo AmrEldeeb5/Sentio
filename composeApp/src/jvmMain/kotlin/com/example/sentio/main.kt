@@ -1,8 +1,8 @@
-package com.example.klarity
+package com.example.sentio
 
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
-import com.example.klarity.di.appModule
+import com.example.sentio.di.appModule
 import org.koin.core.context.startKoin
 
 fun main() = application {

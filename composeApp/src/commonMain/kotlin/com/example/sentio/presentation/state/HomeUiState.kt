@@ -1,8 +1,8 @@
-package com.example.klarity.presentation.state
+package com.example.sentio.presentation.state
 
-import com.example.klarity.domain.models.Folder
-import com.example.klarity.domain.models.Note
-import NoteStatus
+import com.example.sentio.domain.models.Folder
+import com.example.sentio.domain.models.Note
+import com.example.sentio.domain.models.NoteStatus
 
 /**
  * Sealed class representing the UI state for the Home screen.

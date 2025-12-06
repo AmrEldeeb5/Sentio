@@ -1,4 +1,4 @@
-package com.example.klarity.domain.ai
+package com.example.sentio.domain.ai
 
 class EmbeddingService {
 }

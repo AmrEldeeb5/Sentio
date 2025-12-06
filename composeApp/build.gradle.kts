@@ -125,7 +125,7 @@ dependencies {
 
 compose.desktop {
     application {
-        mainClass = "com.example.klarity.MainKt"
+        mainClass = "com.example.sentio.MainKt"
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
             packageName = "com.example.klarity"
@@ -140,7 +140,7 @@ compose.desktop {
 sqldelight {
     databases {
         create("KlarityDatabase") {
-            packageName.set("com.example.klarity.db")
+            packageName.set("com.example.sentio.db")
         }
     }
 }

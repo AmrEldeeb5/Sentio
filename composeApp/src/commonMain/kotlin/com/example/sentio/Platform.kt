@@ -1,4 +1,4 @@
-package com.example.klarity
+package com.example.sentio
 
 interface Platform {
     val name: String

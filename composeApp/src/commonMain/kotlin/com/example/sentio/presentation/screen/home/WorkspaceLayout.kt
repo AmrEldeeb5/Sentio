@@ -1,4 +1,4 @@
-package com.example.klarity.presentation.screen.home
+package com.example.sentio.presentation.screen.home
 
 import androidx.compose.animation.*
 import androidx.compose.animation.core.animateDpAsState
@@ -27,7 +27,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.klarity.presentation.theme.KlarityColors
+import com.example.sentio.presentation.theme.KlarityColors
 
 /**
  * Workspace layout modes

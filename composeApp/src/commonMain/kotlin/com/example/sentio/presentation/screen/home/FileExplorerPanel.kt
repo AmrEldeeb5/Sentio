@@ -1,4 +1,4 @@
-package com.example.klarity.presentation.screen.home
+package com.example.sentio.presentation.screen.home
 
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.tween
@@ -31,10 +31,10 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
-import com.example.klarity.domain.models.Folder
-import com.example.klarity.domain.models.Note
-import NoteStatus
-import com.example.klarity.presentation.theme.KlarityColors
+import com.example.sentio.domain.models.Folder
+import com.example.sentio.domain.models.Note
+import com.example.sentio.domain.models.NoteStatus
+import com.example.sentio.presentation.theme.KlarityColors
 
 /**
  * File Explorer Panel - Shows folder tree structure with full folder management

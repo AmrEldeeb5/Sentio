@@ -1,4 +1,4 @@
-package com.example.klarity.presentation.screen.home
+package com.example.sentio.presentation.screen.home
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
@@ -35,10 +35,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.klarity.domain.models.Folder
-import com.example.klarity.domain.models.Note
-import NoteStatus
-import com.example.klarity.presentation.theme.KlarityColors
+import com.example.sentio.domain.models.Folder
+import com.example.sentio.domain.models.Note
+import com.example.sentio.domain.models.NoteStatus
+import com.example.sentio.presentation.theme.KlarityColors
 
 /**
  * Notes Tree Sidebar - Right sidebar showing notes organized in tree structure

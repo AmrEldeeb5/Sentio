@@ -1,8 +1,8 @@
-package com.example.klarity.data.mapper
+package com.example.sentio.data.mapper
 
-import com.example.klarity.domain.models.Note
+import com.example.sentio.domain.models.Note
 import kotlinx.datetime.Instant
-import com.example.klarity.db.Note as NoteEntity
+import com.example.sentio.db.Note as NoteEntity
 
 /**
  * Extension functions for converting between Note domain model and database entity.

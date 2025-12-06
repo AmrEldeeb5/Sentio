@@ -1,4 +1,4 @@
-package com.example.klarity.data.util
+package com.example.sentio.data.util
 
 import kotlinx.coroutines.CoroutineDispatcher
 

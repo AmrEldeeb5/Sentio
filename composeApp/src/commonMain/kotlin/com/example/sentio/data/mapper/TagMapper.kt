@@ -1,7 +1,7 @@
-package com.example.klarity.data.mapper
+package com.example.sentio.data.mapper
 
-import com.example.klarity.domain.models.Tag
-import com.example.klarity.db.Tag as TagEntity
+import com.example.sentio.domain.models.Tag
+import com.example.sentio.db.Tag as TagEntity
 
 /**
  * Extension functions for converting between Tag domain model and database entity.
