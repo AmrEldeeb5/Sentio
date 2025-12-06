@@ -58,6 +58,8 @@ sealed class HomeUiEvent {
     data object CloseNote : HomeUiEvent()
     data class DeleteNote(val noteId: String) : HomeUiEvent()
     data object CreateNote : HomeUiEvent()
+    /** Create a new note with a specific title (from wiki link) */
+    data class CreateNoteWithTitle(val title: String) : HomeUiEvent()
     data class CreateFolder(val name: String) : HomeUiEvent()
     /** Toggle folder expansion */
     data class ToggleFolder(val folderId: String) : HomeUiEvent()

@@ -58,6 +58,21 @@ fun SlashMenu(onDismiss: () -> Unit) {
                 title = "Code Block",
                 subtitle = "Add a formatted code block"
             )
+            SlashMenuItem(
+                icon = "🔗",
+                title = "Wiki Link",
+                subtitle = "Link to another note [[note-name]]"
+            )
+            SlashMenuItem(
+                icon = "📝",
+                title = "Heading",
+                subtitle = "Add a section heading"
+            )
+            SlashMenuItem(
+                icon = "•",
+                title = "Bullet List",
+                subtitle = "Create a bulleted list"
+            )
         }
     }
 }

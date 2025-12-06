@@ -2,10 +2,12 @@ package com.example.sentio.presentation.components
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.ClickableText
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -16,17 +18,23 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.sentio.presentation.theme.KlarityColors
 
+// Wiki link annotation tag
+private const val WIKI_LINK_TAG = "wiki_link"
+
 /**
  * Markdown Renderer - Renders markdown content with syntax highlighting
+ * Supports wiki-style links: [[note-name]] or [[note-name|display text]]
  */
 @Composable
 fun MarkdownRenderer(
     content: String,
+    onWikiLinkClick: (noteName: String) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -60,13 +68,13 @@ fun MarkdownRenderer(
                 }
                 // Headers
                 line.startsWith("# ") -> {
-                    MarkdownHeader(line.removePrefix("# "), level = 1)
+                    MarkdownHeader(line.removePrefix("# "), level = 1, onWikiLinkClick = onWikiLinkClick)
                 }
                 line.startsWith("## ") -> {
-                    MarkdownHeader(line.removePrefix("## "), level = 2)
+                    MarkdownHeader(line.removePrefix("## "), level = 2, onWikiLinkClick = onWikiLinkClick)
                 }
                 line.startsWith("### ") -> {
-                    MarkdownHeader(line.removePrefix("### "), level = 3)
+                    MarkdownHeader(line.removePrefix("### "), level = 3, onWikiLinkClick = onWikiLinkClick)
                 }
                 // Unordered list
                 line.trimStart().startsWith("- ") || line.trimStart().startsWith("* ") -> {
@@ -74,7 +82,8 @@ fun MarkdownRenderer(
                     MarkdownListItem(
                         text = line.trimStart().drop(2),
                         indent = indent / 2,
-                        isOrdered = false
+                        isOrdered = false,
+                        onWikiLinkClick = onWikiLinkClick
                     )
                 }
                 // Ordered list
@@ -84,19 +93,28 @@ fun MarkdownRenderer(
                     MarkdownListItem(
                         text = text,
                         indent = indent / 2,
-                        isOrdered = true
+                        isOrdered = true,
+                        onWikiLinkClick = onWikiLinkClick
                     )
                 }
                 // Checkbox (task list)
                 line.trimStart().startsWith("- [ ] ") -> {
-                    MarkdownCheckbox(text = line.trimStart().removePrefix("- [ ] "), checked = false)
+                    MarkdownCheckbox(
+                        text = line.trimStart().removePrefix("- [ ] "), 
+                        checked = false,
+                        onWikiLinkClick = onWikiLinkClick
+                    )
                 }
                 line.trimStart().startsWith("- [x] ") || line.trimStart().startsWith("- [X] ") -> {
-                    MarkdownCheckbox(text = line.trimStart().drop(6), checked = true)
+                    MarkdownCheckbox(
+                        text = line.trimStart().drop(6), 
+                        checked = true,
+                        onWikiLinkClick = onWikiLinkClick
+                    )
                 }
                 // Blockquote
                 line.startsWith("> ") -> {
-                    MarkdownBlockquote(line.removePrefix("> "))
+                    MarkdownBlockquote(line.removePrefix("> "), onWikiLinkClick = onWikiLinkClick)
                 }
                 // Horizontal rule
                 line.trim() in listOf("---", "***", "___") -> {
@@ -108,7 +126,7 @@ fun MarkdownRenderer(
                 }
                 // Regular paragraph with inline formatting
                 else -> {
-                    MarkdownParagraph(line)
+                    MarkdownParagraph(line, onWikiLinkClick = onWikiLinkClick)
                 }
             }
         }
@@ -116,7 +134,11 @@ fun MarkdownRenderer(
 }
 
 @Composable
-fun MarkdownHeader(text: String, level: Int) {
+fun MarkdownHeader(
+    text: String, 
+    level: Int,
+    onWikiLinkClick: (String) -> Unit = {}
+) {
     val (fontSize, fontWeight) = when (level) {
         1 -> 28.sp to FontWeight.Bold
         2 -> 22.sp to FontWeight.SemiBold
@@ -124,27 +146,53 @@ fun MarkdownHeader(text: String, level: Int) {
         else -> 16.sp to FontWeight.Normal
     }
     
-    Text(
-        text = parseInlineMarkdown(text),
-        fontSize = fontSize,
-        fontWeight = fontWeight,
-        color = Color.White,
-        modifier = Modifier.padding(vertical = 4.dp)
+    val annotatedString = parseInlineMarkdownWithWikiLinks(text)
+    ClickableText(
+        text = annotatedString,
+        style = androidx.compose.ui.text.TextStyle(
+            fontSize = fontSize,
+            fontWeight = fontWeight,
+            color = Color.White
+        ),
+        modifier = Modifier.padding(vertical = 4.dp),
+        onClick = { offset ->
+            annotatedString.getStringAnnotations(WIKI_LINK_TAG, offset, offset)
+                .firstOrNull()?.let { annotation ->
+                    onWikiLinkClick(annotation.item)
+                }
+        }
     )
 }
 
 @Composable
-fun MarkdownParagraph(text: String) {
-    Text(
-        text = parseInlineMarkdown(text),
-        fontSize = 15.sp,
-        color = KlarityColors.TextSecondary,
-        lineHeight = 24.sp
+fun MarkdownParagraph(
+    text: String,
+    onWikiLinkClick: (String) -> Unit = {}
+) {
+    val annotatedString = parseInlineMarkdownWithWikiLinks(text)
+    ClickableText(
+        text = annotatedString,
+        style = androidx.compose.ui.text.TextStyle(
+            fontSize = 15.sp,
+            color = KlarityColors.TextSecondary,
+            lineHeight = 24.sp
+        ),
+        onClick = { offset ->
+            annotatedString.getStringAnnotations(WIKI_LINK_TAG, offset, offset)
+                .firstOrNull()?.let { annotation ->
+                    onWikiLinkClick(annotation.item)
+                }
+        }
     )
 }
 
 @Composable
-fun MarkdownListItem(text: String, indent: Int, isOrdered: Boolean) {
+fun MarkdownListItem(
+    text: String, 
+    indent: Int, 
+    isOrdered: Boolean,
+    onWikiLinkClick: (String) -> Unit = {}
+) {
     Row(
         modifier = Modifier.padding(start = (indent * 16).dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -154,17 +202,30 @@ fun MarkdownListItem(text: String, indent: Int, isOrdered: Boolean) {
             fontSize = 15.sp,
             color = KlarityColors.AccentAI
         )
-        Text(
-            text = parseInlineMarkdown(text),
-            fontSize = 15.sp,
-            color = KlarityColors.TextSecondary,
-            lineHeight = 24.sp
+        val annotatedString = parseInlineMarkdownWithWikiLinks(text)
+        ClickableText(
+            text = annotatedString,
+            style = androidx.compose.ui.text.TextStyle(
+                fontSize = 15.sp,
+                color = KlarityColors.TextSecondary,
+                lineHeight = 24.sp
+            ),
+            onClick = { offset ->
+                annotatedString.getStringAnnotations(WIKI_LINK_TAG, offset, offset)
+                    .firstOrNull()?.let { annotation ->
+                        onWikiLinkClick(annotation.item)
+                    }
+            }
         )
     }
 }
 
 @Composable
-fun MarkdownCheckbox(text: String, checked: Boolean) {
+fun MarkdownCheckbox(
+    text: String, 
+    checked: Boolean,
+    onWikiLinkClick: (String) -> Unit = {}
+) {
     Row(
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
@@ -173,17 +234,29 @@ fun MarkdownCheckbox(text: String, checked: Boolean) {
             fontSize = 15.sp,
             color = if (checked) KlarityColors.AccentAI else KlarityColors.TextTertiary
         )
-        Text(
-            text = parseInlineMarkdown(text),
-            fontSize = 15.sp,
-            color = if (checked) KlarityColors.TextTertiary else KlarityColors.TextSecondary,
-            lineHeight = 24.sp
+        val annotatedString = parseInlineMarkdownWithWikiLinks(text)
+        ClickableText(
+            text = annotatedString,
+            style = androidx.compose.ui.text.TextStyle(
+                fontSize = 15.sp,
+                color = if (checked) KlarityColors.TextTertiary else KlarityColors.TextSecondary,
+                lineHeight = 24.sp
+            ),
+            onClick = { offset ->
+                annotatedString.getStringAnnotations(WIKI_LINK_TAG, offset, offset)
+                    .firstOrNull()?.let { annotation ->
+                        onWikiLinkClick(annotation.item)
+                    }
+            }
         )
     }
 }
 
 @Composable
-fun MarkdownBlockquote(text: String) {
+fun MarkdownBlockquote(
+    text: String,
+    onWikiLinkClick: (String) -> Unit = {}
+) {
     Surface(
         modifier = Modifier.fillMaxWidth(),
         color = KlarityColors.BgElevated.copy(alpha = 0.3f),
@@ -196,12 +269,21 @@ fun MarkdownBlockquote(text: String) {
                     .fillMaxHeight()
                     .background(KlarityColors.AccentAI)
             )
-            Text(
-                text = parseInlineMarkdown(text),
-                fontSize = 15.sp,
-                fontStyle = FontStyle.Italic,
-                color = KlarityColors.TextSecondary,
-                modifier = Modifier.padding(12.dp)
+            val annotatedString = parseInlineMarkdownWithWikiLinks(text)
+            ClickableText(
+                text = annotatedString,
+                style = androidx.compose.ui.text.TextStyle(
+                    fontSize = 15.sp,
+                    fontStyle = FontStyle.Italic,
+                    color = KlarityColors.TextSecondary
+                ),
+                modifier = Modifier.padding(12.dp),
+                onClick = { offset ->
+                    annotatedString.getStringAnnotations(WIKI_LINK_TAG, offset, offset)
+                        .firstOrNull()?.let { annotation ->
+                            onWikiLinkClick(annotation.item)
+                        }
+                }
             )
         }
     }
@@ -318,6 +400,116 @@ fun parseInlineMarkdown(text: String): androidx.compose.ui.text.AnnotatedString 
                     if (textEnd > 1 && urlStart == textEnd + 1 && urlEnd > urlStart) {
                         val linkText = remaining.substring(1, textEnd)
                         withStyle(SpanStyle(color = KlarityColors.AccentAI)) {
+                            append(linkText)
+                        }
+                        remaining = remaining.substring(urlEnd + 1)
+                    } else {
+                        append("[")
+                        remaining = remaining.drop(1)
+                    }
+                }
+                else -> {
+                    append(remaining.first())
+                    remaining = remaining.drop(1)
+                }
+            }
+        }
+    }
+}
+
+/**
+ * Parse inline markdown with wiki-style links support
+ * Supports: [[note-name]] and [[note-name|display text]]
+ */
+fun parseInlineMarkdownWithWikiLinks(text: String): androidx.compose.ui.text.AnnotatedString {
+    return buildAnnotatedString {
+        var remaining = text
+        
+        while (remaining.isNotEmpty()) {
+            when {
+                // Wiki-style link [[note-name]] or [[note-name|display text]]
+                remaining.startsWith("[[") -> {
+                    val endIndex = remaining.indexOf("]]")
+                    if (endIndex > 2) {
+                        val linkContent = remaining.substring(2, endIndex)
+                        val (noteName, displayText) = if (linkContent.contains("|")) {
+                            val parts = linkContent.split("|", limit = 2)
+                            parts[0].trim() to parts[1].trim()
+                        } else {
+                            linkContent.trim() to linkContent.trim()
+                        }
+                        
+                        // Add clickable annotation
+                        pushStringAnnotation(tag = WIKI_LINK_TAG, annotation = noteName)
+                        withStyle(SpanStyle(
+                            color = Color(0xFF1FDBC8), // Luminous Teal
+                            fontWeight = FontWeight.Medium,
+                            textDecoration = TextDecoration.Underline
+                        )) {
+                            append("📄 $displayText")
+                        }
+                        pop()
+                        
+                        remaining = remaining.substring(endIndex + 2)
+                    } else {
+                        append("[[")
+                        remaining = remaining.drop(2)
+                    }
+                }
+                // Bold **text**
+                remaining.startsWith("**") -> {
+                    val endIndex = remaining.indexOf("**", 2)
+                    if (endIndex > 2) {
+                        withStyle(SpanStyle(fontWeight = FontWeight.Bold, color = Color.White)) {
+                            append(remaining.substring(2, endIndex))
+                        }
+                        remaining = remaining.substring(endIndex + 2)
+                    } else {
+                        append("**")
+                        remaining = remaining.drop(2)
+                    }
+                }
+                // Italic _text_ or *text*
+                remaining.startsWith("_") && !remaining.startsWith("__") -> {
+                    val endIndex = remaining.indexOf("_", 1)
+                    if (endIndex > 1) {
+                        withStyle(SpanStyle(fontStyle = FontStyle.Italic)) {
+                            append(remaining.substring(1, endIndex))
+                        }
+                        remaining = remaining.substring(endIndex + 1)
+                    } else {
+                        append("_")
+                        remaining = remaining.drop(1)
+                    }
+                }
+                // Inline code `code`
+                remaining.startsWith("`") && !remaining.startsWith("```") -> {
+                    val endIndex = remaining.indexOf("`", 1)
+                    if (endIndex > 1) {
+                        withStyle(SpanStyle(
+                            fontFamily = FontFamily.Monospace,
+                            background = Color(0xFF2D333B),
+                            color = Color(0xFFE06C75)
+                        )) {
+                            append(" ${remaining.substring(1, endIndex)} ")
+                        }
+                        remaining = remaining.substring(endIndex + 1)
+                    } else {
+                        append("`")
+                        remaining = remaining.drop(1)
+                    }
+                }
+                // Link [text](url)
+                remaining.startsWith("[") && !remaining.startsWith("[[") -> {
+                    val textEnd = remaining.indexOf("]")
+                    val urlStart = remaining.indexOf("(", textEnd)
+                    val urlEnd = remaining.indexOf(")", urlStart)
+                    if (textEnd > 1 && urlStart == textEnd + 1 && urlEnd > urlStart) {
+                        val linkText = remaining.substring(1, textEnd)
+                        withStyle(SpanStyle(
+                            color = KlarityColors.AccentAI,
+                            textDecoration = TextDecoration.Underline
+                        )) {
                             append(linkText)
                         }
                         remaining = remaining.substring(urlEnd + 1)

@@ -60,6 +60,7 @@ fun EditorPanel(
     onTogglePin: () -> Unit,
     onDelete: () -> Unit,
     onStatusChange: (NoteStatus) -> Unit = {},
+    onWikiLinkClick: (noteName: String) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     // Track formatting state for toolbar callbacks
@@ -139,7 +140,10 @@ fun EditorPanel(
 
                     // Editor Content (editable or preview)
                     if (isPreviewMode) {
-                        MarkdownPreviewContent(note = selectedNote)
+                        MarkdownPreviewContent(
+                            note = selectedNote,
+                            onWikiLinkClick = onWikiLinkClick
+                        )
                     } else {
                         EditableEditorContent(
                             note = selectedNote,
@@ -609,7 +613,10 @@ fun EditableEditorContent(
 }
 
 @Composable
-fun MarkdownPreviewContent(note: Note) {
+fun MarkdownPreviewContent(
+    note: Note,
+    onWikiLinkClick: (noteName: String) -> Unit = {}
+) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -626,9 +633,10 @@ fun MarkdownPreviewContent(note: Note) {
             lineHeight = 40.sp
         )
 
-        // Rendered markdown content
+        // Rendered markdown content with wiki link support
         com.example.sentio.presentation.components.MarkdownRenderer(
             content = note.content,
+            onWikiLinkClick = onWikiLinkClick,
             modifier = Modifier.fillMaxWidth()
         )
     }

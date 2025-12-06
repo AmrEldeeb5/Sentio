@@ -89,6 +89,7 @@ class HomeViewModel(
             is HomeUiEvent.ClearSearch -> clearSearch()
             is HomeUiEvent.DeleteNote -> deleteNote(event.noteId)
             is HomeUiEvent.CreateNote -> createNote()
+            is HomeUiEvent.CreateNoteWithTitle -> createNoteWithTitle(event.title)
             is HomeUiEvent.CreateFolder -> createFolder(event.name)
             is HomeUiEvent.ToggleFolder -> toggleFolder(event.folderId)
             is HomeUiEvent.TogglePinnedSection -> togglePinnedSection()
@@ -174,6 +175,23 @@ class HomeViewModel(
             noteUseCases.create(title = title)
                 .onSuccess { note ->
                     _effects.send(HomeUiEffect.NavigateToEditor(note.id))
+                }
+                .onFailure { error ->
+                    _effects.send(HomeUiEffect.ShowError(error.message ?: "Failed to create note"))
+                }
+        }
+    }
+
+    /**
+     * Create a new note with a specific title (from wiki link click)
+     * and immediately select it for editing
+     */
+    private fun createNoteWithTitle(title: String) {
+        viewModelScope.launch {
+            noteUseCases.create(title = title)
+                .onSuccess { note ->
+                    _selectedNoteId.value = note.id
+                    _effects.send(HomeUiEffect.ShowSnackbar("Created note: $title"))
                 }
                 .onFailure { error ->
                     _effects.send(HomeUiEffect.ShowError(error.message ?: "Failed to create note"))

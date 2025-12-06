@@ -295,6 +295,18 @@ fun HomeScreen(
                                         onStatusChange = { status ->
                                             selectedNote?.let { viewModel.onEvent(HomeUiEvent.UpdateNoteStatus(it.id, status)) }
                                         },
+                                        onWikiLinkClick = { noteName ->
+                                            // Find note by title and navigate to it
+                                            val linkedNote = notes.find { 
+                                                it.title.equals(noteName, ignoreCase = true) 
+                                            }
+                                            if (linkedNote != null) {
+                                                viewModel.onEvent(HomeUiEvent.SelectNote(linkedNote.id))
+                                            } else {
+                                                // Create new note with this title
+                                                viewModel.onEvent(HomeUiEvent.CreateNoteWithTitle(noteName))
+                                            }
+                                        },
                                         modifier = modifier
                                     )
                                     PaneType.TASKS -> TasksPane(modifier = modifier)
@@ -317,6 +329,18 @@ fun HomeScreen(
                                         },
                                         onStatusChange = { status ->
                                             selectedNote?.let { viewModel.onEvent(HomeUiEvent.UpdateNoteStatus(it.id, status)) }
+                                        },
+                                        onWikiLinkClick = { noteName ->
+                                            // Find note by title and navigate to it
+                                            val linkedNote = notes.find { 
+                                                it.title.equals(noteName, ignoreCase = true) 
+                                            }
+                                            if (linkedNote != null) {
+                                                viewModel.onEvent(HomeUiEvent.SelectNote(linkedNote.id))
+                                            } else {
+                                                // Create new note with this title
+                                                viewModel.onEvent(HomeUiEvent.CreateNoteWithTitle(noteName))
+                                            }
                                         },
                                         modifier = modifier
                                     )
