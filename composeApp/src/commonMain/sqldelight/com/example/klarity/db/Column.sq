@@ -1,0 +1,58 @@
+-- Column.sq
+-- SQLDelight schema for Kanban Column persistence
+-- Requirements: 9.1, 9.2 - Board state persistence
+
+CREATE TABLE ColumnEntity (
+    id TEXT PRIMARY KEY NOT NULL,
+    title TEXT NOT NULL,
+    status TEXT NOT NULL,
+    columnOrder INTEGER NOT NULL DEFAULT 0,
+    isCollapsed INTEGER NOT NULL DEFAULT 0,
+    wipLimit INTEGER
+);
+
+-- Index for ordering
+CREATE INDEX column_order ON ColumnEntity(columnOrder);
+
+-- Select all columns ordered by position
+selectAll:
+SELECT * FROM ColumnEntity ORDER BY columnOrder ASC;
+
+-- Select column by ID
+selectById:
+SELECT * FROM ColumnEntity WHERE id = ?;
+
+-- Select column by status
+selectByStatus:
+SELECT * FROM ColumnEntity WHERE status = ?;
+
+-- Insert a new column
+insert:
+INSERT INTO ColumnEntity(id, title, status, columnOrder, isCollapsed, wipLimit)
+VALUES (?, ?, ?, ?, ?, ?);
+
+-- Update a column
+update:
+UPDATE ColumnEntity SET
+    title = ?,
+    status = ?,
+    columnOrder = ?,
+    isCollapsed = ?,
+    wipLimit = ?
+WHERE id = ?;
+
+-- Delete a column
+delete:
+DELETE FROM ColumnEntity WHERE id = ?;
+
+-- Update column order
+updateOrder:
+UPDATE ColumnEntity SET columnOrder = ? WHERE id = ?;
+
+-- Toggle collapsed state
+toggleCollapsed:
+UPDATE ColumnEntity SET isCollapsed = ? WHERE id = ?;
+
+-- Count columns
+countAll:
+SELECT COUNT(*) FROM ColumnEntity;

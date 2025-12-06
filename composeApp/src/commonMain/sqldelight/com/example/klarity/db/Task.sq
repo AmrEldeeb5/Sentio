@@ -1,0 +1,143 @@
+-- Task.sq
+-- SQLDelight schema for Task persistence
+-- Requirements: 9.1, 9.2 - Task persistence to local storage
+
+CREATE TABLE TaskEntity (
+    id TEXT PRIMARY KEY NOT NULL,
+    title TEXT NOT NULL,
+    description TEXT NOT NULL DEFAULT '',
+    status TEXT NOT NULL DEFAULT 'TODO',
+    priority TEXT NOT NULL DEFAULT 'MEDIUM',
+    tags TEXT NOT NULL DEFAULT '[]',  -- JSON array of TagState
+    points INTEGER,
+    assignee TEXT,
+    dueDate INTEGER,
+    startDate INTEGER,
+    estimatedHours REAL,
+    actualHours REAL,
+    subtasks TEXT NOT NULL DEFAULT '[]',  -- JSON array of SubtaskState
+    linkedNoteIds TEXT NOT NULL DEFAULT '[]',  -- JSON array of note IDs
+    timerStartedAt INTEGER,
+    timerPausedDuration INTEGER,
+    timerIsPaused INTEGER DEFAULT 0,
+    isActive INTEGER NOT NULL DEFAULT 0,
+    completed INTEGER NOT NULL DEFAULT 0,
+    columnOrder INTEGER NOT NULL DEFAULT 0,
+    createdAt INTEGER NOT NULL,
+    updatedAt INTEGER NOT NULL,
+    completedAt INTEGER
+);
+
+-- Indexes for common queries
+CREATE INDEX task_status ON TaskEntity(status);
+CREATE INDEX task_priority ON TaskEntity(priority);
+CREATE INDEX task_completed ON TaskEntity(completed);
+CREATE INDEX task_isActive ON TaskEntity(isActive);
+CREATE INDEX task_columnOrder ON TaskEntity(columnOrder);
+CREATE INDEX task_createdAt ON TaskEntity(createdAt);
+CREATE INDEX task_updatedAt ON TaskEntity(updatedAt);
+
+-- Select all tasks ordered by column order
+selectAll:
+SELECT * FROM TaskEntity ORDER BY columnOrder ASC;
+
+-- Select task by ID
+selectById:
+SELECT * FROM TaskEntity WHERE id = ?;
+
+-- Select tasks by status (for Kanban columns)
+selectByStatus:
+SELECT * FROM TaskEntity WHERE status = ? ORDER BY columnOrder ASC;
+
+-- Select active tasks (tasks with active timer)
+selectActive:
+SELECT * FROM TaskEntity WHERE isActive = 1;
+
+-- Select completed tasks
+selectCompleted:
+SELECT * FROM TaskEntity WHERE completed = 1 ORDER BY updatedAt DESC;
+
+-- Select incomplete tasks
+selectIncomplete:
+SELECT * FROM TaskEntity WHERE completed = 0 ORDER BY columnOrder ASC;
+
+-- Insert a new task
+insert:
+INSERT INTO TaskEntity(
+    id, title, description, status, priority, tags, points, assignee,
+    dueDate, startDate, estimatedHours, actualHours, subtasks, linkedNoteIds,
+    timerStartedAt, timerPausedDuration, timerIsPaused, isActive, completed,
+    columnOrder, createdAt, updatedAt, completedAt
+) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+-- Update an existing task
+update:
+UPDATE TaskEntity SET
+    title = ?,
+    description = ?,
+    status = ?,
+    priority = ?,
+    tags = ?,
+    points = ?,
+    assignee = ?,
+    dueDate = ?,
+    startDate = ?,
+    estimatedHours = ?,
+    actualHours = ?,
+    subtasks = ?,
+    linkedNoteIds = ?,
+    timerStartedAt = ?,
+    timerPausedDuration = ?,
+    timerIsPaused = ?,
+    isActive = ?,
+    completed = ?,
+    columnOrder = ?,
+    updatedAt = ?,
+    completedAt = ?
+WHERE id = ?;
+
+-- Delete a task
+delete:
+DELETE FROM TaskEntity WHERE id = ?;
+
+-- Update task status (for drag-and-drop)
+updateStatus:
+UPDATE TaskEntity SET status = ?, columnOrder = ?, updatedAt = ? WHERE id = ?;
+
+-- Update task completion status
+updateCompleted:
+UPDATE TaskEntity SET completed = ?, completedAt = ?, updatedAt = ? WHERE id = ?;
+
+-- Update task timer
+updateTimer:
+UPDATE TaskEntity SET 
+    timerStartedAt = ?, 
+    timerPausedDuration = ?, 
+    timerIsPaused = ?, 
+    isActive = ?,
+    updatedAt = ? 
+WHERE id = ?;
+
+-- Clear active timer
+clearTimer:
+UPDATE TaskEntity SET 
+    timerStartedAt = NULL, 
+    timerPausedDuration = NULL, 
+    timerIsPaused = 0, 
+    isActive = 0,
+    updatedAt = ? 
+WHERE id = ?;
+
+-- Update column order for multiple tasks (batch reorder)
+updateColumnOrder:
+UPDATE TaskEntity SET columnOrder = ?, updatedAt = ? WHERE id = ?;
+
+-- Search tasks by title or description
+search:
+SELECT * FROM TaskEntity 
+WHERE title LIKE '%' || ? || '%' OR description LIKE '%' || ? || '%'
+ORDER BY columnOrder ASC;
+
+-- Count tasks by status
+countByStatus:
+SELECT status, COUNT(*) AS count FROM TaskEntity GROUP BY status;
