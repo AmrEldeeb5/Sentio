@@ -16,7 +16,9 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
@@ -163,6 +165,13 @@ private fun KanbanColumnView(
                     .padding(8.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
+                // Empty column placeholder (Requirement 2.2)
+                if (column.tasks.isEmpty()) {
+                    item {
+                        EmptyColumnPlaceholder(onClick = onTaskCreate)
+                    }
+                }
+                
                 itemsIndexed(column.tasks) { index, task ->
                     // Drop zone indicator before each task
                     if (dragState.isDragging && 
@@ -198,9 +207,11 @@ private fun KanbanColumnView(
                     }
                 }
                 
-                // Add task button at bottom
-                item {
-                    AddTaskButton(onClick = onTaskCreate)
+                // Add task button at bottom (only show if column has tasks)
+                if (column.tasks.isNotEmpty()) {
+                    item {
+                        AddTaskButton(onClick = onTaskCreate)
+                    }
                 }
             }
         }
@@ -880,6 +891,85 @@ private fun AddTaskButton(
         )
     }
 }
+
+/**
+ * Empty column placeholder (Requirement 2.2)
+ * 
+ * Shows "Add task" placeholder when column has no tasks.
+ * Styled with dashed border and muted text to indicate tasks can be added.
+ */
+@Composable
+fun EmptyColumnPlaceholder(
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Box(
+        modifier = modifier
+            .fillMaxWidth()
+            .height(100.dp)
+            .dashedBorder(
+                width = 1.5.dp,
+                color = KlarityColors.TextTertiary.copy(alpha = 0.4f),
+                shape = RoundedCornerShape(8.dp),
+                dashLength = 8.dp,
+                gapLength = 4.dp
+            )
+            .clip(RoundedCornerShape(8.dp))
+            .clickable(onClick = onClick)
+            .padding(16.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Icon(
+                imageVector = Icons.Default.Add,
+                contentDescription = "Add task",
+                tint = KlarityColors.TextTertiary.copy(alpha = 0.6f),
+                modifier = Modifier.size(24.dp)
+            )
+            Text(
+                text = "Add task",
+                style = MaterialTheme.typography.bodySmall,
+                color = KlarityColors.TextTertiary.copy(alpha = 0.6f)
+            )
+        }
+    }
+}
+
+/**
+ * Extension function to draw a dashed border around a composable.
+ */
+private fun Modifier.dashedBorder(
+    width: androidx.compose.ui.unit.Dp,
+    color: Color,
+    shape: RoundedCornerShape,
+    dashLength: androidx.compose.ui.unit.Dp,
+    gapLength: androidx.compose.ui.unit.Dp
+): Modifier = this.then(
+    Modifier.drawWithContent {
+        drawContent()
+        val strokeWidth = width.toPx()
+        val dash = dashLength.toPx()
+        val gap = gapLength.toPx()
+        
+        drawRoundRect(
+            color = color,
+            style = androidx.compose.ui.graphics.drawscope.Stroke(
+                width = strokeWidth,
+                pathEffect = androidx.compose.ui.graphics.PathEffect.dashPathEffect(
+                    floatArrayOf(dash, gap),
+                    0f
+                )
+            ),
+            cornerRadius = androidx.compose.ui.geometry.CornerRadius(
+                shape.topStart.toPx(size, this),
+                shape.topStart.toPx(size, this)
+            )
+        )
+    }
+)
 
 @Composable
 private fun AddColumnButton(

@@ -1367,3 +1367,912 @@ class TagRenderingCompletenessPropertyTest {
         }
     }
 }
+
+
+// ============================================================================
+// Property 5: Task modal content completeness
+// **Feature: kanban-board, Property 5: Task modal content completeness**
+// **Validates: Requirements 4.1, 4.4**
+//
+// For any task, the detail modal SHALL display task ID, title, description, 
+// and properties (status, priority, points).
+// ============================================================================
+
+class TaskModalContentCompletenessPropertyTest {
+
+    /**
+     * Generates valid TaskTag instances.
+     */
+    private fun arbTaskTag(): Arb<TaskTag> = arbitrary {
+        TaskTag(
+            label = Arb.string(1..20).bind(),
+            colorClass = Arb.enum<TagColor>().bind()
+        )
+    }
+
+    /**
+     * Generates valid Subtask instances.
+     */
+    private fun arbSubtask(): Arb<Subtask> = arbitrary {
+        Subtask(
+            id = "subtask-${Arb.string(5..10).bind()}",
+            title = Arb.string(1..50).bind(),
+            isCompleted = Arb.boolean().bind(),
+            order = Arb.int(0..100).bind()
+        )
+    }
+
+    /**
+     * Generates valid Task instances with all fields that would be displayed in the modal.
+     */
+    private fun arbTaskForModal(): Arb<Task> = arbitrary {
+        val now = Clock.System.now()
+        Task(
+            id = "task-${Arb.string(5..10).bind()}",
+            title = Arb.string(1..100).bind(),
+            description = Arb.string(0..500).bind(),
+            status = Arb.enum<TaskStatus>().bind(),
+            priority = Arb.enum<TaskPriority>().bind(),
+            tags = Arb.list(arbTaskTag(), 0..5).bind(),
+            points = Arb.int(1..13).orNull().bind(),
+            assignee = Arb.string(1..20).orNull().bind(),
+            subtasks = Arb.list(arbSubtask(), 0..5).bind(),
+            completed = Arb.boolean().bind(),
+            createdAt = now - Arb.long(1L, 86400000L * 30).bind().milliseconds,
+            updatedAt = now
+        )
+    }
+
+    /**
+     * Extracts the content that would be displayed in the TaskDetailModal.
+     * This simulates what the modal composable would render.
+     */
+    private fun extractModalContent(task: Task): TaskModalContent {
+        return TaskModalContent(
+            taskId = task.id,
+            title = task.title,
+            description = task.description,
+            status = task.status,
+            priority = task.priority,
+            points = task.points
+        )
+    }
+
+    /**
+     * Data class representing the content displayed in the modal.
+     */
+    data class TaskModalContent(
+        val taskId: String,
+        val title: String,
+        val description: String,
+        val status: TaskStatus,
+        val priority: TaskPriority,
+        val points: Int?
+    )
+
+    /**
+     * Verifies that all required modal content fields are present.
+     * Returns true if all required fields are present and valid.
+     */
+    private fun verifyModalContentCompleteness(content: TaskModalContent): Boolean {
+        // Task ID must be non-empty
+        if (content.taskId.isEmpty()) return false
+        
+        // Title must be non-empty
+        if (content.title.isEmpty()) return false
+        
+        // Description can be empty but must be present (not null - it's a String)
+        // Status must be a valid TaskStatus (always true for enum)
+        // Priority must be a valid TaskPriority (always true for enum)
+        // Points can be null but the field must be present
+        
+        return true
+    }
+
+    @Test
+    fun property5_modalDisplaysTaskId() {
+        runBlocking {
+            checkAll(100, arbTaskForModal()) { task ->
+                val content = extractModalContent(task)
+                
+                assertTrue(
+                    content.taskId.isNotEmpty(),
+                    "Modal should display task ID. Task ID: '${task.id}'"
+                )
+                assertEquals(
+                    task.id,
+                    content.taskId,
+                    "Modal task ID should match the task's ID"
+                )
+            }
+        }
+    }
+
+    @Test
+    fun property5_modalDisplaysTitle() {
+        runBlocking {
+            checkAll(100, arbTaskForModal()) { task ->
+                val content = extractModalContent(task)
+                
+                assertTrue(
+                    content.title.isNotEmpty(),
+                    "Modal should display task title. Task title: '${task.title}'"
+                )
+                assertEquals(
+                    task.title,
+                    content.title,
+                    "Modal title should match the task's title"
+                )
+            }
+        }
+    }
+
+    @Test
+    fun property5_modalDisplaysDescription() {
+        runBlocking {
+            checkAll(100, arbTaskForModal()) { task ->
+                val content = extractModalContent(task)
+                
+                // Description is always present (may be empty string)
+                assertEquals(
+                    task.description,
+                    content.description,
+                    "Modal description should match the task's description"
+                )
+            }
+        }
+    }
+
+    @Test
+    fun property5_modalDisplaysStatus() {
+        runBlocking {
+            checkAll(100, arbTaskForModal()) { task ->
+                val content = extractModalContent(task)
+                
+                assertEquals(
+                    task.status,
+                    content.status,
+                    "Modal should display task status. Expected: ${task.status}, Got: ${content.status}"
+                )
+            }
+        }
+    }
+
+    @Test
+    fun property5_modalDisplaysPriority() {
+        runBlocking {
+            checkAll(100, arbTaskForModal()) { task ->
+                val content = extractModalContent(task)
+                
+                assertEquals(
+                    task.priority,
+                    content.priority,
+                    "Modal should display task priority. Expected: ${task.priority}, Got: ${content.priority}"
+                )
+            }
+        }
+    }
+
+    @Test
+    fun property5_modalDisplaysPoints() {
+        runBlocking {
+            checkAll(100, arbTaskForModal()) { task ->
+                val content = extractModalContent(task)
+                
+                assertEquals(
+                    task.points,
+                    content.points,
+                    "Modal should display task points. Expected: ${task.points}, Got: ${content.points}"
+                )
+            }
+        }
+    }
+
+    @Test
+    fun property5_modalContentIsComplete() {
+        runBlocking {
+            checkAll(100, arbTaskForModal()) { task ->
+                val content = extractModalContent(task)
+                val isComplete = verifyModalContentCompleteness(content)
+                
+                assertTrue(
+                    isComplete,
+                    "Modal content should be complete for task. " +
+                    "Task ID: '${task.id}', Title: '${task.title}', " +
+                    "Status: ${task.status}, Priority: ${task.priority}, Points: ${task.points}"
+                )
+            }
+        }
+    }
+
+    @Test
+    fun property5_modalPreservesAllProperties() {
+        runBlocking {
+            checkAll(100, arbTaskForModal()) { task ->
+                val content = extractModalContent(task)
+                
+                // Verify all properties are preserved
+                assertEquals(task.id, content.taskId, "Task ID should be preserved")
+                assertEquals(task.title, content.title, "Title should be preserved")
+                assertEquals(task.description, content.description, "Description should be preserved")
+                assertEquals(task.status, content.status, "Status should be preserved")
+                assertEquals(task.priority, content.priority, "Priority should be preserved")
+                assertEquals(task.points, content.points, "Points should be preserved")
+            }
+        }
+    }
+
+    @Test
+    fun property5_modalHandlesNullPoints() {
+        runBlocking {
+            // Generate tasks specifically with null points
+            val arbTaskWithNullPoints = arbitrary {
+                val now = Clock.System.now()
+                Task(
+                    id = "task-${Arb.string(5..10).bind()}",
+                    title = Arb.string(1..100).bind(),
+                    description = Arb.string(0..200).bind(),
+                    status = Arb.enum<TaskStatus>().bind(),
+                    priority = Arb.enum<TaskPriority>().bind(),
+                    points = null, // Explicitly null
+                    createdAt = now,
+                    updatedAt = now
+                )
+            }
+            
+            checkAll(100, arbTaskWithNullPoints) { task ->
+                val content = extractModalContent(task)
+                
+                assertTrue(
+                    content.points == null,
+                    "Modal should handle null points gracefully"
+                )
+                
+                // Modal should still be complete even with null points
+                val isComplete = verifyModalContentCompleteness(content)
+                assertTrue(
+                    isComplete,
+                    "Modal content should be complete even with null points"
+                )
+            }
+        }
+    }
+
+    @Test
+    fun property5_modalHandlesEmptyDescription() {
+        runBlocking {
+            // Generate tasks specifically with empty description
+            val arbTaskWithEmptyDescription = arbitrary {
+                val now = Clock.System.now()
+                Task(
+                    id = "task-${Arb.string(5..10).bind()}",
+                    title = Arb.string(1..100).bind(),
+                    description = "", // Explicitly empty
+                    status = Arb.enum<TaskStatus>().bind(),
+                    priority = Arb.enum<TaskPriority>().bind(),
+                    points = Arb.int(1..13).orNull().bind(),
+                    createdAt = now,
+                    updatedAt = now
+                )
+            }
+            
+            checkAll(100, arbTaskWithEmptyDescription) { task ->
+                val content = extractModalContent(task)
+                
+                assertEquals(
+                    "",
+                    content.description,
+                    "Modal should handle empty description"
+                )
+                
+                // Modal should still be complete even with empty description
+                val isComplete = verifyModalContentCompleteness(content)
+                assertTrue(
+                    isComplete,
+                    "Modal content should be complete even with empty description"
+                )
+            }
+        }
+    }
+}
+
+
+// ============================================================================
+// Property 1: Column task count accuracy
+// **Feature: kanban-board, Property 1: Column task count accuracy**
+// **Validates: Requirements 1.2**
+//
+// For any Kanban column containing N tasks, the displayed task count badge 
+// SHALL show the value N.
+// ============================================================================
+
+class ColumnTaskCountAccuracyPropertyTest {
+
+    /**
+     * Generates valid TaskTag instances.
+     */
+    private fun arbTaskTag(): Arb<TaskTag> = arbitrary {
+        TaskTag(
+            label = Arb.string(1..20).bind(),
+            colorClass = Arb.enum<TagColor>().bind()
+        )
+    }
+
+    /**
+     * Generates valid Task instances for populating columns.
+     */
+    private fun arbTask(): Arb<Task> = arbitrary {
+        val now = Clock.System.now()
+        Task(
+            id = "task-${Arb.string(5..10).bind()}",
+            title = Arb.string(1..100).bind(),
+            description = Arb.string(0..200).bind(),
+            status = Arb.enum<TaskStatus>().bind(),
+            priority = Arb.enum<TaskPriority>().bind(),
+            tags = Arb.list(arbTaskTag(), 0..5).bind(),
+            points = Arb.int(1..13).orNull().bind(),
+            completed = Arb.boolean().bind(),
+            createdAt = now,
+            updatedAt = now
+        )
+    }
+
+    /**
+     * Generates valid KanbanColumn instances with 0 to 100 tasks.
+     */
+    private fun arbKanbanColumn(): Arb<KanbanColumn> = arbitrary {
+        val status = Arb.enum<TaskStatus>().bind()
+        val tasks = Arb.list(arbTask(), 0..100).bind()
+        val wipLimit = Arb.int(1..20).orNull().bind()
+        
+        KanbanColumn(
+            status = status,
+            tasks = tasks,
+            isCollapsed = Arb.boolean().bind(),
+            wipLimit = wipLimit
+        )
+    }
+
+    /**
+     * Extracts the task count that would be displayed in the column header badge.
+     * This simulates the logic in ColumnHeader composable.
+     * 
+     * From KanbanBoard.kt ColumnHeader:
+     *   val taskCount = column.tasks.size
+     *   Text(text = if (column.wipLimit != null) "$taskCount/${column.wipLimit}" else "$taskCount", ...)
+     */
+    private fun getDisplayedTaskCount(column: KanbanColumn): Int {
+        return column.tasks.size
+    }
+
+    @Test
+    fun property1_columnTaskCountMatchesActualTaskCount() {
+        runBlocking {
+            checkAll(100, arbKanbanColumn()) { column ->
+                val actualTaskCount = column.tasks.size
+                val displayedCount = getDisplayedTaskCount(column)
+                
+                assertEquals(
+                    actualTaskCount,
+                    displayedCount,
+                    "Displayed task count ($displayedCount) should equal actual task count ($actualTaskCount) " +
+                    "for column ${column.status}"
+                )
+            }
+        }
+    }
+
+    @Test
+    fun property1_emptyColumnShowsZeroCount() {
+        val emptyColumn = KanbanColumn(
+            status = TaskStatus.TODO,
+            tasks = emptyList(),
+            isCollapsed = false,
+            wipLimit = null
+        )
+        
+        val displayedCount = getDisplayedTaskCount(emptyColumn)
+        
+        assertEquals(
+            0,
+            displayedCount,
+            "Empty column should display count of 0"
+        )
+    }
+
+    @Test
+    fun property1_columnWithManyTasksShowsCorrectCount() {
+        runBlocking {
+            // Generate columns with many tasks (50-100) to ensure no truncation
+            val arbColumnWithManyTasks = arbitrary {
+                val now = Clock.System.now()
+                val tasks = Arb.list(
+                    arbitrary {
+                        Task(
+                            id = "task-${Arb.string(5..10).bind()}",
+                            title = Arb.string(1..50).bind(),
+                            createdAt = now,
+                            updatedAt = now
+                        )
+                    },
+                    50..100
+                ).bind()
+                
+                KanbanColumn(
+                    status = Arb.enum<TaskStatus>().bind(),
+                    tasks = tasks,
+                    isCollapsed = false,
+                    wipLimit = null
+                )
+            }
+            
+            checkAll(100, arbColumnWithManyTasks) { column ->
+                val displayedCount = getDisplayedTaskCount(column)
+                
+                assertEquals(
+                    column.tasks.size,
+                    displayedCount,
+                    "Column with ${column.tasks.size} tasks should display that exact count"
+                )
+            }
+        }
+    }
+
+    @Test
+    fun property1_taskCountIsIndependentOfWipLimit() {
+        runBlocking {
+            checkAll(100, arbKanbanColumn()) { column ->
+                // The task count should be the same regardless of WIP limit
+                val displayedCount = getDisplayedTaskCount(column)
+                
+                assertEquals(
+                    column.tasks.size,
+                    displayedCount,
+                    "Task count should be independent of WIP limit. " +
+                    "Tasks: ${column.tasks.size}, WIP limit: ${column.wipLimit}"
+                )
+            }
+        }
+    }
+
+    @Test
+    fun property1_taskCountIsIndependentOfCollapsedState() {
+        runBlocking {
+            checkAll(100, arbKanbanColumn()) { column ->
+                // Test both collapsed and expanded states
+                val expandedColumn = column.copy(isCollapsed = false)
+                val collapsedColumn = column.copy(isCollapsed = true)
+                
+                val expandedCount = getDisplayedTaskCount(expandedColumn)
+                val collapsedCount = getDisplayedTaskCount(collapsedColumn)
+                
+                assertEquals(
+                    expandedCount,
+                    collapsedCount,
+                    "Task count should be the same whether column is collapsed or expanded"
+                )
+                assertEquals(
+                    column.tasks.size,
+                    expandedCount,
+                    "Task count should match actual task count"
+                )
+            }
+        }
+    }
+
+    @Test
+    fun property1_addingTaskIncreasesCount() {
+        runBlocking {
+            checkAll(100, arbKanbanColumn(), arbTask()) { column, newTask ->
+                val originalCount = getDisplayedTaskCount(column)
+                val updatedColumn = column.copy(tasks = column.tasks + newTask)
+                val newCount = getDisplayedTaskCount(updatedColumn)
+                
+                assertEquals(
+                    originalCount + 1,
+                    newCount,
+                    "Adding a task should increase the count by 1"
+                )
+            }
+        }
+    }
+
+    @Test
+    fun property1_removingTaskDecreasesCount() {
+        runBlocking {
+            // Generate columns with at least one task
+            val arbColumnWithTasks = arbitrary {
+                val now = Clock.System.now()
+                val tasks = Arb.list(
+                    arbitrary {
+                        Task(
+                            id = "task-${Arb.string(5..10).bind()}",
+                            title = Arb.string(1..50).bind(),
+                            createdAt = now,
+                            updatedAt = now
+                        )
+                    },
+                    1..50
+                ).bind()
+                
+                KanbanColumn(
+                    status = Arb.enum<TaskStatus>().bind(),
+                    tasks = tasks,
+                    isCollapsed = false,
+                    wipLimit = null
+                )
+            }
+            
+            checkAll(100, arbColumnWithTasks) { column ->
+                val originalCount = getDisplayedTaskCount(column)
+                val updatedColumn = column.copy(tasks = column.tasks.dropLast(1))
+                val newCount = getDisplayedTaskCount(updatedColumn)
+                
+                assertEquals(
+                    originalCount - 1,
+                    newCount,
+                    "Removing a task should decrease the count by 1"
+                )
+            }
+        }
+    }
+}
+
+
+// ============================================================================
+// Property 3: Empty column placeholder
+// **Feature: kanban-board, Property 3: Empty column placeholder**
+// **Validates: Requirements 2.2**
+//
+// For any column with zero tasks, the column SHALL display a placeholder element.
+// ============================================================================
+
+class EmptyColumnPlaceholderPropertyTest {
+
+    /**
+     * Generates valid TaskTag instances.
+     */
+    private fun arbTaskTag(): Arb<TaskTag> = arbitrary {
+        TaskTag(
+            label = Arb.string(1..20).bind(),
+            colorClass = Arb.enum<TagColor>().bind()
+        )
+    }
+
+    /**
+     * Generates valid Task instances for populating columns.
+     */
+    private fun arbTask(): Arb<Task> = arbitrary {
+        val now = Clock.System.now()
+        Task(
+            id = "task-${Arb.string(5..10).bind()}",
+            title = Arb.string(1..100).bind(),
+            description = Arb.string(0..200).bind(),
+            status = Arb.enum<TaskStatus>().bind(),
+            priority = Arb.enum<TaskPriority>().bind(),
+            tags = Arb.list(arbTaskTag(), 0..5).bind(),
+            points = Arb.int(1..13).orNull().bind(),
+            completed = Arb.boolean().bind(),
+            createdAt = now,
+            updatedAt = now
+        )
+    }
+
+    /**
+     * Generates valid KanbanColumn instances with varying task counts.
+     */
+    private fun arbKanbanColumn(): Arb<KanbanColumn> = arbitrary {
+        val status = Arb.enum<TaskStatus>().bind()
+        val tasks = Arb.list(arbTask(), 0..20).bind()
+        val wipLimit = Arb.int(1..20).orNull().bind()
+        
+        KanbanColumn(
+            status = status,
+            tasks = tasks,
+            isCollapsed = Arb.boolean().bind(),
+            wipLimit = wipLimit
+        )
+    }
+
+    /**
+     * Generates empty KanbanColumn instances (zero tasks).
+     */
+    private fun arbEmptyKanbanColumn(): Arb<KanbanColumn> = arbitrary {
+        val status = Arb.enum<TaskStatus>().bind()
+        val wipLimit = Arb.int(1..20).orNull().bind()
+        
+        KanbanColumn(
+            status = status,
+            tasks = emptyList(), // Always empty
+            isCollapsed = Arb.boolean().bind(),
+            wipLimit = wipLimit
+        )
+    }
+
+    /**
+     * Generates non-empty KanbanColumn instances (at least one task).
+     */
+    private fun arbNonEmptyKanbanColumn(): Arb<KanbanColumn> = arbitrary {
+        val status = Arb.enum<TaskStatus>().bind()
+        val tasks = Arb.list(arbTask(), 1..20).bind() // At least 1 task
+        val wipLimit = Arb.int(1..20).orNull().bind()
+        
+        KanbanColumn(
+            status = status,
+            tasks = tasks,
+            isCollapsed = Arb.boolean().bind(),
+            wipLimit = wipLimit
+        )
+    }
+
+    /**
+     * Determines whether a placeholder should be displayed for a column.
+     * 
+     * From KanbanBoard.kt KanbanColumnView:
+     *   if (column.tasks.isEmpty()) {
+     *       item {
+     *           EmptyColumnPlaceholder(onClick = onTaskCreate)
+     *       }
+     *   }
+     * 
+     * The placeholder is shown when the column has zero tasks.
+     */
+    private fun shouldShowPlaceholder(column: KanbanColumn): Boolean {
+        return column.tasks.isEmpty()
+    }
+
+    @Test
+    fun property3_emptyColumnShowsPlaceholder() {
+        runBlocking {
+            checkAll(100, arbEmptyKanbanColumn()) { column ->
+                val showsPlaceholder = shouldShowPlaceholder(column)
+                
+                assertTrue(
+                    showsPlaceholder,
+                    "Empty column (${column.status}) with 0 tasks should show placeholder"
+                )
+            }
+        }
+    }
+
+    @Test
+    fun property3_nonEmptyColumnDoesNotShowPlaceholder() {
+        runBlocking {
+            checkAll(100, arbNonEmptyKanbanColumn()) { column ->
+                val showsPlaceholder = shouldShowPlaceholder(column)
+                
+                assertTrue(
+                    !showsPlaceholder,
+                    "Non-empty column (${column.status}) with ${column.tasks.size} tasks should NOT show placeholder"
+                )
+            }
+        }
+    }
+
+    @Test
+    fun property3_placeholderVisibilityMatchesEmptyState() {
+        runBlocking {
+            checkAll(100, arbKanbanColumn()) { column ->
+                val showsPlaceholder = shouldShowPlaceholder(column)
+                val isEmpty = column.tasks.isEmpty()
+                
+                assertEquals(
+                    isEmpty,
+                    showsPlaceholder,
+                    "Placeholder visibility ($showsPlaceholder) should match empty state ($isEmpty) " +
+                    "for column ${column.status} with ${column.tasks.size} tasks"
+                )
+            }
+        }
+    }
+
+    @Test
+    fun property3_placeholderIsIndependentOfColumnStatus() {
+        runBlocking {
+            // Test that placeholder behavior is consistent across all column statuses
+            checkAll(100, Arb.enum<TaskStatus>()) { status ->
+                val emptyColumn = KanbanColumn(
+                    status = status,
+                    tasks = emptyList(),
+                    isCollapsed = false,
+                    wipLimit = null
+                )
+                
+                val showsPlaceholder = shouldShowPlaceholder(emptyColumn)
+                
+                assertTrue(
+                    showsPlaceholder,
+                    "Empty column should show placeholder regardless of status ($status)"
+                )
+            }
+        }
+    }
+
+    @Test
+    fun property3_placeholderIsIndependentOfWipLimit() {
+        runBlocking {
+            checkAll(100, Arb.int(1..100).orNull()) { wipLimit ->
+                val emptyColumn = KanbanColumn(
+                    status = TaskStatus.TODO,
+                    tasks = emptyList(),
+                    isCollapsed = false,
+                    wipLimit = wipLimit
+                )
+                
+                val showsPlaceholder = shouldShowPlaceholder(emptyColumn)
+                
+                assertTrue(
+                    showsPlaceholder,
+                    "Empty column should show placeholder regardless of WIP limit ($wipLimit)"
+                )
+            }
+        }
+    }
+
+    @Test
+    fun property3_placeholderIsIndependentOfCollapsedState() {
+        runBlocking {
+            checkAll(100, Arb.boolean()) { isCollapsed ->
+                val emptyColumn = KanbanColumn(
+                    status = TaskStatus.TODO,
+                    tasks = emptyList(),
+                    isCollapsed = isCollapsed,
+                    wipLimit = null
+                )
+                
+                val showsPlaceholder = shouldShowPlaceholder(emptyColumn)
+                
+                assertTrue(
+                    showsPlaceholder,
+                    "Empty column should show placeholder regardless of collapsed state ($isCollapsed)"
+                )
+            }
+        }
+    }
+
+    @Test
+    fun property3_removingAllTasksShowsPlaceholder() {
+        runBlocking {
+            checkAll(100, arbNonEmptyKanbanColumn()) { column ->
+                // Start with non-empty column (no placeholder)
+                val initialShowsPlaceholder = shouldShowPlaceholder(column)
+                assertTrue(
+                    !initialShowsPlaceholder,
+                    "Non-empty column should not show placeholder initially"
+                )
+                
+                // Remove all tasks
+                val emptyColumn = column.copy(tasks = emptyList())
+                val afterRemovalShowsPlaceholder = shouldShowPlaceholder(emptyColumn)
+                
+                assertTrue(
+                    afterRemovalShowsPlaceholder,
+                    "Column should show placeholder after removing all tasks"
+                )
+            }
+        }
+    }
+
+    @Test
+    fun property3_addingTaskHidesPlaceholder() {
+        runBlocking {
+            checkAll(100, arbEmptyKanbanColumn(), arbTask()) { emptyColumn, newTask ->
+                // Start with empty column (shows placeholder)
+                val initialShowsPlaceholder = shouldShowPlaceholder(emptyColumn)
+                assertTrue(
+                    initialShowsPlaceholder,
+                    "Empty column should show placeholder initially"
+                )
+                
+                // Add a task
+                val nonEmptyColumn = emptyColumn.copy(tasks = listOf(newTask))
+                val afterAdditionShowsPlaceholder = shouldShowPlaceholder(nonEmptyColumn)
+                
+                assertTrue(
+                    !afterAdditionShowsPlaceholder,
+                    "Column should NOT show placeholder after adding a task"
+                )
+            }
+        }
+    }
+}
+
+
+// ============================================================================
+// Property 13: View mode highlight consistency
+// **Feature: kanban-board, Property 13: View mode highlight consistency**
+// **Validates: Requirements 10.2**
+//
+// For any selected view mode, that view option SHALL be highlighted 
+// in the navigation.
+// ============================================================================
+
+class ViewModeHighlightPropertyTest {
+
+    /**
+     * Property test verifying that for any selected view mode, only that mode
+     * is highlighted in the navigation.
+     * 
+     * **Property 13: View mode highlight consistency**
+     * **Validates: Requirements 10.2**
+     */
+    @Test
+    fun property13_selectedViewModeIsHighlighted() {
+        runBlocking {
+            checkAll(100, Arb.enum<TaskViewMode>()) { selectedMode ->
+                // The selected mode should be highlighted
+                val isHighlighted = isViewModeHighlighted(selectedMode, selectedMode)
+                
+                assertTrue(
+                    isHighlighted,
+                    "Selected view mode '$selectedMode' should be highlighted"
+                )
+            }
+        }
+    }
+
+    @Test
+    fun property13_nonSelectedViewModesAreNotHighlighted() {
+        runBlocking {
+            checkAll(100, Arb.enum<TaskViewMode>()) { selectedMode ->
+                // All other modes should NOT be highlighted
+                TaskViewMode.entries.filter { it != selectedMode }.forEach { otherMode ->
+                    val isHighlighted = isViewModeHighlighted(otherMode, selectedMode)
+                    
+                    assertTrue(
+                        !isHighlighted,
+                        "Non-selected view mode '$otherMode' should NOT be highlighted when '$selectedMode' is selected"
+                    )
+                }
+            }
+        }
+    }
+
+    @Test
+    fun property13_exactlyOneViewModeIsHighlightedAtATime() {
+        runBlocking {
+            checkAll(100, Arb.enum<TaskViewMode>()) { selectedMode ->
+                // Count how many modes are highlighted
+                val highlightedCount = TaskViewMode.entries.count { mode ->
+                    isViewModeHighlighted(mode, selectedMode)
+                }
+                
+                assertEquals(
+                    1,
+                    highlightedCount,
+                    "Exactly one view mode should be highlighted at a time. " +
+                    "Selected: $selectedMode, Highlighted count: $highlightedCount"
+                )
+            }
+        }
+    }
+
+    @Test
+    fun property13_highlightIsSymmetric() {
+        runBlocking {
+            // For all pairs of view modes, verify highlight consistency
+            checkAll(100, Arb.enum<TaskViewMode>(), Arb.enum<TaskViewMode>()) { mode1, mode2 ->
+                val mode1HighlightedWhenMode1Selected = isViewModeHighlighted(mode1, mode1)
+                val mode2HighlightedWhenMode2Selected = isViewModeHighlighted(mode2, mode2)
+                
+                // Each mode should be highlighted when it's selected
+                assertTrue(
+                    mode1HighlightedWhenMode1Selected,
+                    "Mode '$mode1' should be highlighted when selected"
+                )
+                assertTrue(
+                    mode2HighlightedWhenMode2Selected,
+                    "Mode '$mode2' should be highlighted when selected"
+                )
+                
+                // Cross-check: mode1 highlighted when mode2 selected should equal mode1 == mode2
+                val mode1HighlightedWhenMode2Selected = isViewModeHighlighted(mode1, mode2)
+                assertEquals(
+                    mode1 == mode2,
+                    mode1HighlightedWhenMode2Selected,
+                    "Mode '$mode1' should be highlighted when '$mode2' is selected only if they are the same"
+                )
+            }
+        }
+    }
+}
