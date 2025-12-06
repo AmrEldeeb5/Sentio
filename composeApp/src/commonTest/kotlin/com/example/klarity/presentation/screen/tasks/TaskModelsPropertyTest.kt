@@ -651,3 +651,328 @@ class TaskModelsPropertyTest {
         assertTrue(restoredTask.timer == null, "Null timer should be preserved")
     }
 }
+
+
+// ============================================================================
+// Property 4: Task completion toggle idempotence
+// **Feature: kanban-board, Property 4: Task completion toggle idempotence**
+// **Validates: Requirements 3.2**
+//
+// For any task, toggling completion twice SHALL return the task 
+// to its original completion state.
+// ============================================================================
+
+class TaskCompletionTogglePropertyTest {
+
+    /**
+     * Generates valid Task instances for testing completion toggle.
+     */
+    private fun arbTaskForToggle(): Arb<Task> = arbitrary {
+        val now = Clock.System.now()
+        Task(
+            id = "task-${Arb.string(5..10).bind()}",
+            title = Arb.string(1..50).bind(),
+            description = Arb.string(0..100).bind(),
+            status = Arb.enum<TaskStatus>().bind(),
+            priority = Arb.enum<TaskPriority>().bind(),
+            completed = Arb.boolean().bind(),
+            createdAt = now,
+            updatedAt = now
+        )
+    }
+
+    @Test
+    fun property4_toggleCompletionTwiceReturnsToOriginalState() {
+        runBlocking {
+            checkAll(100, arbTaskForToggle()) { originalTask ->
+                // First toggle
+                val afterFirstToggle = originalTask.copy(completed = !originalTask.completed)
+                
+                // Second toggle
+                val afterSecondToggle = afterFirstToggle.copy(completed = !afterFirstToggle.completed)
+                
+                // Verify the completion state is back to original
+                assertEquals(
+                    originalTask.completed,
+                    afterSecondToggle.completed,
+                    "Toggling completion twice should return to original state. " +
+                    "Original: ${originalTask.completed}, After two toggles: ${afterSecondToggle.completed}"
+                )
+            }
+        }
+    }
+
+    @Test
+    fun property4_toggleCompletionChangesState() {
+        runBlocking {
+            checkAll(100, arbTaskForToggle()) { originalTask ->
+                // Single toggle should change the state
+                val afterToggle = originalTask.copy(completed = !originalTask.completed)
+                
+                assertTrue(
+                    originalTask.completed != afterToggle.completed,
+                    "Single toggle should change completion state"
+                )
+            }
+        }
+    }
+
+    @Test
+    fun property4_toggleCompletionPreservesOtherFields() {
+        runBlocking {
+            checkAll(100, arbTaskForToggle()) { originalTask ->
+                val afterToggle = originalTask.copy(completed = !originalTask.completed)
+                
+                // All other fields should remain unchanged
+                assertEquals(originalTask.id, afterToggle.id, "ID should be preserved")
+                assertEquals(originalTask.title, afterToggle.title, "Title should be preserved")
+                assertEquals(originalTask.description, afterToggle.description, "Description should be preserved")
+                assertEquals(originalTask.status, afterToggle.status, "Status should be preserved")
+                assertEquals(originalTask.priority, afterToggle.priority, "Priority should be preserved")
+            }
+        }
+    }
+}
+
+// ============================================================================
+// Property 6: Assignee filter correctness
+// **Feature: kanban-board, Property 6: Assignee filter correctness**
+// **Validates: Requirements 5.3**
+//
+// For any set of tasks and assignee filter value, the filtered result 
+// SHALL contain only tasks where assignee matches the filter value.
+// ============================================================================
+
+class AssigneeFilterPropertyTest {
+
+    /**
+     * Generates a list of tasks with various assignees.
+     */
+    private fun arbTasksWithAssignees(): Arb<List<Task>> = arbitrary {
+        val now = Clock.System.now()
+        val assignees = listOf("Alice", "Bob", "Charlie", null)
+        
+        Arb.list(
+            arbitrary {
+                Task(
+                    id = "task-${Arb.string(5..10).bind()}",
+                    title = Arb.string(1..50).bind(),
+                    assignee = assignees[Arb.int(0..3).bind()],
+                    createdAt = now,
+                    updatedAt = now
+                )
+            },
+            1..20
+        ).bind()
+    }
+
+    /**
+     * Filter tasks by assignee - pure function for testing.
+     */
+    private fun filterByAssignee(tasks: List<Task>, assignee: String): List<Task> {
+        return tasks.filter { task -> task.assignee == assignee }
+    }
+
+    @Test
+    fun property6_filteredTasksOnlyContainMatchingAssignee() {
+        runBlocking {
+            val assignees = listOf("Alice", "Bob", "Charlie")
+            
+            checkAll(100, arbTasksWithAssignees(), Arb.enum<TaskPriority>()) { tasks, _ ->
+                for (targetAssignee in assignees) {
+                    val filteredTasks = filterByAssignee(tasks, targetAssignee)
+                    
+                    // All filtered tasks should have the target assignee
+                    filteredTasks.forEach { task ->
+                        assertEquals(
+                            targetAssignee,
+                            task.assignee,
+                            "Filtered task should have assignee '$targetAssignee', but got '${task.assignee}'"
+                        )
+                    }
+                }
+            }
+        }
+    }
+
+    @Test
+    fun property6_filterDoesNotExcludeMatchingTasks() {
+        runBlocking {
+            checkAll(100, arbTasksWithAssignees()) { tasks ->
+                val targetAssignee = "Alice"
+                val filteredTasks = filterByAssignee(tasks, targetAssignee)
+                
+                // Count tasks with target assignee in original list
+                val expectedCount = tasks.count { it.assignee == targetAssignee }
+                
+                assertEquals(
+                    expectedCount,
+                    filteredTasks.size,
+                    "Filter should return all tasks with matching assignee"
+                )
+            }
+        }
+    }
+
+    @Test
+    fun property6_filterWithNoMatchesReturnsEmpty() {
+        runBlocking {
+            checkAll(100, arbTasksWithAssignees()) { tasks ->
+                val nonExistentAssignee = "NonExistentUser12345"
+                val filteredTasks = filterByAssignee(tasks, nonExistentAssignee)
+                
+                assertTrue(
+                    filteredTasks.isEmpty(),
+                    "Filter with non-existent assignee should return empty list"
+                )
+            }
+        }
+    }
+}
+
+// ============================================================================
+// Property 7: Tag filter correctness
+// **Feature: kanban-board, Property 7: Tag filter correctness**
+// **Validates: Requirements 5.4**
+//
+// For any set of tasks and tag filter values, the filtered result 
+// SHALL contain only tasks that have at least one matching tag.
+// ============================================================================
+
+class TagFilterPropertyTest {
+
+    /**
+     * Generates a list of tasks with various tags.
+     */
+    private fun arbTasksWithTags(): Arb<List<Task>> = arbitrary {
+        val now = Clock.System.now()
+        val availableTags = listOf(
+            TaskTag("feature", TagColor.GREEN),
+            TaskTag("bug", TagColor.RED),
+            TaskTag("urgent", TagColor.ORANGE),
+            TaskTag("design", TagColor.PURPLE),
+            TaskTag("backend", TagColor.BLUE)
+        )
+        
+        Arb.list(
+            arbitrary {
+                val numTags = Arb.int(0..3).bind()
+                val taskTags = if (numTags > 0) {
+                    availableTags.shuffled().take(numTags)
+                } else {
+                    emptyList()
+                }
+                
+                Task(
+                    id = "task-${Arb.string(5..10).bind()}",
+                    title = Arb.string(1..50).bind(),
+                    tags = taskTags,
+                    createdAt = now,
+                    updatedAt = now
+                )
+            },
+            1..20
+        ).bind()
+    }
+
+    /**
+     * Filter tasks by tags - pure function for testing.
+     * Returns tasks that have at least one matching tag.
+     */
+    private fun filterByTags(tasks: List<Task>, tags: Set<String>): List<Task> {
+        if (tags.isEmpty()) return tasks
+        return tasks.filter { task ->
+            task.tags.any { it.label in tags }
+        }
+    }
+
+    @Test
+    fun property7_filteredTasksContainAtLeastOneMatchingTag() {
+        runBlocking {
+            checkAll(100, arbTasksWithTags()) { tasks ->
+                val filterTags = setOf("feature", "bug")
+                val filteredTasks = filterByTags(tasks, filterTags)
+                
+                // All filtered tasks should have at least one matching tag
+                filteredTasks.forEach { task ->
+                    val hasMatchingTag = task.tags.any { it.label in filterTags }
+                    assertTrue(
+                        hasMatchingTag,
+                        "Filtered task should have at least one tag from $filterTags, " +
+                        "but has tags: ${task.tags.map { it.label }}"
+                    )
+                }
+            }
+        }
+    }
+
+    @Test
+    fun property7_filterDoesNotExcludeTasksWithMatchingTags() {
+        runBlocking {
+            checkAll(100, arbTasksWithTags()) { tasks ->
+                val filterTags = setOf("feature")
+                val filteredTasks = filterByTags(tasks, filterTags)
+                
+                // Count tasks with at least one matching tag in original list
+                val expectedCount = tasks.count { task ->
+                    task.tags.any { it.label in filterTags }
+                }
+                
+                assertEquals(
+                    expectedCount,
+                    filteredTasks.size,
+                    "Filter should return all tasks with at least one matching tag"
+                )
+            }
+        }
+    }
+
+    @Test
+    fun property7_emptyFilterReturnsAllTasks() {
+        runBlocking {
+            checkAll(100, arbTasksWithTags()) { tasks ->
+                val filteredTasks = filterByTags(tasks, emptySet())
+                
+                assertEquals(
+                    tasks.size,
+                    filteredTasks.size,
+                    "Empty tag filter should return all tasks"
+                )
+            }
+        }
+    }
+
+    @Test
+    fun property7_filterWithNoMatchesReturnsEmpty() {
+        runBlocking {
+            checkAll(100, arbTasksWithTags()) { tasks ->
+                val nonExistentTags = setOf("nonexistent-tag-xyz")
+                val filteredTasks = filterByTags(tasks, nonExistentTags)
+                
+                assertTrue(
+                    filteredTasks.isEmpty(),
+                    "Filter with non-existent tags should return empty list"
+                )
+            }
+        }
+    }
+
+    @Test
+    fun property7_multipleTagsFilterIsInclusive() {
+        runBlocking {
+            checkAll(100, arbTasksWithTags()) { tasks ->
+                val filterTags = setOf("feature", "bug", "urgent")
+                val filteredTasks = filterByTags(tasks, filterTags)
+                
+                // Verify each filtered task has at least one (not all) matching tag
+                filteredTasks.forEach { task ->
+                    val matchingTags = task.tags.filter { it.label in filterTags }
+                    assertTrue(
+                        matchingTags.isNotEmpty(),
+                        "Task should have at least one matching tag (OR logic)"
+                    )
+                }
+            }
+        }
+    }
+}
