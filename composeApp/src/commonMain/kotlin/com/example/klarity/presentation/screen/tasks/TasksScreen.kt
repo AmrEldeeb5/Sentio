@@ -74,7 +74,7 @@ fun TasksScreen(
             FilterPanel(
                 filter = filter,
                 onFilterChange = { filter = it },
-                allTags = allTasks.flatMap { it.tags }.distinct(),
+                allTags = allTasks.flatMap { it.tags }.map { it.label }.distinct(),
                 allAssignees = allTasks.mapNotNull { it.assignee }.distinct()
             )
         }
@@ -501,7 +501,7 @@ private fun TaskEditorPanel(
 ) {
     var title by remember(task) { mutableStateOf(task?.title ?: "") }
     var description by remember(task) { mutableStateOf(task?.description ?: "") }
-    var priority by remember(task) { mutableStateOf(task?.priority ?: TaskPriority.NORMAL) }
+    var priority by remember(task) { mutableStateOf(task?.priority ?: TaskPriority.MEDIUM) }
     var status by remember(task) { mutableStateOf(task?.status ?: TaskStatus.TODO) }
     
     Column(
@@ -668,7 +668,7 @@ private fun createSampleKanbanColumns(): List<KanbanColumn> {
                     title = "Research new AI models",
                     description = "Explore latest LLM options for the assistant",
                     priority = TaskPriority.LOW,
-                    tags = listOf("research", "ai"),
+                    tags = listOf(TaskTag("research", TagColor.BLUE), TaskTag("ai", TagColor.PURPLE)),
                     createdAt = now,
                     updatedAt = now
                 )
@@ -682,15 +682,15 @@ private fun createSampleKanbanColumns(): List<KanbanColumn> {
                     title = "Implement Knowledge Graph",
                     description = "Build the spatial canvas for note connections",
                     priority = TaskPriority.HIGH,
-                    tags = listOf("feature", "graph"),
+                    tags = listOf(TaskTag("feature", TagColor.GREEN), TaskTag("graph", TagColor.ORANGE)),
                     createdAt = now,
                     updatedAt = now
                 ),
                 Task(
                     id = "3",
                     title = "Design settings screen",
-                    priority = TaskPriority.NORMAL,
-                    tags = listOf("design", "ui"),
+                    priority = TaskPriority.MEDIUM,
+                    tags = listOf(TaskTag("design", TagColor.PURPLE), TaskTag("ui", TagColor.BLUE)),
                     createdAt = now,
                     updatedAt = now
                 )
@@ -704,8 +704,8 @@ private fun createSampleKanbanColumns(): List<KanbanColumn> {
                     id = "4",
                     title = "TaskFlow Kanban Board",
                     description = "Implement drag-and-drop kanban view",
-                    priority = TaskPriority.URGENT,
-                    tags = listOf("feature", "tasks"),
+                    priority = TaskPriority.HIGH,
+                    tags = listOf(TaskTag("feature", TagColor.GREEN), TaskTag("tasks", TagColor.ORANGE)),
                     subtasks = listOf(
                         Subtask("s1", "Create models", true),
                         Subtask("s2", "Build UI components", true),

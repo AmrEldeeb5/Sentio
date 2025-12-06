@@ -410,7 +410,7 @@ private fun TaskCard(
                     modifier = Modifier.horizontalScroll(rememberScrollState())
                 ) {
                     task.tags.take(3).forEach { tag ->
-                        TagChip(tag = tag)
+                        TagChip(tag = tag.label, color = tag.colorClass)
                     }
                     if (task.tags.size > 3) {
                         Text(
@@ -552,18 +552,20 @@ private fun DueDateBadge(
 @Composable
 private fun TagChip(
     tag: String,
+    color: TagColor = TagColor.GRAY,
     modifier: Modifier = Modifier
 ) {
+    val tagColor = Color(color.textColor)
     Box(
         modifier = modifier
             .clip(RoundedCornerShape(4.dp))
-            .background(KlarityColors.AccentPrimary.copy(alpha = 0.15f))
+            .background(tagColor.copy(alpha = color.bgAlpha))
             .padding(horizontal = 6.dp, vertical = 2.dp)
     ) {
         Text(
             text = tag,
             style = MaterialTheme.typography.labelSmall,
-            color = KlarityColors.AccentPrimary
+            color = tagColor
         )
     }
 }

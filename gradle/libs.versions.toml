@@ -1,6 +1,8 @@
 [versions]
 # AGP 8.7 is current stable/beta range. 8.13 is likely a typo.
 agp = "8.13.1"
+# Kotest for property-based testing
+kotest = "5.9.1"
 # Android 15 is API 35. 36 is not standard yet.
 android-compileSdk = "35"
 android-minSdk = "24"
@@ -77,6 +79,12 @@ sqldelight-primitive-adapters = { module = "app.cash.sqldelight:primitive-adapte
 
 # Navigation
 navigation-compose = { module = "org.jetbrains.androidx.navigation:navigation-compose", version.ref = "navigation" }
+
+# Kotest for property-based testing
+kotest-assertions-core = { module = "io.kotest:kotest-assertions-core", version.ref = "kotest" }
+kotest-property = { module = "io.kotest:kotest-property", version.ref = "kotest" }
+kotest-framework-engine = { module = "io.kotest:kotest-framework-engine", version.ref = "kotest" }
+kotest-runner-junit5 = { module = "io.kotest:kotest-runner-junit5", version.ref = "kotest" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }
