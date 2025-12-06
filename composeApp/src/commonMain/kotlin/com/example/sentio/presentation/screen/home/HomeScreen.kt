@@ -11,6 +11,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.key.*
 import androidx.compose.ui.unit.dp
+import com.example.sentio.presentation.screen.graph.GraphScreen
 import com.example.sentio.presentation.state.HomeUiEffect
 import com.example.sentio.presentation.state.HomeUiEvent
 import com.example.sentio.presentation.theme.KlarityColors
@@ -56,8 +57,7 @@ fun HomeScreen(
     // Command Palette state
     var showCommandPalette by remember { mutableStateOf(false) }
     
-    // Top command bar state
-    var topSearchQuery by remember { mutableStateOf("") }
+    // Top command bar state - synced with ViewModel search
     var currentTheme by remember { mutableStateOf(ThemeMode.DARK) }
     
     // Multi-select state for notes
@@ -127,6 +127,11 @@ fun HomeScreen(
             } else {
                 WorkspacePresets.notesDefault
             }
+            NavDestination.GRAPH -> WorkspacePresets.notesDefault.copy(
+                centerPane = PaneType.GRAPH,
+                leftPane = null,
+                rightPane = null
+            )
             NavDestination.TASKS -> WorkspacePresets.tasksFull
             NavDestination.SETTINGS -> workspaceConfig
         }
@@ -161,11 +166,17 @@ fun HomeScreen(
 
             // Main Workspace Area
             Column(modifier = Modifier.fillMaxSize().weight(1f)) {
-                // Top Command Bar
+                // Top Command Bar - connected to ViewModel search
                 TopCommandBar(
                     currentPath = breadcrumbPath,
-                    searchQuery = topSearchQuery,
-                    onSearchQueryChange = { topSearchQuery = it },
+                    searchQuery = searchQuery,
+                    onSearchQueryChange = { query ->
+                        viewModel.onEvent(HomeUiEvent.SearchQueryChanged(query))
+                        // Auto-navigate to Notes when searching
+                        if (query.isNotEmpty() && currentNavDestination == NavDestination.HOME) {
+                            currentNavDestination = NavDestination.NOTES
+                        }
+                    },
                     onCommandPaletteOpen = { showCommandPalette = true },
                     syncStatus = SyncStatus.SYNCED,
                     currentTheme = currentTheme,
@@ -306,6 +317,15 @@ fun HomeScreen(
                                                 // Create new note with this title
                                                 viewModel.onEvent(HomeUiEvent.CreateNoteWithTitle(noteName))
                                             }
+                                        },
+                                        modifier = modifier
+                                    )
+                                    PaneType.GRAPH -> GraphScreen(
+                                        notes = notes,
+                                        selectedNoteId = selectedNoteId,
+                                        onNoteSelected = { noteId ->
+                                            viewModel.onEvent(HomeUiEvent.SelectNote(noteId))
+                                            currentNavDestination = NavDestination.NOTES
                                         },
                                         modifier = modifier
                                     )

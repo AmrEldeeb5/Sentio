@@ -45,6 +45,7 @@ enum class WorkspaceLayoutMode {
 enum class PaneType {
     NOTES_LIST,
     EDITOR,
+    GRAPH,
     TASKS
 }
 

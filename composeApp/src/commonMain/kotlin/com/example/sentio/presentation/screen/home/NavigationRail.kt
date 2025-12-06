@@ -29,11 +29,11 @@ import com.example.sentio.presentation.theme.KlarityColors
 
 /**
  * Navigation destinations for the app
- * Simplified: Notes + Tasks only
  */
 enum class NavDestination(val icon: String, val label: String) {
     HOME("🏠", "Home"),
     NOTES("📝", "Notes"),
+    GRAPH("🕸️", "Graph"),
     TASKS("🧩", "Tasks"),
     SETTINGS("⚙️", "Settings")
 }
