@@ -1,16 +1,12 @@
 package com.example.klarity.presentation.screen.home
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.slideInHorizontally
-import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.key.*
-import androidx.compose.ui.unit.dp
+import com.example.klarity.presentation.navigation.NavDestination
+import com.example.klarity.presentation.navigation.NavigationRail
 import com.example.klarity.presentation.screen.graph.GraphScreen
 import com.example.klarity.presentation.state.HomeUiEffect
 import com.example.klarity.presentation.state.HomeUiEvent

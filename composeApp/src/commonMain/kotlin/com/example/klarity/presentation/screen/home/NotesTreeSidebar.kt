@@ -1,12 +1,7 @@
 package com.example.klarity.presentation.screen.home
 
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.tween
-import androidx.compose.animation.expandVertically
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
@@ -38,6 +33,7 @@ import androidx.compose.ui.unit.sp
 import com.example.klarity.domain.models.Folder
 import com.example.klarity.domain.models.Note
 import com.example.klarity.domain.models.NoteStatus
+import com.example.klarity.presentation.screen.home.util.formatRelativeTime
 import com.example.klarity.presentation.theme.KlarityColors
 
 /**

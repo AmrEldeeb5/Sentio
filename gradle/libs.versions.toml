@@ -1,6 +1,6 @@
 [versions]
 # AGP 8.7 is current stable/beta range. 8.13 is likely a typo.
-agp = "8.13.1"
+agp = "8.13.2"
 # Kotest for property-based testing
 kotest = "5.9.1"
 # Android 15 is API 35. 36 is not standard yet.
