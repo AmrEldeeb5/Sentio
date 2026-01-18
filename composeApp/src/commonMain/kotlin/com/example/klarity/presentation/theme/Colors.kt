@@ -67,6 +67,15 @@ object KlarityColors {
     /** Highlight color for text selection, AI suggestions */
     val Highlight = Color(0xFF2DD4BF).copy(alpha = 0.3f)
 
+    /** Luminous Teal - navigation active states, primary interactive elements */
+    val LuminousTeal = Color(0xFF1FDBC8)
+
+    /** Electric Mint - hover states, secondary interactive elements */
+    val ElectricMint = Color(0xFF3DD68C)
+
+    /** Glow color for hover effects */
+    val GlowColor = ElectricMint.copy(alpha = 0.3f)
+
     // ══════════════════════════════════════════════════════════════
     // TEXT COLORS - Improved Contrast
     // ══════════════════════════════════════════════════════════════

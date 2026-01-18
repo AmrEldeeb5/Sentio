@@ -58,8 +58,9 @@ fun GraphScreen(
     onNoteSelected: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val luminousTeal = Color(0xFF1FDBC8)
-    val electricMint = Color(0xFF3DD68C)
+    // Use centralized colors from theme
+    val luminousTeal = KlarityColors.LuminousTeal
+    val electricMint = KlarityColors.ElectricMint
 
     // Parse wiki links from notes to build graph
     val (nodes, edges) = remember(notes) {
@@ -81,11 +82,15 @@ fun GraphScreen(
     // Physics simulation
     var isSimulating by remember { mutableStateOf(true) }
 
-    // Run force-directed layout simulation
+    // Run force-directed layout simulation on background thread
     LaunchedEffect(isSimulating, nodes, edges) {
         if (isSimulating && nodes.isNotEmpty()) {
             while (isSimulating) {
-                nodePositions = applyForces(nodes, edges, nodePositions)
+                // Move heavy computation to Default dispatcher
+                val newPositions = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Default) {
+                    applyForces(nodes, edges, nodePositions)
+                }
+                nodePositions = newPositions
                 kotlinx.coroutines.delay(16) // ~60fps
             }
         }

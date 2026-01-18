@@ -74,9 +74,10 @@ fun NotesListPane(
     onAskAI: (Note) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val luminousTeal = Color(0xFF1FDBC8)
-    val electricMint = Color(0xFF3DD68C)
-    
+    // Use centralized colors from theme
+    val luminousTeal = KlarityColors.LuminousTeal
+    val electricMint = KlarityColors.ElectricMint
+
     var sortOption by remember { mutableStateOf(NoteSortOption.UPDATED) }
     var groupOption by remember { mutableStateOf(NoteGroupOption.NONE) }
     var showSortMenu by remember { mutableStateOf(false) }

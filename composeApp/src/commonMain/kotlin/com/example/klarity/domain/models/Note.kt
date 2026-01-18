@@ -1,5 +1,6 @@
 package com.example.klarity.domain.models
 
+import androidx.compose.runtime.Immutable
 import com.benasher44.uuid.uuid4
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
@@ -20,7 +21,10 @@ enum class NoteStatus {
 /**
  * Core domain model for a note in Klarity.
  * Represents a single document with markdown content, metadata, and relationships.
+ *
+ * Marked @Immutable for Compose stability - helps prevent unnecessary recompositions.
  */
+@Immutable
 @Serializable
 data class Note(
     val id: String = uuid4().toString(),

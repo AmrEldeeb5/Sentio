@@ -7,6 +7,7 @@ CREATE TABLE Note (
     updatedAt INTEGER NOT NULL,
     isPinned INTEGER DEFAULT 0 NOT NULL,
     isFavorite INTEGER DEFAULT 0 NOT NULL,
+    status TEXT NOT NULL DEFAULT 'NONE',
     FOREIGN KEY (folderId) REFERENCES Folder(id) ON DELETE SET NULL
 );
 
@@ -14,6 +15,7 @@ CREATE INDEX note_folderId ON Note(folderId);
 CREATE INDEX note_createdAt ON Note(createdAt);
 CREATE INDEX note_updatedAt ON Note(updatedAt);
 CREATE INDEX note_isPinned ON Note(isPinned);
+CREATE INDEX note_status ON Note(status);
 
 selectAll:
 SELECT * FROM Note ORDER BY updatedAt DESC;
@@ -31,12 +33,12 @@ selectFavorites:
 SELECT * FROM Note WHERE isFavorite = 1 ORDER BY updatedAt DESC;
 
 insert:
-INSERT INTO Note(id, title, content, folderId, createdAt, updatedAt, isPinned, isFavorite)
-VALUES (?, ?, ?, ?, ?, ?, ?, ?);
+INSERT INTO Note(id, title, content, folderId, createdAt, updatedAt, isPinned, isFavorite, status)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
 
 update:
 UPDATE Note 
-SET title = ?, content = ?, folderId = ?, updatedAt = ?, isPinned = ?, isFavorite = ?
+SET title = ?, content = ?, folderId = ?, updatedAt = ?, isPinned = ?, isFavorite = ?, status = ?
 WHERE id = ?;
 
 delete:

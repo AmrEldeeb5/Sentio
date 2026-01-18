@@ -50,11 +50,11 @@ fun NavigationRail(
     onDestinationSelected: (NavDestination) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    // Colors
-    val luminousTeal = Color(0xFF1FDBC8)
-    val electricMint = Color(0xFF3DD68C)
-    val glowColor = electricMint.copy(alpha = 0.3f)
-    
+    // Use centralized colors from theme
+    val luminousTeal = KlarityColors.LuminousTeal
+    val electricMint = KlarityColors.ElectricMint
+    val glowColor = KlarityColors.GlowColor
+
     Surface(
         modifier = modifier
             .width(72.dp)

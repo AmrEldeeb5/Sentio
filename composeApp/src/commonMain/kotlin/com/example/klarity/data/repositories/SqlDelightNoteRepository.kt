@@ -9,6 +9,7 @@ import com.example.klarity.db.KlarityDatabase
 import com.example.klarity.domain.models.Note
 import com.example.klarity.domain.repositories.NoteRepository
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
@@ -34,6 +35,11 @@ class SqlDelightNoteRepository(
                     val tags = getTagsForNote(entity.id)
                     entity.toDomain(tags)
                 }
+            }
+            .catch { e ->
+                // Log error and emit empty list to prevent crash
+                println("Error loading notes: ${e.message}")
+                emit(emptyList())
             }
 
     override suspend fun getNoteById(id: String): Note? = withContext(dispatchers.io) {
@@ -91,7 +97,8 @@ class SqlDelightNoteRepository(
                 createdAt = entity.createdAt,
                 updatedAt = entity.updatedAt,
                 isPinned = entity.isPinned,
-                isFavorite = entity.isFavorite
+                isFavorite = entity.isFavorite,
+                status = entity.status
             )
             
             // Link tags
@@ -112,6 +119,7 @@ class SqlDelightNoteRepository(
                 updatedAt = entity.updatedAt,
                 isPinned = entity.isPinned,
                 isFavorite = entity.isFavorite,
+                status = entity.status,
                 id = entity.id
             )
             

@@ -30,6 +30,8 @@ import androidx.compose.ui.input.key.isCtrlPressed
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.input.key.type
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -310,26 +312,39 @@ fun ToolbarButton(
     val interactionSource = remember { MutableInteractionSource() }
     val isHovered by interactionSource.collectIsHoveredAsState()
 
-    // Fixed size box - tooltip rendered in popup layer
-    Surface(
+    // 48dp touch target for accessibility, visual element inside
+    Box(
         modifier = Modifier
-            .size(32.dp)
-            .clickable(interactionSource = interactionSource, indication = null, onClick = onClick)
-            .hoverable(interactionSource),
-        shape = RoundedCornerShape(6.dp),
-        color = if (isActive || isHovered) KlarityColors.BgElevated.copy(alpha = 0.5f) else Color.Transparent
-    ) {
-        Box(contentAlignment = Alignment.Center) {
-            Text(
-                text,
-                fontSize = 14.sp,
-                fontWeight = if (isBold) FontWeight.Bold else FontWeight.Normal,
-                color = when {
-                    isPrimary -> KlarityColors.AccentAI
-                    isActive -> Color.White
-                    else -> KlarityColors.TextTertiary
-                }
+            .size(48.dp)
+            .clickable(
+                interactionSource = interactionSource,
+                indication = null,
+                onClick = onClick,
+                onClickLabel = tooltip.ifEmpty { text }
             )
+            .hoverable(interactionSource)
+            .semantics {
+                contentDescription = tooltip.ifEmpty { text }
+            },
+        contentAlignment = Alignment.Center
+    ) {
+        Surface(
+            modifier = Modifier.size(32.dp),
+            shape = RoundedCornerShape(6.dp),
+            color = if (isActive || isHovered) KlarityColors.BgElevated.copy(alpha = 0.5f) else Color.Transparent
+        ) {
+            Box(contentAlignment = Alignment.Center) {
+                Text(
+                    text,
+                    fontSize = 14.sp,
+                    fontWeight = if (isBold) FontWeight.Bold else FontWeight.Normal,
+                    color = when {
+                        isPrimary -> KlarityColors.AccentAI
+                        isActive -> Color.White
+                        else -> KlarityColors.TextTertiary
+                    }
+                )
+            }
         }
     }
     
