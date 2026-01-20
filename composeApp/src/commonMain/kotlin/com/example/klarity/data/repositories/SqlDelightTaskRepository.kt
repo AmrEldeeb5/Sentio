@@ -182,7 +182,7 @@ class SqlDelightTaskRepository(
         withContext(dispatchers.io) {
             taskQueries.countByStatus().executeAsList().associate { row ->
                 val status = TaskStatus.entries.find { it.name == row.status } ?: TaskStatus.TODO
-                status to row.count_.toInt()
+                status to row.taskCount.toInt()
             }
         }
 }

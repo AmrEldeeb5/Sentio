@@ -140,4 +140,4 @@ ORDER BY columnOrder ASC;
 
 -- Count tasks by status
 countByStatus:
-SELECT status, COUNT(*) AS count FROM TaskEntity GROUP BY status;
+SELECT status, COUNT(*) AS taskCount FROM TaskEntity GROUP BY status;

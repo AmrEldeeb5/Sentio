@@ -68,18 +68,17 @@ class HomeViewModel(
         _pinnedNotes,
         _folders,
         _searchQuery,
-        _selectedNoteId,
-        _expandedFolderIds
-    ) { notes, pinnedNotes, folders, searchQuery, selectedNoteId, expandedFolderIds ->
+        _selectedNoteId
+    ) { notes, pinnedNotes, folders, searchQuery, selectedNoteId ->
         HomeUiState.Success(
             notes = notes,
             pinnedNotes = pinnedNotes,
             folders = folders,
-            expandedFolderIds = expandedFolderIds,
+            expandedFolderIds = _expandedFolderIds.value,
             searchQuery = searchQuery,
             isSearching = searchQuery.isNotBlank(),
             selectedNoteId = selectedNoteId
-        )
+        ) as HomeUiState
     }.catch { e ->
         emit(HomeUiState.Error(
             message = e.message ?: "An unexpected error occurred",
