@@ -16,6 +16,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -34,7 +35,6 @@ import com.example.klarity.domain.models.Folder
 import com.example.klarity.domain.models.Note
 import com.example.klarity.domain.models.NoteStatus
 import com.example.klarity.presentation.screen.home.util.formatRelativeTime
-import com.example.klarity.presentation.theme.KlarityColors
 
 /**
  * Notes Tree Sidebar - Right sidebar showing notes organized in tree structure
@@ -57,8 +57,8 @@ fun NotesTreeSidebar(
 ) {
     Surface(
         modifier = Modifier.width(320.dp).fillMaxHeight(),
-        color = KlarityColors.BgPrimary,
-        border = BorderStroke(1.dp, KlarityColors.BorderPrimary.copy(alpha = 0.5f))
+        color = MaterialTheme.colorScheme.surface,
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.3f))
     ) {
         Column(
             modifier = Modifier.fillMaxSize().padding(16.dp),
@@ -74,7 +74,7 @@ fun NotesTreeSidebar(
                 Surface(
                     modifier = Modifier.weight(1f).height(40.dp),
                     shape = RoundedCornerShape(8.dp),
-                    color = KlarityColors.BgElevated,
+                    color = MaterialTheme.colorScheme.surfaceVariant,
                     border = BorderStroke(1.dp, Color.Transparent)
                 ) {
                     Row(
@@ -82,20 +82,20 @@ fun NotesTreeSidebar(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        Text("🔍", fontSize = 14.sp, color = KlarityColors.TextTertiary)
+                        Text("🔍", fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         BasicTextField(
                             value = searchQuery,
                             onValueChange = onSearchQueryChange,
                             modifier = Modifier.weight(1f),
                             singleLine = true,
                             textStyle = TextStyle(
-                                color = Color.White,
+                                color = MaterialTheme.colorScheme.onSurface,
                                 fontSize = 14.sp
                             ),
-                            cursorBrush = SolidColor(KlarityColors.AccentAI),
+                            cursorBrush = SolidColor(MaterialTheme.colorScheme.tertiary),
                             decorationBox = { innerTextField ->
                                 if (searchQuery.isEmpty()) {
-                                    Text("Search notes...", color = KlarityColors.TextTertiary, fontSize = 14.sp)
+                                    Text("Search notes...", color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f), fontSize = 14.sp)
                                 }
                                 innerTextField()
                             }
@@ -106,14 +106,14 @@ fun NotesTreeSidebar(
                 // New Button
                 Button(
                     onClick = onCreateNote,
-                    colors = ButtonDefaults.buttonColors(containerColor = KlarityColors.AccentAI),
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
                     shape = RoundedCornerShape(8.dp),
                     contentPadding = PaddingValues(horizontal = 12.dp),
                     modifier = Modifier.height(40.dp)
                 ) {
-                    Text("+", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = KlarityColors.BgSecondary)
+                    Text("+", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onPrimary)
                     Spacer(Modifier.width(4.dp))
-                    Text("New", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = KlarityColors.BgSecondary)
+                    Text("New", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onPrimary)
                 }
             }
 
@@ -198,7 +198,7 @@ fun NotesTreeSidebar(
                             modifier = Modifier.fillMaxWidth().padding(32.dp),
                             contentAlignment = Alignment.Center
                         ) {
-                            Text("No notes found", color = KlarityColors.TextTertiary, fontSize = 14.sp)
+                            Text("No notes found", color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f), fontSize = 14.sp)
                         }
                     }
                 }
@@ -211,7 +211,7 @@ fun NotesTreeSidebar(
 fun TreeSectionHeader(
     title: String,
     icon: String,
-    iconColor: Color = KlarityColors.TextTertiary,
+    iconColor: Color = MaterialTheme.colorScheme.onSurfaceVariant,
     isExpanded: Boolean,
     onToggle: () -> Unit
 ) {
@@ -230,14 +230,14 @@ fun TreeSectionHeader(
         Text(
             if (isExpanded) "▼" else "▶",
             fontSize = 8.sp,
-            color = KlarityColors.TextTertiary
+            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
         )
         Text(icon, fontSize = 12.sp, color = iconColor)
         Text(
             title,
             fontSize = 11.sp,
             fontWeight = FontWeight.Bold,
-            color = if (isHovered) Color.White else KlarityColors.TextTertiary,
+            color = if (isHovered) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
             letterSpacing = 1.sp
         )
     }
@@ -303,7 +303,7 @@ fun TreeDivider() {
             .fillMaxWidth()
             .padding(vertical = 8.dp)
             .height(1.dp)
-            .background(KlarityColors.BorderPrimary.copy(alpha = 0.3f))
+            .background(MaterialTheme.colorScheme.outline.copy(alpha = 0.3f))
     )
 }
 
@@ -319,8 +319,8 @@ fun TreeNoteCard(
 
     val bgColor by animateColorAsState(
         targetValue = when {
-            isSelected -> KlarityColors.BgSelected.copy(alpha = 0.8f)
-            isHovered -> KlarityColors.BgElevated.copy(alpha = 0.4f)
+            isSelected -> MaterialTheme.colorScheme.primaryContainer
+            isHovered -> MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
             else -> Color.Transparent
         },
         animationSpec = tween(150)
@@ -333,7 +333,7 @@ fun TreeNoteCard(
             .hoverable(interactionSource),
         shape = RoundedCornerShape(10.dp),
         color = bgColor,
-        border = if (isSelected) BorderStroke(1.dp, KlarityColors.BorderPrimary.copy(alpha = 0.5f)) else null
+        border = if (isSelected) BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.5f)) else null
     ) {
         Column(
             modifier = Modifier.padding(12.dp),
@@ -353,13 +353,13 @@ fun TreeNoteCard(
                     Text(
                         "📄",
                         fontSize = 14.sp,
-                        color = if (isSelected) KlarityColors.AccentAI else KlarityColors.TextTertiary
+                        color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Text(
                         note.title.ifBlank { "Untitled" },
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Medium,
-                        color = if (isSelected || isHovered) Color.White else KlarityColors.TextSecondary,
+                        color = if (isSelected || isHovered) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                     )
@@ -367,7 +367,7 @@ fun TreeNoteCard(
                 Text(
                     formatRelativeTime(note.updatedAt),
                     fontSize = 10.sp,
-                    color = KlarityColors.TextTertiary
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
                 )
             }
 
@@ -375,7 +375,7 @@ fun TreeNoteCard(
             Text(
                 note.preview(),
                 fontSize = 12.sp,
-                color = KlarityColors.TextTertiary,
+                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis,
                 lineHeight = 18.sp,
@@ -458,9 +458,9 @@ fun TreeTagBadge(tag: String) {
             )
         else ->
             Triple(
-                KlarityColors.BgSelected.copy(alpha = 0.5f),
-                KlarityColors.TextSecondary,
-                KlarityColors.BorderPrimary.copy(alpha = 0.5f)
+                MaterialTheme.colorScheme.surfaceVariant,
+                MaterialTheme.colorScheme.onSurfaceVariant,
+                MaterialTheme.colorScheme.outline.copy(alpha = 0.5f)
             )
     }
 

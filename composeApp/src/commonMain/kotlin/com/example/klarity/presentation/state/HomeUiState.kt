@@ -26,6 +26,12 @@ sealed class HomeUiState {
     /**
      * Success state - data has been loaded successfully.
      * Note and Folder are @Immutable, so this state is safe.
+     *
+     * Operation States provide UI feedback during async operations:
+     * - isCreatingNote: Show loading spinner on "New Note" button
+     * - isDeletingNoteId: Show loading state on specific note being deleted
+     * - isMovingNoteId: Show loading state during folder move
+     * - isRefreshing: Pull-to-refresh indicator
      */
     @Immutable
     data class Success(
@@ -38,7 +44,13 @@ sealed class HomeUiState {
         /** Currently selected note (single click - highlighted in sidebar) */
         val selectedNoteId: String? = null,
         /** Currently opened note (double click - shown in editor) */
-        val openedNoteId: String? = null
+        val openedNoteId: String? = null,
+
+        // Operation Loading States (for user feedback)
+        val isCreatingNote: Boolean = false,
+        val isDeletingNoteId: String? = null,
+        val isMovingNoteId: String? = null,
+        val isRefreshing: Boolean = false
     ) : HomeUiState()
 
     /**

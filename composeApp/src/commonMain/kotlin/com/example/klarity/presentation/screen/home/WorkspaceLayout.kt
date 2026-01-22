@@ -27,7 +27,6 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.klarity.presentation.navigation.NavDestination
-import com.example.klarity.presentation.theme.KlarityColors
 
 /**
  * Workspace layout modes
@@ -190,9 +189,9 @@ private fun WorkspacePane(
     Surface(
         modifier = modifier.fillMaxHeight(),
         color = when (position) {
-            PanePosition.LEFT -> KlarityColors.BgSecondary
-            PanePosition.CENTER -> KlarityColors.BgPrimary
-            PanePosition.RIGHT -> KlarityColors.BgSecondary
+            PanePosition.LEFT -> MaterialTheme.colorScheme.surfaceVariant
+            PanePosition.CENTER -> MaterialTheme.colorScheme.background
+            PanePosition.RIGHT -> MaterialTheme.colorScheme.surfaceVariant
         }
     ) {
         content()
@@ -211,7 +210,7 @@ fun LayoutModeSelector(
     Row(
         modifier = modifier
             .background(
-                color = KlarityColors.BgTertiary,
+                color = MaterialTheme.colorScheme.surface,
                 shape = RoundedCornerShape(8.dp)
             )
             .padding(4.dp),
@@ -256,8 +255,8 @@ private fun LayoutModeButton(
     
     val bgColor by animateColorAsState(
         targetValue = when {
-            isSelected -> KlarityColors.AccentPrimary.copy(alpha = 0.2f)
-            isHovered -> KlarityColors.BgElevated
+            isSelected -> MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)
+            isHovered -> MaterialTheme.colorScheme.surfaceVariant
             else -> Color.Transparent
         },
         animationSpec = tween(100),
@@ -266,9 +265,9 @@ private fun LayoutModeButton(
     
     val contentColor by animateColorAsState(
         targetValue = when {
-            isSelected -> KlarityColors.AccentPrimary
-            isHovered -> KlarityColors.TextPrimary
-            else -> KlarityColors.TextTertiary
+            isSelected -> MaterialTheme.colorScheme.primary
+            isHovered -> MaterialTheme.colorScheme.onSurface
+            else -> MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
         },
         animationSpec = tween(100),
         label = "contentColor"
@@ -309,8 +308,8 @@ fun DetachedWindowStyle(
     modifier: Modifier = Modifier,
     content: @Composable () -> Unit
 ) {
-    val luminousTeal = Color(0xFF1FDBC8)
-    
+    val luminousTeal = MaterialTheme.colorScheme.primary
+
     Surface(
         modifier = modifier
             .shadow(
@@ -330,7 +329,7 @@ fun DetachedWindowStyle(
                 ),
                 shape = RoundedCornerShape(12.dp)
             ),
-        color = KlarityColors.BgPrimary,
+        color = MaterialTheme.colorScheme.background,
         shape = RoundedCornerShape(12.dp)
     ) {
         Column(modifier = Modifier.fillMaxSize()) {
@@ -338,14 +337,14 @@ fun DetachedWindowStyle(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(KlarityColors.BgSecondary)
+                    .background(MaterialTheme.colorScheme.surfaceVariant)
                     .padding(horizontal = 16.dp, vertical = 8.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
                     text = title,
-                    color = KlarityColors.TextPrimary,
+                    color = MaterialTheme.colorScheme.onSurface,
                     fontWeight = FontWeight.Medium,
                     fontSize = 14.sp
                 )
@@ -357,7 +356,7 @@ fun DetachedWindowStyle(
                     Icon(
                         Icons.Default.Close,
                         contentDescription = "Close",
-                        tint = KlarityColors.TextTertiary,
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
                         modifier = Modifier.size(16.dp)
                     )
                 }
@@ -391,9 +390,9 @@ fun PaneResizer(
     
     val color by animateColorAsState(
         targetValue = when {
-            isDragging -> KlarityColors.AccentPrimary
-            isHovered -> KlarityColors.AccentPrimary.copy(alpha = 0.5f)
-            else -> KlarityColors.BorderPrimary.copy(alpha = 0.3f)
+            isDragging -> MaterialTheme.colorScheme.primary
+            isHovered -> MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)
+            else -> MaterialTheme.colorScheme.outline.copy(alpha = 0.3f)
         },
         animationSpec = tween(100),
         label = "resizerColor"
@@ -427,7 +426,7 @@ fun WorkspaceTopBar(
 ) {
     Surface(
         modifier = modifier.fillMaxWidth(),
-        color = KlarityColors.BgSecondary
+        color = MaterialTheme.colorScheme.surfaceVariant
     ) {
         Row(
             modifier = Modifier
@@ -445,11 +444,11 @@ fun WorkspaceTopBar(
                     imageVector = currentDestination.selectedIcon,
                     contentDescription = null,
                     modifier = Modifier.size(20.dp),
-                    tint = KlarityColors.AccentPrimary
+                    tint = MaterialTheme.colorScheme.primary
                 )
                 Text(
                     text = currentDestination.label,
-                    color = KlarityColors.TextPrimary,
+                    color = MaterialTheme.colorScheme.onSurface,
                     fontWeight = FontWeight.SemiBold,
                     fontSize = 16.sp
                 )
@@ -495,7 +494,7 @@ private fun PanelToggleButton(
     
     Surface(
         onClick = onClick,
-        color = if (isHovered) KlarityColors.BgElevated else Color.Transparent,
+        color = if (isHovered) MaterialTheme.colorScheme.surfaceVariant else Color.Transparent,
         shape = RoundedCornerShape(6.dp),
         modifier = Modifier.hoverable(interactionSource)
     ) {
@@ -506,7 +505,7 @@ private fun PanelToggleButton(
             Text(
                 text = icon,
                 fontSize = 18.sp,
-                color = if (isHovered) KlarityColors.TextPrimary else KlarityColors.TextTertiary
+                color = if (isHovered) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
             )
         }
     }
@@ -524,7 +523,7 @@ fun GraphPane(modifier: Modifier = Modifier) {
     Box(
         modifier = modifier
             .fillMaxSize()
-            .background(KlarityColors.BgPrimary),
+            .background(MaterialTheme.colorScheme.background),
         contentAlignment = Alignment.Center
     ) {
         Column(
@@ -536,7 +535,7 @@ fun GraphPane(modifier: Modifier = Modifier) {
                 modifier = Modifier
                     .size(80.dp)
                     .background(
-                        color = KlarityColors.AccentAI.copy(alpha = 0.1f),
+                        color = MaterialTheme.colorScheme.tertiary.copy(alpha = 0.1f),
                         shape = CircleShape
                     ),
                 contentAlignment = Alignment.Center
@@ -549,14 +548,14 @@ fun GraphPane(modifier: Modifier = Modifier) {
             
             Text(
                 text = "Knowledge Graph",
-                color = KlarityColors.TextPrimary,
+                color = MaterialTheme.colorScheme.onSurface,
                 fontWeight = FontWeight.SemiBold,
                 fontSize = 20.sp
             )
             
             Text(
                 text = "Visualize connections between your notes",
-                color = KlarityColors.TextTertiary,
+                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
                 fontSize = 14.sp,
                 textAlign = TextAlign.Center,
                 modifier = Modifier.widthIn(max = 300.dp)
@@ -584,7 +583,7 @@ fun TasksPane(modifier: Modifier = Modifier) {
     Box(
         modifier = modifier
             .fillMaxSize()
-            .background(KlarityColors.BgPrimary),
+            .background(MaterialTheme.colorScheme.background),
         contentAlignment = Alignment.Center
     ) {
         Column(
@@ -596,7 +595,7 @@ fun TasksPane(modifier: Modifier = Modifier) {
                 modifier = Modifier
                     .size(80.dp)
                     .background(
-                        color = KlarityColors.AccentPrimary.copy(alpha = 0.1f),
+                        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
                         shape = CircleShape
                     ),
                 contentAlignment = Alignment.Center
@@ -609,14 +608,14 @@ fun TasksPane(modifier: Modifier = Modifier) {
             
             Text(
                 text = "Tasks",
-                color = KlarityColors.TextPrimary,
+                color = MaterialTheme.colorScheme.onSurface,
                 fontWeight = FontWeight.SemiBold,
                 fontSize = 20.sp
             )
             
             Text(
                 text = "Manage tasks extracted from your notes",
-                color = KlarityColors.TextTertiary,
+                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
                 fontSize = 14.sp,
                 textAlign = TextAlign.Center,
                 modifier = Modifier.widthIn(max = 300.dp)
@@ -644,7 +643,7 @@ fun AIChatPane(modifier: Modifier = Modifier) {
     Box(
         modifier = modifier
             .fillMaxSize()
-            .background(KlarityColors.BgPrimary),
+            .background(MaterialTheme.colorScheme.background),
         contentAlignment = Alignment.Center
     ) {
         Column(
@@ -658,8 +657,8 @@ fun AIChatPane(modifier: Modifier = Modifier) {
                     .background(
                         brush = Brush.radialGradient(
                             colors = listOf(
-                                KlarityColors.AccentAI.copy(alpha = 0.2f),
-                                KlarityColors.AccentAI.copy(alpha = 0.05f),
+                                MaterialTheme.colorScheme.tertiary.copy(alpha = 0.2f),
+                                MaterialTheme.colorScheme.tertiary.copy(alpha = 0.05f),
                                 Color.Transparent
                             )
                         ),
@@ -675,14 +674,14 @@ fun AIChatPane(modifier: Modifier = Modifier) {
             
             Text(
                 text = "AI Assistant",
-                color = KlarityColors.TextPrimary,
+                color = MaterialTheme.colorScheme.onSurface,
                 fontWeight = FontWeight.SemiBold,
                 fontSize = 20.sp
             )
             
             Text(
                 text = "Chat with AI about your notes and ideas",
-                color = KlarityColors.TextTertiary,
+                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
                 fontSize = 14.sp,
                 textAlign = TextAlign.Center,
                 modifier = Modifier.widthIn(max = 300.dp)
@@ -693,7 +692,7 @@ fun AIChatPane(modifier: Modifier = Modifier) {
             // Start chat button
             Surface(
                 onClick = { /* Start chat */ },
-                color = KlarityColors.AccentAI.copy(alpha = 0.15f),
+                color = MaterialTheme.colorScheme.tertiaryContainer,
                 shape = RoundedCornerShape(12.dp)
             ) {
                 Row(
@@ -704,7 +703,7 @@ fun AIChatPane(modifier: Modifier = Modifier) {
                     Text("✨", fontSize = 16.sp)
                     Text(
                         text = "Start a conversation",
-                        color = KlarityColors.AccentAI,
+                        color = MaterialTheme.colorScheme.tertiary,
                         fontWeight = FontWeight.Medium,
                         fontSize = 14.sp
                     )
@@ -724,13 +723,13 @@ private fun StatItem(
     ) {
         Text(
             text = value,
-            color = KlarityColors.TextPrimary,
+            color = MaterialTheme.colorScheme.onSurface,
             fontWeight = FontWeight.Bold,
             fontSize = 24.sp
         )
         Text(
             text = label,
-            color = KlarityColors.TextTertiary,
+            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
             fontSize = 12.sp
         )
     }

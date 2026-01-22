@@ -19,13 +19,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.klarity.presentation.theme.KlarityColors
 import com.example.klarity.presentation.theme.KlarityMotion
 
 /**
@@ -60,15 +58,15 @@ fun NavigationRail(
 ) {
     androidx.compose.material3.NavigationRail(
         modifier = modifier,
-        containerColor = KlarityColors.BgPrimary,
-        contentColor = KlarityColors.TextPrimary,
+        containerColor = MaterialTheme.colorScheme.surface,
+        contentColor = MaterialTheme.colorScheme.onSurface,
         header = {
             // Logo/Brand at top
             Spacer(Modifier.height(8.dp))
             Surface(
                 modifier = Modifier.size(48.dp),
                 shape = RoundedCornerShape(14.dp),
-                color = KlarityColors.BgElevated,
+                color = MaterialTheme.colorScheme.primaryContainer,
                 tonalElevation = 2.dp
             ) {
                 Box(contentAlignment = Alignment.Center) {
@@ -76,7 +74,7 @@ fun NavigationRail(
                         text = "K",
                         fontSize = 22.sp,
                         fontWeight = FontWeight.Bold,
-                        color = KlarityColors.LuminousTeal
+                        color = MaterialTheme.colorScheme.primary
                     )
                 }
             }
@@ -123,9 +121,9 @@ private fun KlarityNavRailItem(
     // Animation for icon color
     val iconColor by animateColorAsState(
         targetValue = when {
-            isSelected -> KlarityColors.LuminousTeal
-            isHovered -> KlarityColors.ElectricMint
-            else -> KlarityColors.TextTertiary
+            isSelected -> MaterialTheme.colorScheme.primary
+            isHovered -> MaterialTheme.colorScheme.primary.copy(alpha = 0.8f)
+            else -> MaterialTheme.colorScheme.onSurfaceVariant
         },
         animationSpec = KlarityMotion.standardEnter(),
         label = "iconColor"
@@ -153,11 +151,11 @@ private fun KlarityNavRailItem(
         alwaysShowLabel = false, // Show label only when selected
         interactionSource = interactionSource,
         colors = NavigationRailItemDefaults.colors(
-            selectedIconColor = KlarityColors.LuminousTeal,
-            selectedTextColor = KlarityColors.LuminousTeal,
-            unselectedIconColor = KlarityColors.TextTertiary,
-            unselectedTextColor = KlarityColors.TextTertiary,
-            indicatorColor = KlarityColors.LuminousTeal.copy(alpha = 0.15f)
+            selectedIconColor = MaterialTheme.colorScheme.primary,
+            selectedTextColor = MaterialTheme.colorScheme.primary,
+            unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+            unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant,
+            indicatorColor = MaterialTheme.colorScheme.primaryContainer
         )
     )
 }

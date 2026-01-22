@@ -19,13 +19,9 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
 
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import com.example.klarity.presentation.theme.KlarityColors
 
 /**
  * BoardControls - Header component for the Kanban board
@@ -58,7 +54,7 @@ fun BoardControls(
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .background(KlarityColors.BgSecondary)
+            .background(MaterialTheme.colorScheme.surfaceVariant)
             .padding(horizontal = 16.dp, vertical = 12.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
@@ -84,12 +80,12 @@ fun BoardControls(
                     text = boardTitle,
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold,
-                    color = KlarityColors.TextPrimary
+                    color = MaterialTheme.colorScheme.onSurface
                 )
                 Text(
                     text = boardSubtitle,
                     style = MaterialTheme.typography.bodySmall,
-                    color = KlarityColors.TextSecondary
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
             
@@ -128,17 +124,10 @@ private fun AiSuggestionBanner(
         modifier = modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(12.dp))
-            .background(
-                Brush.horizontalGradient(
-                    colors = listOf(
-                        Color(0xFF0D3D3D),  // Dark teal
-                        Color(0xFF0A4040)   // Slightly lighter teal
-                    )
-                )
-            )
+            .background(MaterialTheme.colorScheme.tertiaryContainer)
             .border(
                 width = 1.dp,
-                color = KlarityColors.AccentPrimary.copy(alpha = 0.3f),
+                color = MaterialTheme.colorScheme.tertiary.copy(alpha = 0.3f),
                 shape = RoundedCornerShape(12.dp)
             )
             .padding(16.dp),
@@ -154,7 +143,7 @@ private fun AiSuggestionBanner(
             Icon(
                 imageVector = Icons.Default.Star,
                 contentDescription = "AI Suggestion",
-                tint = KlarityColors.AccentPrimary,
+                tint = MaterialTheme.colorScheme.tertiary,
                 modifier = Modifier.size(24.dp)
             )
             
@@ -165,12 +154,12 @@ private fun AiSuggestionBanner(
                     text = title,
                     style = MaterialTheme.typography.bodyMedium,
                     fontWeight = FontWeight.SemiBold,
-                    color = KlarityColors.TextPrimary
+                    color = MaterialTheme.colorScheme.onTertiaryContainer
                 )
                 Text(
                     text = description,
                     style = MaterialTheme.typography.bodySmall,
-                    color = KlarityColors.TextSecondary
+                    color = MaterialTheme.colorScheme.onTertiaryContainer.copy(alpha = 0.8f)
                 )
             }
         }
@@ -179,7 +168,7 @@ private fun AiSuggestionBanner(
         Button(
             onClick = onReviewClick,
             colors = ButtonDefaults.buttonColors(
-                containerColor = KlarityColors.AccentPrimary
+                containerColor = MaterialTheme.colorScheme.tertiary
             ),
             shape = RoundedCornerShape(8.dp),
             contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)
@@ -221,8 +210,8 @@ private fun AddColumnButton(
         modifier = modifier
             .clip(RoundedCornerShape(8.dp))
             .background(
-                if (isHovered) KlarityColors.AccentPrimary.copy(alpha = 0.2f)
-                else KlarityColors.BgTertiary
+                if (isHovered) MaterialTheme.colorScheme.primaryContainer
+                else MaterialTheme.colorScheme.surfaceVariant
             )
             .hoverable(interactionSource = interactionSource)
             .clickable(onClick = onClick)
@@ -233,14 +222,14 @@ private fun AddColumnButton(
         Icon(
             imageVector = Icons.Default.Add,
             contentDescription = "Add Column",
-            tint = if (isHovered) KlarityColors.AccentPrimary else KlarityColors.TextSecondary,
+            tint = if (isHovered) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.size(18.dp)
         )
         Text(
             text = "Add Column",
             style = MaterialTheme.typography.bodyMedium,
             fontWeight = FontWeight.Medium,
-            color = if (isHovered) KlarityColors.AccentPrimary else KlarityColors.TextSecondary
+            color = if (isHovered) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
         )
     }
 }
@@ -317,18 +306,18 @@ private fun FilterDropdownChip(
     
     val backgroundColor by animateColorAsState(
         targetValue = when {
-            isActive -> KlarityColors.AccentPrimary.copy(alpha = 0.15f)
-            isHovered -> KlarityColors.BgElevated
-            else -> KlarityColors.BgTertiary
+            isActive -> MaterialTheme.colorScheme.primaryContainer
+            isHovered -> MaterialTheme.colorScheme.surfaceVariant
+            else -> MaterialTheme.colorScheme.surface
         },
         animationSpec = tween(150)
     )
     
     val contentColor by animateColorAsState(
         targetValue = when {
-            isActive -> KlarityColors.AccentPrimary
-            isHovered -> KlarityColors.TextPrimary
-            else -> KlarityColors.TextSecondary
+            isActive -> MaterialTheme.colorScheme.primary
+            isHovered -> MaterialTheme.colorScheme.onSurface
+            else -> MaterialTheme.colorScheme.onSurfaceVariant
         },
         animationSpec = tween(150)
     )

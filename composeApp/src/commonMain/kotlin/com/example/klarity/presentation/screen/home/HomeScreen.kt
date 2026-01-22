@@ -19,7 +19,6 @@ import com.example.klarity.presentation.screen.graph.GraphScreen
 import com.example.klarity.presentation.state.HomeUiEffect
 import com.example.klarity.presentation.state.HomeUiEvent
 import com.example.klarity.presentation.state.HomeUiState
-import com.example.klarity.presentation.theme.KlarityColors
 import com.example.klarity.presentation.viewmodel.HomeViewModel
 import org.koin.compose.viewmodel.koinViewModel
 
@@ -74,7 +73,7 @@ private fun HomeLoadingScreen() {
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(KlarityColors.BgPrimary),
+            .background(MaterialTheme.colorScheme.background),
         contentAlignment = Alignment.Center
     ) {
         Column(
@@ -82,13 +81,13 @@ private fun HomeLoadingScreen() {
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             CircularProgressIndicator(
-                color = KlarityColors.AccentPrimary,
+                color = MaterialTheme.colorScheme.primary,
                 strokeWidth = 3.dp
             )
             Text(
                 text = "Loading your workspace...",
                 style = MaterialTheme.typography.bodyMedium,
-                color = KlarityColors.TextSecondary
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
     }
@@ -105,7 +104,7 @@ private fun HomeErrorScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(KlarityColors.BgPrimary),
+            .background(MaterialTheme.colorScheme.background),
         contentAlignment = Alignment.Center
     ) {
         Column(
@@ -120,19 +119,19 @@ private fun HomeErrorScreen(
             Text(
                 text = "Something went wrong",
                 style = MaterialTheme.typography.titleLarge,
-                color = KlarityColors.TextPrimary
+                color = MaterialTheme.colorScheme.onSurface
             )
             Text(
                 text = message,
                 style = MaterialTheme.typography.bodyMedium,
-                color = KlarityColors.TextSecondary,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center
             )
             if (onRetry != null) {
                 TextButton(onClick = onRetry) {
                     Text(
                         text = "Try Again",
-                        color = KlarityColors.AccentPrimary
+                        color = MaterialTheme.colorScheme.primary
                     )
                 }
             }
@@ -254,7 +253,7 @@ private fun HomeScreenContent(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(KlarityColors.BgPrimary)
+            .background(MaterialTheme.colorScheme.background)
             .onKeyEvent { event ->
                 // Command Palette shortcut: Ctrl+K
                 if (event.type == KeyEventType.KeyDown &&

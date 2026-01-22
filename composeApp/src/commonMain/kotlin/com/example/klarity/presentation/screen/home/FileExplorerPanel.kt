@@ -17,6 +17,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
@@ -34,7 +35,6 @@ import androidx.compose.ui.window.Dialog
 import com.example.klarity.domain.models.Folder
 import com.example.klarity.domain.models.Note
 import com.example.klarity.domain.models.NoteStatus
-import com.example.klarity.presentation.theme.KlarityColors
 
 /**
  * File Explorer Panel - Shows folder tree structure with full folder management
@@ -63,7 +63,7 @@ fun FileExplorerPanel(
     Surface(
         modifier = Modifier.width(220.dp).fillMaxHeight(),
         color = Color(0xFF11221F),
-        border = BorderStroke(1.dp, KlarityColors.BorderPrimary.copy(alpha = 0.5f))
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.5f))
     ) {
         Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
             // Header - Editable project name
@@ -82,13 +82,13 @@ fun FileExplorerPanel(
                             fontWeight = FontWeight.SemiBold
                         ),
                         singleLine = true,
-                        cursorBrush = SolidColor(KlarityColors.AccentAI),
+                        cursorBrush = SolidColor(MaterialTheme.colorScheme.tertiary),
                         modifier = Modifier.weight(1f),
                         decorationBox = { innerTextField ->
                             Surface(
                                 shape = RoundedCornerShape(4.dp),
-                                color = KlarityColors.BgElevated,
-                                border = BorderStroke(1.dp, KlarityColors.AccentAI)
+                                color = MaterialTheme.colorScheme.surfaceVariant,
+                                border = BorderStroke(1.dp, MaterialTheme.colorScheme.tertiary)
                             ) {
                                 Box(Modifier.padding(horizontal = 8.dp, vertical = 4.dp)) {
                                     innerTextField()
@@ -170,12 +170,12 @@ fun FileExplorerPanel(
                 Box(
                     modifier = Modifier
                         .size(8.dp)
-                        .background(KlarityColors.AccentAI, CircleShape)
+                        .background(MaterialTheme.colorScheme.tertiary, CircleShape)
                 )
                 Text(
                     "AI Indexing active...",
                     fontSize = 11.sp,
-                    color = KlarityColors.TextTertiary
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
                 )
             }
         }

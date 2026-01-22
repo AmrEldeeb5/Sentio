@@ -7,6 +7,7 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsHoveredAsState
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -18,7 +19,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.klarity.presentation.theme.KlarityColors
 
 /**
  * Slash Menu - Floating command menu for quick actions
@@ -28,8 +28,8 @@ fun SlashMenu(onDismiss: () -> Unit) {
     Surface(
         modifier = Modifier.width(320.dp),
         shape = RoundedCornerShape(12.dp),
-        color = Color(0xFF1A342F),
-        border = BorderStroke(1.dp, KlarityColors.BorderPrimary),
+        color = MaterialTheme.colorScheme.surfaceVariant,
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
         shadowElevation = 16.dp
     ) {
         Column(modifier = Modifier.padding(8.dp)) {
@@ -37,7 +37,7 @@ fun SlashMenu(onDismiss: () -> Unit) {
                 "COMMANDS",
                 fontSize = 10.sp,
                 fontWeight = FontWeight.Bold,
-                color = KlarityColors.TextTertiary,
+                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
                 letterSpacing = 1.sp,
                 modifier = Modifier.padding(horizontal = 8.dp, vertical = 6.dp)
             )
@@ -93,7 +93,7 @@ fun SlashMenuItem(
             .clickable(interactionSource = interactionSource, indication = null) { }
             .hoverable(interactionSource),
         shape = RoundedCornerShape(8.dp),
-        color = if (isActive || isHovered) Color.White.copy(alpha = 0.05f) else Color.Transparent
+        color = if (isActive || isHovered) MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f) else Color.Transparent
     ) {
         Row(
             modifier = Modifier.padding(10.dp),
@@ -103,13 +103,13 @@ fun SlashMenuItem(
             Surface(
                 modifier = Modifier.size(32.dp),
                 shape = RoundedCornerShape(6.dp),
-                color = if (isActive) KlarityColors.AccentAI.copy(alpha = 0.1f) else Color.Transparent
+                color = if (isActive) MaterialTheme.colorScheme.tertiaryContainer else Color.Transparent
             ) {
                 Box(contentAlignment = Alignment.Center) {
                     Text(
                         icon,
                         fontSize = 16.sp,
-                        color = if (isActive) KlarityColors.AccentAI else KlarityColors.TextTertiary
+                        color = if (isActive) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
             }
@@ -118,12 +118,12 @@ fun SlashMenuItem(
                     title,
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Medium,
-                    color = if (isActive) Color.White else KlarityColors.TextSecondary
+                    color = if (isActive) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 Text(
                     subtitle,
                     fontSize = 12.sp,
-                    color = KlarityColors.TextTertiary
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
                 )
             }
         }

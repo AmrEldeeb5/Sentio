@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -23,11 +24,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.klarity.presentation.theme.KlarityColors
 
 /**
  * Top Bar - Main navigation bar with view mode toggles and action buttons
@@ -41,8 +40,8 @@ fun TopBar(
 
     Surface(
         modifier = Modifier.fillMaxWidth().height(56.dp),
-        color = KlarityColors.BgSecondary,
-        border = BorderStroke(1.dp, KlarityColors.BorderPrimary.copy(alpha = 0.5f))
+        color = MaterialTheme.colorScheme.surfaceVariant,
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.3f))
     ) {
         Row(
             modifier = Modifier.fillMaxSize().padding(horizontal = 24.dp),
@@ -59,11 +58,16 @@ fun TopBar(
                     modifier = Modifier.size(24.dp),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text("K", color = KlarityColors.AccentAI, fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                    Text(
+                        "K",
+                        color = MaterialTheme.colorScheme.tertiary,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 16.sp
+                    )
                 }
                 Text(
                     "Klarity",
-                    color = Color.White,
+                    color = MaterialTheme.colorScheme.onSurface,
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold,
                     letterSpacing = (-0.5).sp
@@ -73,7 +77,7 @@ fun TopBar(
             // View Mode Toggles
             Row(
                 modifier = Modifier
-                    .background(KlarityColors.BgElevated, RoundedCornerShape(8.dp))
+                    .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(8.dp))
                     .padding(4.dp),
                 horizontalArrangement = Arrangement.spacedBy(2.dp)
             ) {
@@ -88,11 +92,16 @@ fun TopBar(
                 // Share Button
                 Button(
                     onClick = { },
-                    colors = ButtonDefaults.buttonColors(containerColor = KlarityColors.AccentAI),
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
                     shape = RoundedCornerShape(8.dp),
                     contentPadding = PaddingValues(horizontal = 20.dp, vertical = 8.dp)
                 ) {
-                    Text("Share", color = KlarityColors.BgPrimary, fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                    Text(
+                        "Share",
+                        color = MaterialTheme.colorScheme.onPrimary,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 14.sp
+                    )
                 }
 
                 // Icon Buttons

@@ -30,7 +30,6 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
-import com.example.klarity.presentation.theme.KlarityColors
 import kotlinx.datetime.*
 import kotlin.math.roundToInt
 
@@ -62,7 +61,7 @@ fun KanbanBoard(
     Row(
         modifier = modifier
             .fillMaxSize()
-            .background(KlarityColors.BgPrimary)
+            .background(MaterialTheme.colorScheme.background)
             .horizontalScroll(rememberScrollState())
             .padding(16.dp),
         horizontalArrangement = Arrangement.spacedBy(16.dp)
@@ -133,8 +132,8 @@ private fun KanbanColumnView(
     val isDropTarget = dragState.isDragging && dragState.targetColumn == column.status
     val borderColor by animateColorAsState(
         targetValue = when {
-            isDropTarget -> KlarityColors.AccentPrimary
-            isHighlighted -> KlarityColors.AccentPrimary.copy(alpha = 0.6f)
+            isDropTarget -> MaterialTheme.colorScheme.primary
+            isHighlighted -> MaterialTheme.colorScheme.primary.copy(alpha = 0.6f)
             else -> Color.Transparent
         },
         animationSpec = tween(150)
@@ -144,7 +143,7 @@ private fun KanbanColumnView(
     val borderModifier = if (isHighlighted && !isDropTarget) {
         Modifier.dashedBorder(
             width = 2.dp,
-            color = KlarityColors.AccentPrimary.copy(alpha = 0.6f),
+            color = MaterialTheme.colorScheme.primary.copy(alpha = 0.6f),
             shape = RoundedCornerShape(12.dp),
             dashLength = 8.dp,
             gapLength = 4.dp
@@ -161,7 +160,7 @@ private fun KanbanColumnView(
         modifier = modifier
             .fillMaxHeight()
             .clip(RoundedCornerShape(12.dp))
-            .background(KlarityColors.BgSecondary)
+            .background(MaterialTheme.colorScheme.surface)
             .then(borderModifier)
     ) {
         // Column Header
@@ -252,7 +251,7 @@ private fun ColumnHeader(
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .background(KlarityColors.BgTertiary)
+            .background(MaterialTheme.colorScheme.surface)
             .clickable { onCollapseToggle(!isCollapsed) }
             .padding(12.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -273,7 +272,7 @@ private fun ColumnHeader(
                 text = column.status.label,
                 style = MaterialTheme.typography.titleSmall,
                 fontWeight = FontWeight.SemiBold,
-                color = KlarityColors.TextPrimary
+                color = MaterialTheme.colorScheme.onSurface
             )
             
             // Task count badge
@@ -282,14 +281,14 @@ private fun ColumnHeader(
                     .clip(RoundedCornerShape(8.dp))
                     .background(
                         if (wipLimitExceeded) Color(0xFFFF5252).copy(alpha = 0.2f)
-                        else KlarityColors.BgElevated
+                        else MaterialTheme.colorScheme.secondary
                     )
                     .padding(horizontal = 8.dp, vertical = 2.dp)
             ) {
                 Text(
                     text = if (column.wipLimit != null) "$taskCount/${column.wipLimit}" else "$taskCount",
                     style = MaterialTheme.typography.labelSmall,
-                    color = if (wipLimitExceeded) Color(0xFFFF5252) else KlarityColors.TextSecondary
+                    color = if (wipLimitExceeded) Color(0xFFFF5252) else MaterialTheme.colorScheme.onSurface
                 )
             }
         }
@@ -306,7 +305,7 @@ private fun ColumnHeader(
                 Icon(
                     imageVector = Icons.Default.Add,
                     contentDescription = "Add task",
-                    tint = KlarityColors.TextSecondary,
+                    tint = MaterialTheme.colorScheme.onSurface,
                     modifier = Modifier.size(16.dp)
                 )
             }
@@ -315,7 +314,7 @@ private fun ColumnHeader(
             Icon(
                 imageVector = if (isCollapsed) Icons.Default.KeyboardArrowRight else Icons.Default.KeyboardArrowDown,
                 contentDescription = if (isCollapsed) "Expand" else "Collapse",
-                tint = KlarityColors.TextTertiary,
+                tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
                 modifier = Modifier.size(20.dp)
             )
         }
@@ -380,8 +379,8 @@ private fun TaskCard(
                     Modifier.shadow(
                         elevation = (8 * glowAlpha).dp,
                         shape = RoundedCornerShape(10.dp),
-                        ambientColor = KlarityColors.AccentPrimary.copy(alpha = glowAlpha),
-                        spotColor = KlarityColors.AccentPrimary.copy(alpha = glowAlpha)
+                        ambientColor = MaterialTheme.colorScheme.primary.copy(alpha = glowAlpha),
+                        spotColor = MaterialTheme.colorScheme.primary.copy(alpha = glowAlpha)
                     )
                 } else Modifier
             )
@@ -410,7 +409,7 @@ private fun TaskCard(
             .clickable(onClick = onClick),
         shape = RoundedCornerShape(10.dp),
         colors = CardDefaults.cardColors(
-            containerColor = if (isDragging) KlarityColors.BgElevated else KlarityColors.BgCard
+            containerColor = if (isDragging) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.surface
         )
     ) {
         Box(modifier = Modifier.fillMaxWidth()) {
@@ -454,8 +453,8 @@ private fun TaskCard(
                     style = MaterialTheme.typography.bodyMedium,
                     fontWeight = FontWeight.Medium,
                     color = if (task.completed || task.status == TaskStatus.DONE) 
-                        KlarityColors.TextTertiary else KlarityColors.TextPrimary,
-                    textDecoration = if (task.completed || task.status == TaskStatus.DONE) 
+                        MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f) else MaterialTheme.colorScheme.onSurface,
+                    textDecoration = if (task.completed || task.status == TaskStatus.DONE)
                         TextDecoration.LineThrough else null,
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis
@@ -466,7 +465,7 @@ private fun TaskCard(
                     Text(
                         text = task.description.take(100),
                         style = MaterialTheme.typography.bodySmall,
-                        color = KlarityColors.TextSecondary,
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f),
                         maxLines = 2,
                         overflow = TextOverflow.Ellipsis
                     )
@@ -519,7 +518,7 @@ private fun TaskCard(
                                 Text(
                                     text = "${task.linkedNoteIds.size}",
                                     style = MaterialTheme.typography.labelSmall,
-                                    color = KlarityColors.TextTertiary
+                                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f)
                                 )
                             }
                         }
@@ -538,7 +537,7 @@ private fun TaskCard(
                                     imageVector = if (task.completed || task.status == TaskStatus.DONE) 
                                         Icons.Default.Refresh else Icons.Default.Check,
                                     contentDescription = "Toggle complete",
-                                    tint = KlarityColors.AccentSecondary,
+                                    tint = MaterialTheme.colorScheme.primary,
                                     modifier = Modifier.size(14.dp)
                                 )
                             }
@@ -587,11 +586,11 @@ private fun CompletionCheckbox(
             .clip(RoundedCornerShape(4.dp))
             .border(
                 width = 1.5.dp,
-                color = if (isCompleted) KlarityColors.AccentPrimary else KlarityColors.BorderPrimary,
+                color = if (isCompleted) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
                 shape = RoundedCornerShape(4.dp)
             )
             .background(
-                if (isCompleted) KlarityColors.AccentPrimary.copy(alpha = 0.2f) 
+                if (isCompleted) MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)
                 else Color.Transparent
             )
             .clickable(
@@ -605,7 +604,7 @@ private fun CompletionCheckbox(
             Icon(
                 imageVector = Icons.Default.Check,
                 contentDescription = "Completed",
-                tint = KlarityColors.AccentPrimary,
+                tint = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.size(14.dp)
             )
         }
@@ -666,7 +665,7 @@ private fun StoryPointsBadge(
     Row(
         modifier = modifier
             .clip(RoundedCornerShape(4.dp))
-            .background(KlarityColors.BgTertiary)
+            .background(MaterialTheme.colorScheme.surface)
             .padding(horizontal = 6.dp, vertical = 2.dp),
         horizontalArrangement = Arrangement.spacedBy(4.dp),
         verticalAlignment = Alignment.CenterVertically
@@ -678,7 +677,7 @@ private fun StoryPointsBadge(
         Text(
             text = "$points",
             style = MaterialTheme.typography.labelSmall,
-            color = KlarityColors.TextSecondary,
+            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f),
             fontWeight = FontWeight.Medium
         )
     }
@@ -693,24 +692,27 @@ private fun TimerDisplay(
     isActive: Boolean,
     modifier: Modifier = Modifier
 ) {
-    Row(
-        modifier = modifier
-            .clip(RoundedCornerShape(4.dp))
-            .background(KlarityColors.TimerBg)
-            .padding(horizontal = 8.dp, vertical = 4.dp),
-        horizontalArrangement = Arrangement.spacedBy(4.dp),
-        verticalAlignment = Alignment.CenterVertically
+    Surface(
+        modifier = modifier,
+        shape = RoundedCornerShape(4.dp),
+        color = MaterialTheme.colorScheme.secondaryContainer
     ) {
-        Text(
-            text = if (isActive) "⏱️" else "⏸️",
-            fontSize = 12.sp
-        )
-        Text(
-            text = timer.formattedTime(),
-            style = MaterialTheme.typography.labelMedium,
-            color = if (isActive) KlarityColors.TimerActive else KlarityColors.TimerText,
-            fontWeight = FontWeight.Medium
-        )
+        Row(
+            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+            horizontalArrangement = Arrangement.spacedBy(4.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = if (isActive) "⏱️" else "⏸️",
+                fontSize = 12.sp
+            )
+            Text(
+                text = timer.formattedTime(),
+                style = MaterialTheme.typography.labelMedium,
+                color = if (isActive) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSecondaryContainer,
+                fontWeight = FontWeight.Medium
+            )
+        }
     }
 }
 
@@ -720,8 +722,8 @@ private fun DueDateBadge(
     isOverdue: Boolean,
     modifier: Modifier = Modifier
 ) {
-    val color = if (isOverdue) Color(0xFFFF5252) else KlarityColors.TextSecondary
-    
+    val color = if (isOverdue) Color(0xFFFF5252) else MaterialTheme.colorScheme.onSurface
+
     Row(
         modifier = modifier
             .clip(RoundedCornerShape(4.dp))
@@ -829,7 +831,7 @@ private fun SubtaskProgress(
         Text(
             text = "✓",
             fontSize = 12.sp,
-            color = KlarityColors.AccentSecondary
+            color = MaterialTheme.colorScheme.primary
         )
         
         LinearProgressIndicator(
@@ -838,14 +840,14 @@ private fun SubtaskProgress(
                 .weight(1f)
                 .height(4.dp)
                 .clip(RoundedCornerShape(2.dp)),
-            color = KlarityColors.AccentSecondary,
-            trackColor = KlarityColors.BgTertiary,
+            color = MaterialTheme.colorScheme.primary,
+            trackColor = MaterialTheme.colorScheme.surfaceVariant,
         )
         
         Text(
             text = "$completed/$total",
             style = MaterialTheme.typography.labelSmall,
-            color = KlarityColors.TextTertiary
+            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f)
         )
     }
 }
@@ -855,19 +857,19 @@ private fun AssigneeAvatar(
     name: String,
     modifier: Modifier = Modifier
 ) {
-    Box(
-        modifier = modifier
-            .size(24.dp)
-            .clip(CircleShape)
-            .background(KlarityColors.AccentPrimary.copy(alpha = 0.2f)),
-        contentAlignment = Alignment.Center
+    Surface(
+        modifier = modifier.size(24.dp),
+        shape = CircleShape,
+        color = MaterialTheme.colorScheme.primaryContainer
     ) {
-        Text(
-            text = name.take(1).uppercase(),
-            style = MaterialTheme.typography.labelSmall,
-            color = KlarityColors.AccentPrimary,
-            fontWeight = FontWeight.Bold
-        )
+        Box(contentAlignment = Alignment.Center) {
+            Text(
+                text = name.take(1).uppercase(),
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onPrimaryContainer,
+                fontWeight = FontWeight.Bold
+            )
+        }
     }
 }
 
@@ -880,7 +882,7 @@ private fun DropZoneIndicator(
             .fillMaxWidth()
             .height(4.dp)
             .clip(RoundedCornerShape(2.dp))
-            .background(KlarityColors.AccentPrimary)
+            .background(MaterialTheme.colorScheme.primary)
     )
 }
 
@@ -901,13 +903,13 @@ private fun AddTaskButton(
         Icon(
             imageVector = Icons.Default.Add,
             contentDescription = "Add task",
-            tint = KlarityColors.TextTertiary,
+            tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f),
             modifier = Modifier.size(16.dp)
         )
         Text(
             text = "Add task",
             style = MaterialTheme.typography.bodySmall,
-            color = KlarityColors.TextTertiary
+            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f)
         )
     }
 }
@@ -929,7 +931,7 @@ fun EmptyColumnPlaceholder(
             .height(100.dp)
             .dashedBorder(
                 width = 1.5.dp,
-                color = KlarityColors.TextTertiary.copy(alpha = 0.4f),
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f),
                 shape = RoundedCornerShape(8.dp),
                 dashLength = 8.dp,
                 gapLength = 4.dp
@@ -946,13 +948,13 @@ fun EmptyColumnPlaceholder(
             Icon(
                 imageVector = Icons.Default.Add,
                 contentDescription = "Add task",
-                tint = KlarityColors.TextTertiary.copy(alpha = 0.6f),
+                tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
                 modifier = Modifier.size(24.dp)
             )
             Text(
                 text = "Add task",
                 style = MaterialTheme.typography.bodySmall,
-                color = KlarityColors.TextTertiary.copy(alpha = 0.6f)
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
             )
         }
     }
@@ -1003,7 +1005,7 @@ private fun AddColumnButton(
             .clip(RoundedCornerShape(12.dp))
             .border(
                 width = 2.dp,
-                color = KlarityColors.TextTertiary.copy(alpha = 0.3f),
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f),
                 shape = RoundedCornerShape(12.dp)
             )
             .clickable(onClick = onClick)
@@ -1014,14 +1016,14 @@ private fun AddColumnButton(
         Icon(
             imageVector = Icons.Default.Add,
             contentDescription = "Add column",
-            tint = KlarityColors.TextTertiary,
+            tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f),
             modifier = Modifier.size(32.dp)
         )
         Spacer(modifier = Modifier.height(8.dp))
         Text(
             text = "Add Column",
             style = MaterialTheme.typography.bodyMedium,
-            color = KlarityColors.TextTertiary
+            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f)
         )
     }
 }

@@ -26,7 +26,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.klarity.domain.models.Note
-import com.example.klarity.presentation.theme.KlarityColors
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 
@@ -75,8 +74,8 @@ fun NotesListPane(
     modifier: Modifier = Modifier
 ) {
     // Use centralized colors from theme
-    val luminousTeal = KlarityColors.LuminousTeal
-    val electricMint = KlarityColors.ElectricMint
+    val luminousTeal = MaterialTheme.colorScheme.primary
+    val electricMint = MaterialTheme.colorScheme.tertiary
 
     var sortOption by remember { mutableStateOf(NoteSortOption.UPDATED) }
     var groupOption by remember { mutableStateOf(NoteGroupOption.NONE) }
@@ -109,7 +108,7 @@ fun NotesListPane(
     Column(
         modifier = modifier
             .fillMaxSize()
-            .background(KlarityColors.BgSecondary)
+            .background(MaterialTheme.colorScheme.surfaceVariant)
             .padding(start = 1.dp) // Subtle left border effect
     ) {
         // Header with search and actions
@@ -161,7 +160,7 @@ fun NotesListPane(
         }
         
         HorizontalDivider(
-            color = KlarityColors.BorderPrimary.copy(alpha = 0.3f),
+            color = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f),
             thickness = 1.dp
         )
         
@@ -217,7 +216,7 @@ private fun NotesListHeader(
             // Title
             Text(
                 text = "Notes",
-                color = KlarityColors.TextPrimary,
+                color = MaterialTheme.colorScheme.onSurface,
                 fontSize = 18.sp,
                 fontWeight = FontWeight.SemiBold
             )
@@ -253,7 +252,7 @@ private fun NotesListHeader(
         
         // Search field
         Surface(
-            color = KlarityColors.BgTertiary,
+            color = MaterialTheme.colorScheme.surface,
             shape = RoundedCornerShape(8.dp)
         ) {
             Row(
@@ -266,7 +265,7 @@ private fun NotesListHeader(
                 Icon(
                     Icons.Default.Search,
                     contentDescription = null,
-                    tint = KlarityColors.TextTertiary,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
                     modifier = Modifier.size(16.dp)
                 )
                 
@@ -274,7 +273,7 @@ private fun NotesListHeader(
                     value = searchQuery,
                     onValueChange = onSearchQueryChange,
                     textStyle = androidx.compose.ui.text.TextStyle(
-                        color = KlarityColors.TextPrimary,
+                        color = MaterialTheme.colorScheme.onSurface,
                         fontSize = 13.sp
                     ),
                     singleLine = true,
@@ -284,7 +283,7 @@ private fun NotesListHeader(
                             if (searchQuery.isEmpty()) {
                                 Text(
                                     text = "Search notes...",
-                                    color = KlarityColors.TextTertiary,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
                                     fontSize = 13.sp
                                 )
                             }
@@ -301,7 +300,7 @@ private fun NotesListHeader(
                         Icon(
                             Icons.Default.Close,
                             contentDescription = "Clear",
-                            tint = KlarityColors.TextTertiary,
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
                             modifier = Modifier.size(14.dp)
                         )
                     }
@@ -333,10 +332,10 @@ private fun NotesListHeader(
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     TextButton(onClick = { /* Bulk delete */ }) {
-                        Text("Delete", color = Color(0xFFFF6B6B), fontSize = 12.sp)
+                        Text("Delete", color = MaterialTheme.colorScheme.error, fontSize = 12.sp)
                     }
                     TextButton(onClick = { /* Bulk tag */ }) {
-                        Text("Tag", color = KlarityColors.TextSecondary, fontSize = 12.sp)
+                        Text("Tag", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 12.sp)
                     }
                 }
             }
@@ -345,7 +344,7 @@ private fun NotesListHeader(
         // Note count
         Text(
             text = "$noteCount notes",
-            color = KlarityColors.TextTertiary,
+            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
             fontSize = 11.sp,
             modifier = Modifier.padding(top = 6.dp)
         )
@@ -385,7 +384,7 @@ private fun NotesListToolbar(
             DropdownMenu(
                 expanded = showSortMenu,
                 onDismissRequest = { onSortSelected(sortOption) },
-                containerColor = KlarityColors.BgElevated
+                containerColor = MaterialTheme.colorScheme.surfaceVariant
             ) {
                 NoteSortOption.entries.forEach { option ->
                     DropdownMenuItem(
@@ -397,7 +396,7 @@ private fun NotesListToolbar(
                                 Text(text = option.icon, fontSize = 14.sp)
                                 Text(
                                     text = option.label,
-                                    color = if (option == sortOption) luminousTeal else KlarityColors.TextPrimary,
+                                    color = if (option == sortOption) luminousTeal else MaterialTheme.colorScheme.onSurface,
                                     fontSize = 13.sp
                                 )
                             }
@@ -419,7 +418,7 @@ private fun NotesListToolbar(
             DropdownMenu(
                 expanded = showGroupMenu,
                 onDismissRequest = { onGroupSelected(groupOption) },
-                containerColor = KlarityColors.BgElevated
+                containerColor = MaterialTheme.colorScheme.surfaceVariant
             ) {
                 NoteGroupOption.entries.forEach { option ->
                     DropdownMenuItem(
@@ -431,7 +430,7 @@ private fun NotesListToolbar(
                                 Text(text = option.icon, fontSize = 14.sp)
                                 Text(
                                     text = option.label,
-                                    color = if (option == groupOption) luminousTeal else KlarityColors.TextPrimary,
+                                    color = if (option == groupOption) luminousTeal else MaterialTheme.colorScheme.onSurface,
                                     fontSize = 13.sp
                                 )
                             }
@@ -463,7 +462,7 @@ private fun ToolbarButton(
     val isHovered by interactionSource.collectIsHoveredAsState()
     
     val bgColor by animateColorAsState(
-        targetValue = if (isHovered) KlarityColors.BgElevated else KlarityColors.BgTertiary.copy(alpha = 0.6f),
+        targetValue = if (isHovered) MaterialTheme.colorScheme.surfaceVariant else MaterialTheme.colorScheme.surface.copy(alpha = 0.6f),
         animationSpec = tween(100),
         label = "toolbarBtnBg"
     )
@@ -476,7 +475,7 @@ private fun ToolbarButton(
             .hoverable(interactionSource)
             .border(
                 width = 1.dp,
-                color = if (isHovered) KlarityColors.BorderPrimary else Color.Transparent,
+                color = if (isHovered) MaterialTheme.colorScheme.outline else Color.Transparent,
                 shape = RoundedCornerShape(16.dp)
             )
     ) {
@@ -488,14 +487,14 @@ private fun ToolbarButton(
             Text(text = icon, fontSize = 12.sp)
             Text(
                 text = label,
-                color = if (isHovered) KlarityColors.TextPrimary else KlarityColors.TextSecondary,
+                color = if (isHovered) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant,
                 fontSize = 12.sp,
                 fontWeight = FontWeight.Medium
             )
             Icon(
                 Icons.Default.ArrowDropDown,
                 contentDescription = null,
-                tint = KlarityColors.TextTertiary,
+                tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
                 modifier = Modifier.size(14.dp)
             )
         }
@@ -515,7 +514,7 @@ private fun AIClusterToggle(
         onClick = onToggle,
         color = when {
             enabled -> electricMint.copy(alpha = 0.15f)
-            isHovered -> KlarityColors.BgElevated
+            isHovered -> MaterialTheme.colorScheme.surfaceVariant
             else -> Color.Transparent
         },
         shape = RoundedCornerShape(6.dp),
@@ -529,7 +528,7 @@ private fun AIClusterToggle(
             Text(text = "🧠", fontSize = 12.sp)
             Text(
                 text = "AI Topics",
-                color = if (enabled) electricMint else KlarityColors.TextSecondary,
+                color = if (enabled) electricMint else MaterialTheme.colorScheme.onSurfaceVariant,
                 fontSize = 11.sp,
                 fontWeight = if (enabled) FontWeight.Medium else FontWeight.Normal
             )
@@ -556,12 +555,12 @@ private fun TagFilterRow(
             
             Surface(
                 onClick = { onTagToggle(tag) },
-                color = if (isSelected) luminousTeal.copy(alpha = 0.15f) else KlarityColors.BgTertiary,
+                color = if (isSelected) luminousTeal.copy(alpha = 0.15f) else MaterialTheme.colorScheme.surface,
                 shape = RoundedCornerShape(4.dp)
             ) {
                 Text(
                     text = "#$tag",
-                    color = if (isSelected) luminousTeal else KlarityColors.TextSecondary,
+                    color = if (isSelected) luminousTeal else MaterialTheme.colorScheme.onSurfaceVariant,
                     fontSize = 11.sp,
                     modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
                 )
@@ -571,7 +570,7 @@ private fun TagFilterRow(
         if (allTags.size > 10) {
             Text(
                 text = "+${allTags.size - 10} more",
-                color = KlarityColors.TextTertiary,
+                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
                 fontSize = 11.sp
             )
         }
@@ -599,7 +598,7 @@ private fun NoteListItem(
         targetValue = when {
             isSelected -> luminousTeal.copy(alpha = 0.15f)
             isMultiSelected -> luminousTeal.copy(alpha = 0.08f)
-            isHovered -> KlarityColors.BgElevated
+            isHovered -> MaterialTheme.colorScheme.surfaceVariant
             else -> Color.Transparent
         },
         animationSpec = tween(100),
@@ -646,7 +645,7 @@ private fun NoteListItem(
                     onCheckedChange = { onSelect(true, false) },
                     colors = CheckboxDefaults.colors(
                         checkedColor = luminousTeal,
-                        uncheckedColor = KlarityColors.TextTertiary
+                        uncheckedColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
                     ),
                     modifier = Modifier.size(20.dp)
                 )
@@ -677,7 +676,7 @@ private fun NoteListItem(
                     
                     Text(
                         text = displayTitle,
-                        color = if (isSelected) luminousTeal else KlarityColors.TextPrimary,
+                        color = if (isSelected) luminousTeal else MaterialTheme.colorScheme.onSurface,
                         fontSize = 14.sp,
                         fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Medium,
                         maxLines = 1,
@@ -689,7 +688,7 @@ private fun NoteListItem(
                 if (note.content.isNotEmpty()) {
                     Text(
                         text = note.content.take(80).replace("\n", " "),
-                        color = KlarityColors.TextSecondary,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                         fontSize = 11.sp,
                         maxLines = 2,
                         overflow = TextOverflow.Ellipsis,
@@ -710,7 +709,7 @@ private fun NoteListItem(
                         note.tags.take(2).forEach { tag ->
                             Text(
                                 text = "#$tag",
-                                color = KlarityColors.TextTertiary,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
                                 fontSize = 10.sp
                             )
                         }
@@ -719,7 +718,7 @@ private fun NoteListItem(
                     // Time
                     Text(
                         text = formatTime(note.updatedAt),
-                        color = KlarityColors.TextTertiary,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
                         fontSize = 10.sp
                     )
                 }
@@ -737,7 +736,7 @@ private fun NoteListItem(
                     QuickActionIcon(
                         icon = if (note.isPinned) "📍" else "📌",
                         onClick = onTogglePin,
-                        tint = if (note.isPinned) luminousTeal else KlarityColors.TextTertiary
+                        tint = if (note.isPinned) luminousTeal else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
                     )
                     QuickActionIcon(
                         icon = "🤖",
@@ -747,7 +746,7 @@ private fun NoteListItem(
                     QuickActionIcon(
                         icon = "🗑️",
                         onClick = onDelete,
-                        tint = Color(0xFFFF6B6B)
+                        tint = MaterialTheme.colorScheme.error
                     )
                 }
             }

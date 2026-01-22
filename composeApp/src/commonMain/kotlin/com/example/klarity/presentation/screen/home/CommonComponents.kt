@@ -7,6 +7,7 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsHoveredAsState
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -18,7 +19,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.klarity.presentation.theme.KlarityColors
 
 /**
  * Common UI components used across the home screen
@@ -40,23 +40,27 @@ fun ViewModeButton(
             .hoverable(interactionSource),
         shape = RoundedCornerShape(6.dp),
         color = when {
-            isSelected -> KlarityColors.BgSecondary
-            isHovered -> Color.White.copy(alpha = 0.05f)
+            isSelected -> MaterialTheme.colorScheme.primaryContainer
+            isHovered -> MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
             else -> Color.Transparent
         },
-        border = if (isSelected) BorderStroke(1.dp, Color.White.copy(alpha = 0.05f)) else null
+        border = if (isSelected) BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.3f)) else null
     ) {
         Row(
             modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(6.dp)
         ) {
-            Text(icon, fontSize = 12.sp, color = if (isSelected) Color.White else KlarityColors.TextTertiary)
+            Text(
+                icon,
+                fontSize = 12.sp,
+                color = if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant
+            )
             Text(
                 label,
                 fontSize = 12.sp,
                 fontWeight = FontWeight.Medium,
-                color = if (isSelected) Color.White else KlarityColors.TextTertiary
+                color = if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
     }
@@ -78,14 +82,22 @@ fun IconActionButton(
             .hoverable(interactionSource),
         shape = RoundedCornerShape(8.dp),
         color = when {
-            isActive -> KlarityColors.AccentAI.copy(alpha = 0.2f)
-            isHovered -> KlarityColors.BgElevated
-            else -> KlarityColors.BgElevated
+            isActive -> MaterialTheme.colorScheme.tertiaryContainer
+            isHovered -> MaterialTheme.colorScheme.surfaceVariant
+            else -> MaterialTheme.colorScheme.surfaceVariant
         },
-        border = BorderStroke(1.dp, if (isActive) KlarityColors.AccentAI.copy(alpha = 0.5f) else Color.White.copy(alpha = 0.05f))
+        border = BorderStroke(
+            1.dp,
+            if (isActive) MaterialTheme.colorScheme.tertiary.copy(alpha = 0.5f)
+            else MaterialTheme.colorScheme.outline.copy(alpha = 0.3f)
+        )
     ) {
         Box(contentAlignment = Alignment.Center) {
-            Text(icon, fontSize = 16.sp, color = if (isActive) KlarityColors.AccentAI else Color.White)
+            Text(
+                icon,
+                fontSize = 16.sp,
+                color = if (isActive) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.onSurface
+            )
         }
     }
 }
@@ -101,10 +113,10 @@ fun SmallIconButton(icon: String, onClick: () -> Unit) {
             .clickable(interactionSource = interactionSource, indication = null, onClick = onClick)
             .hoverable(interactionSource),
         shape = RoundedCornerShape(4.dp),
-        color = if (isHovered) KlarityColors.BgElevated else Color.Transparent
+        color = if (isHovered) MaterialTheme.colorScheme.surfaceVariant else Color.Transparent
     ) {
         Box(contentAlignment = Alignment.Center) {
-            Text(icon, fontSize = 14.sp, color = KlarityColors.TextTertiary)
+            Text(icon, fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
     }
 }
@@ -126,11 +138,11 @@ fun NavItem(
             .hoverable(interactionSource),
         shape = RoundedCornerShape(8.dp),
         color = when {
-            isActive -> KlarityColors.BgElevated
-            isHovered -> KlarityColors.BgElevated.copy(alpha = 0.8f)
+            isActive -> MaterialTheme.colorScheme.surfaceVariant
+            isHovered -> MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
             else -> Color.Transparent
         },
-        border = if (isActive) BorderStroke(1.dp, Color.White.copy(alpha = 0.05f)) else null
+        border = if (isActive) BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.3f)) else null
     ) {
         Row(
             modifier = Modifier.padding(horizontal = 12.dp, vertical = 10.dp),
@@ -144,20 +156,20 @@ fun NavItem(
                 Text(
                     icon,
                     fontSize = 18.sp,
-                    color = if (isActive) KlarityColors.AccentAI else KlarityColors.TextTertiary
+                    color = if (isActive) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 Text(
                     label,
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Medium,
-                    color = if (isActive || isHovered) Color.White else KlarityColors.TextSecondary
+                    color = if (isActive || isHovered) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
             if (shortcut != null && (isActive || isHovered)) {
                 Text(
                     shortcut,
                     fontSize = 10.sp,
-                    color = KlarityColors.TextTertiary
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
                 )
             }
         }

@@ -17,6 +17,11 @@ CREATE INDEX note_updatedAt ON Note(updatedAt);
 CREATE INDEX note_isPinned ON Note(isPinned);
 CREATE INDEX note_status ON Note(status);
 
+-- Composite indexes for common query patterns
+CREATE INDEX note_pinned_updated ON Note(isPinned, updatedAt DESC);
+CREATE INDEX note_favorite_updated ON Note(isFavorite, updatedAt DESC);
+CREATE INDEX note_folder_updated ON Note(folderId, updatedAt DESC);
+
 selectAll:
 SELECT * FROM Note ORDER BY updatedAt DESC;
 

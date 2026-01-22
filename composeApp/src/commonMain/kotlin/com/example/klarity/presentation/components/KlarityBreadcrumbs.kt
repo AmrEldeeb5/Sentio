@@ -20,7 +20,6 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.klarity.presentation.theme.KlarityColors
 
 /**
  * Shared Breadcrumbs component for navigation hierarchy display.
@@ -69,7 +68,7 @@ fun KlarityBreadcrumbs(
 private fun BreadcrumbSeparator() {
     Text(
         text = "/",
-        color = KlarityColors.TextTertiary,
+        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
         fontSize = 12.sp,
         modifier = Modifier.padding(horizontal = 2.dp)
     )
@@ -88,9 +87,9 @@ private fun BreadcrumbSegment(
     Text(
         text = text,
         color = when {
-            isLast -> KlarityColors.TextPrimary
-            isHovered -> KlarityColors.AccentAI
-            else -> KlarityColors.TextSecondary
+            isLast -> MaterialTheme.colorScheme.onSurface
+            isHovered -> MaterialTheme.colorScheme.tertiary
+            else -> MaterialTheme.colorScheme.onSurfaceVariant
         },
         fontSize = 13.sp,
         fontWeight = if (isLast) FontWeight.Medium else FontWeight.Normal,
@@ -107,7 +106,7 @@ private fun BreadcrumbSegment(
                         .clip(RoundedCornerShape(4.dp))
                         .then(
                             if (isHovered) {
-                                Modifier.background(KlarityColors.BgElevated)
+                                Modifier.background(MaterialTheme.colorScheme.surfaceVariant)
                             } else Modifier
                         )
                         .padding(horizontal = 4.dp, vertical = 2.dp)
@@ -150,7 +149,7 @@ fun EditorBreadcrumbs(
             onClick = { onProjectClick?.invoke() }
         )
 
-        Text("/", color = KlarityColors.BorderPrimary, fontSize = 14.sp)
+        Text("/", color = MaterialTheme.colorScheme.outline, fontSize = 14.sp)
 
         ClickableBreadcrumbItem(
             text = folderName,
@@ -158,14 +157,14 @@ fun EditorBreadcrumbs(
             onClick = { onFolderClick?.invoke() }
         )
 
-        Text("/", color = KlarityColors.BorderPrimary, fontSize = 14.sp)
+        Text("/", color = MaterialTheme.colorScheme.outline, fontSize = 14.sp)
 
         // Last item is never clickable - it's the current location
         Text(
             text = itemName,
             fontSize = 14.sp,
             fontWeight = FontWeight.Medium,
-            color = KlarityColors.TextPrimary
+            color = MaterialTheme.colorScheme.onSurface
         )
     }
 }
@@ -184,8 +183,8 @@ private fun ClickableBreadcrumbItem(
         fontSize = 14.sp,
         fontWeight = FontWeight.Normal,
         color = when {
-            isHovered -> KlarityColors.AccentAI
-            else -> KlarityColors.TextTertiary
+            isHovered -> MaterialTheme.colorScheme.tertiary
+            else -> MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
         },
         modifier = if (isClickable) {
             Modifier

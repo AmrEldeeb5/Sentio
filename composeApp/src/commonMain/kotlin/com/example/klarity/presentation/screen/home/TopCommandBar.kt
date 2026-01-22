@@ -31,7 +31,6 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.klarity.presentation.theme.KlarityColors
 
 /**
  * Sync status indicator
@@ -74,12 +73,12 @@ fun TopCommandBar(
     modifier: Modifier = Modifier
 ) {
     // Use centralized theme colors instead of hardcoded values
-    val luminousTeal = KlarityColors.LuminousTeal
-    val electricMint = KlarityColors.ElectricMint
+    val luminousTeal = MaterialTheme.colorScheme.primary
+    val electricMint = MaterialTheme.colorScheme.tertiary
 
     Surface(
         modifier = modifier.fillMaxWidth(),
-        color = KlarityColors.BgSecondary.copy(alpha = 0.95f)
+        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.95f)
     ) {
         Row(
             modifier = Modifier
@@ -162,7 +161,7 @@ private fun Breadcrumbs(path: List<String>) {
             if (index > 0) {
                 Text(
                     text = "/",
-                    color = KlarityColors.TextTertiary,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
                     fontSize = 12.sp
                 )
             }
@@ -173,9 +172,9 @@ private fun Breadcrumbs(path: List<String>) {
             Text(
                 text = item,
                 color = if (index == path.lastIndex) 
-                    KlarityColors.TextPrimary 
-                else 
-                    KlarityColors.TextSecondary,
+                    MaterialTheme.colorScheme.onSurface
+                else
+                    MaterialTheme.colorScheme.onSurfaceVariant,
                 fontSize = 13.sp,
                 fontWeight = if (index == path.lastIndex) FontWeight.Medium else FontWeight.Normal,
                 modifier = Modifier
@@ -183,7 +182,7 @@ private fun Breadcrumbs(path: List<String>) {
                     .clip(RoundedCornerShape(4.dp))
                     .then(
                         if (isHovered && index < path.lastIndex) {
-                            Modifier.background(KlarityColors.BgElevated)
+                            Modifier.background(MaterialTheme.colorScheme.surfaceVariant)
                         } else Modifier
                     )
                     .padding(horizontal = 4.dp, vertical = 2.dp)
@@ -221,9 +220,9 @@ private fun OmniBar(
     
     val bgColor by animateColorAsState(
         targetValue = when {
-            isFocused -> KlarityColors.BgElevated
-            isHovered -> KlarityColors.BgTertiary.copy(alpha = 0.9f)
-            else -> KlarityColors.BgTertiary.copy(alpha = 0.7f)
+            isFocused -> MaterialTheme.colorScheme.surfaceVariant
+            isHovered -> MaterialTheme.colorScheme.surface.copy(alpha = 0.9f)
+            else -> MaterialTheme.colorScheme.surface.copy(alpha = 0.7f)
         },
         animationSpec = tween(150),
         label = "bgColor"
@@ -232,7 +231,7 @@ private fun OmniBar(
     val borderColor by animateColorAsState(
         targetValue = when {
             isFocused -> luminousTeal.copy(alpha = 0.5f)
-            isHovered -> KlarityColors.BorderPrimary
+            isHovered -> MaterialTheme.colorScheme.outline
             else -> Color.Transparent
         },
         animationSpec = tween(150),
@@ -268,7 +267,7 @@ private fun OmniBar(
             Icon(
                 Icons.Default.Search,
                 contentDescription = null,
-                tint = if (isFocused) luminousTeal else KlarityColors.TextTertiary,
+                tint = if (isFocused) luminousTeal else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
                 modifier = Modifier.size(18.dp)
             )
             
@@ -276,7 +275,7 @@ private fun OmniBar(
                 value = query,
                 onValueChange = onQueryChange,
                 textStyle = TextStyle(
-                    color = KlarityColors.TextPrimary,
+                    color = MaterialTheme.colorScheme.onSurface,
                     fontSize = 14.sp
                 ),
                 cursorBrush = SolidColor(luminousTeal),
@@ -289,7 +288,7 @@ private fun OmniBar(
                         if (query.isEmpty()) {
                             Text(
                                 text = "Search or type a command...",
-                                color = KlarityColors.TextTertiary,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
                                 fontSize = 14.sp
                             )
                         }
@@ -312,12 +311,12 @@ private fun OmniBar(
 @Composable
 private fun KeyBadge(key: String) {
     Surface(
-        color = KlarityColors.BgElevated,
+        color = MaterialTheme.colorScheme.surfaceVariant,
         shape = RoundedCornerShape(4.dp)
     ) {
         Text(
             text = key,
-            color = KlarityColors.TextTertiary,
+            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
             fontSize = 11.sp,
             fontWeight = FontWeight.Medium,
             modifier = Modifier.padding(horizontal = 6.dp, vertical = 3.dp)
@@ -373,7 +372,7 @@ private fun AIModelIndicator(
     val isHovered by interactionSource.collectIsHoveredAsState()
     
     Surface(
-        color = if (isHovered) KlarityColors.BgElevated else Color.Transparent,
+        color = if (isHovered) MaterialTheme.colorScheme.surfaceVariant else Color.Transparent,
         shape = RoundedCornerShape(6.dp),
         modifier = Modifier.hoverable(interactionSource)
     ) {
@@ -391,14 +390,14 @@ private fun AIModelIndicator(
             
             Text(
                 text = modelName,
-                color = KlarityColors.TextSecondary,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 fontSize = 11.sp,
                 fontWeight = FontWeight.Medium
             )
             
             Text(
                 text = "T:${String.format("%.1f", temperature)}",
-                color = KlarityColors.TextTertiary,
+                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
                 fontSize = 10.sp
             )
         }
@@ -413,8 +412,8 @@ private fun SyncStatusIndicator(
     val statusColor = when (status) {
         SyncStatus.SYNCED -> luminousTeal
         SyncStatus.SYNCING -> Color(0xFFFFA500) // Orange
-        SyncStatus.OFFLINE -> KlarityColors.TextTertiary
-        SyncStatus.ERROR -> Color(0xFFFF4444) // Red
+        SyncStatus.OFFLINE -> MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+        SyncStatus.ERROR -> MaterialTheme.colorScheme.error
     }
     
     val statusIcon = when (status) {
@@ -462,7 +461,7 @@ private fun ThemeToggle(
     
     Surface(
         onClick = { onThemeChange(nextTheme) },
-        color = if (isHovered) KlarityColors.BgElevated else Color.Transparent,
+        color = if (isHovered) MaterialTheme.colorScheme.surfaceVariant else Color.Transparent,
         shape = RoundedCornerShape(6.dp),
         modifier = Modifier.hoverable(interactionSource)
     ) {
@@ -473,7 +472,7 @@ private fun ThemeToggle(
             Icon(
                 icon,
                 contentDescription = "Toggle theme",
-                tint = KlarityColors.TextSecondary,
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.size(18.dp)
             )
         }
@@ -487,7 +486,7 @@ private fun ProfileButton() {
     
     Surface(
         onClick = { /* Open profile menu */ },
-        color = if (isHovered) KlarityColors.BgElevated else KlarityColors.BgTertiary,
+        color = if (isHovered) MaterialTheme.colorScheme.surfaceVariant else MaterialTheme.colorScheme.surface,
         shape = CircleShape,
         modifier = Modifier.hoverable(interactionSource)
     ) {
@@ -574,7 +573,7 @@ fun CommandPalette(
                         indication = null,
                         onClick = {} // Prevent click-through
                     ),
-                color = KlarityColors.BgSecondary,
+                color = MaterialTheme.colorScheme.surfaceVariant,
                 shape = RoundedCornerShape(16.dp),
                 shadowElevation = 24.dp
             ) {
@@ -634,7 +633,7 @@ private fun CommandPaletteContent(
     ) {
         // Search input
         Surface(
-            color = KlarityColors.BgTertiary,
+            color = MaterialTheme.colorScheme.surface,
             shape = RoundedCornerShape(12.dp),
             modifier = Modifier.fillMaxWidth()
         ) {
@@ -654,7 +653,7 @@ private fun CommandPaletteContent(
                     value = searchQuery,
                     onValueChange = { searchQuery = it },
                     textStyle = TextStyle(
-                        color = KlarityColors.TextPrimary,
+                        color = MaterialTheme.colorScheme.onSurface,
                         fontSize = 15.sp
                     ),
                     cursorBrush = SolidColor(luminousTeal),
@@ -685,7 +684,7 @@ private fun CommandPaletteContent(
                             if (searchQuery.isEmpty()) {
                                 Text(
                                     text = "Type a command or search…",
-                                    color = KlarityColors.TextTertiary,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
                                     fontSize = 15.sp
                                 )
                             }
@@ -710,7 +709,7 @@ private fun CommandPaletteContent(
                 // Category header
                 Text(
                     text = category,
-                    color = KlarityColors.TextTertiary,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
                     fontSize = 11.sp,
                     fontWeight = FontWeight.SemiBold,
                     modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)
@@ -746,7 +745,7 @@ private fun CommandItemRow(
     val bgColor by animateColorAsState(
         targetValue = when {
             isSelected -> luminousTeal.copy(alpha = 0.15f)
-            isHovered -> KlarityColors.BgElevated
+            isHovered -> MaterialTheme.colorScheme.surfaceVariant
             else -> Color.Transparent
         },
         animationSpec = tween(100),
@@ -779,7 +778,7 @@ private fun CommandItemRow(
                 
                 Text(
                     text = command.title,
-                    color = if (isSelected) luminousTeal else KlarityColors.TextPrimary,
+                    color = if (isSelected) luminousTeal else MaterialTheme.colorScheme.onSurface,
                     fontSize = 14.sp,
                     fontWeight = if (isSelected) FontWeight.Medium else FontWeight.Normal
                 )

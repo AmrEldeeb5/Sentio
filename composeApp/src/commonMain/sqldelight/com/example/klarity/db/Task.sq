@@ -37,6 +37,12 @@ CREATE INDEX task_columnOrder ON TaskEntity(columnOrder);
 CREATE INDEX task_createdAt ON TaskEntity(createdAt);
 CREATE INDEX task_updatedAt ON TaskEntity(updatedAt);
 
+-- Composite indexes for common query patterns (performance boost)
+CREATE INDEX task_status_order ON TaskEntity(status, columnOrder ASC);
+CREATE INDEX task_priority_status ON TaskEntity(priority, status);
+CREATE INDEX task_completed_updated ON TaskEntity(completed, updatedAt DESC);
+CREATE INDEX task_dueDate_status ON TaskEntity(dueDate, status);
+
 -- Select all tasks ordered by column order
 selectAll:
 SELECT * FROM TaskEntity ORDER BY columnOrder ASC;

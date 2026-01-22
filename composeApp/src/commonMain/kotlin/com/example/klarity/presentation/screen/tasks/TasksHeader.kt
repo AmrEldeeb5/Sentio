@@ -19,7 +19,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -47,7 +46,7 @@ fun TasksHeader(
         modifier = modifier
             .fillMaxWidth()
             .height(56.dp)
-            .background(KlarityColors.BgSecondary)
+            .background(MaterialTheme.colorScheme.surfaceVariant)
             .padding(horizontal = 16.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
@@ -88,21 +87,14 @@ private fun LogoSection(
             modifier = Modifier
                 .size(32.dp)
                 .clip(RoundedCornerShape(8.dp))
-                .background(
-                    Brush.linearGradient(
-                        colors = listOf(
-                            KlarityColors.AccentPrimary,
-                            KlarityColors.AccentSecondary
-                        )
-                    )
-                ),
+                .background(MaterialTheme.colorScheme.primaryContainer),
             contentAlignment = Alignment.Center
         ) {
             Text(
                 text = "K",
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
-                color = KlarityColors.BgPrimary
+                color = MaterialTheme.colorScheme.onPrimaryContainer
             )
         }
         
@@ -111,7 +103,7 @@ private fun LogoSection(
             text = "Klarity",
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.SemiBold,
-            color = KlarityColors.TextPrimary
+            color = MaterialTheme.colorScheme.onSurface
         )
     }
 }
@@ -137,7 +129,7 @@ private fun ViewModeTabs(
     Row(
         modifier = modifier
             .clip(RoundedCornerShape(8.dp))
-            .background(KlarityColors.BgTertiary)
+            .background(MaterialTheme.colorScheme.surface)
             .padding(4.dp),
         horizontalArrangement = Arrangement.spacedBy(4.dp),
         verticalAlignment = Alignment.CenterVertically
@@ -169,8 +161,8 @@ private fun ViewModeTab(
     
     val backgroundColor by animateColorAsState(
         targetValue = when {
-            isSelected -> KlarityColors.AccentPrimary.copy(alpha = 0.2f)
-            isHovered -> KlarityColors.BgElevated
+            isSelected -> MaterialTheme.colorScheme.primaryContainer
+            isHovered -> MaterialTheme.colorScheme.surfaceVariant
             else -> Color.Transparent
         },
         animationSpec = tween(durationMillis = 150)
@@ -178,9 +170,9 @@ private fun ViewModeTab(
     
     val textColor by animateColorAsState(
         targetValue = when {
-            isSelected -> KlarityColors.AccentPrimary
-            isHovered -> KlarityColors.TextPrimary
-            else -> KlarityColors.TextSecondary
+            isSelected -> MaterialTheme.colorScheme.primary
+            isHovered -> MaterialTheme.colorScheme.onSurface
+            else -> MaterialTheme.colorScheme.onSurfaceVariant
         },
         animationSpec = tween(durationMillis = 150)
     )
@@ -264,18 +256,11 @@ private fun DeepWorkModeButton(
             .shadow(
                 elevation = if (isHovered) 8.dp else 4.dp,
                 shape = RoundedCornerShape(8.dp),
-                ambientColor = KlarityColors.AccentAI.copy(alpha = glowAlpha),
-                spotColor = KlarityColors.AccentAI.copy(alpha = glowAlpha)
+                ambientColor = MaterialTheme.colorScheme.tertiary.copy(alpha = glowAlpha),
+                spotColor = MaterialTheme.colorScheme.tertiary.copy(alpha = glowAlpha)
             )
             .clip(RoundedCornerShape(8.dp))
-            .background(
-                Brush.linearGradient(
-                    colors = listOf(
-                        KlarityColors.AccentAI.copy(alpha = 0.15f),
-                        KlarityColors.AccentPrimary.copy(alpha = 0.15f)
-                    )
-                )
-            )
+            .background(MaterialTheme.colorScheme.tertiaryContainer)
             .hoverable(interactionSource = interactionSource)
             .clickable(onClick = onClick)
             .padding(horizontal = 14.dp, vertical = 8.dp)
@@ -292,7 +277,7 @@ private fun DeepWorkModeButton(
                 text = "Deep Work Mode",
                 style = MaterialTheme.typography.bodyMedium,
                 fontWeight = FontWeight.Medium,
-                color = KlarityColors.AccentAI
+                color = MaterialTheme.colorScheme.onTertiaryContainer
             )
         }
     }
@@ -314,7 +299,7 @@ private fun NotificationsButton(
             .size(36.dp)
             .clip(CircleShape)
             .background(
-                if (isHovered) KlarityColors.BgElevated else Color.Transparent
+                if (isHovered) MaterialTheme.colorScheme.surfaceVariant else Color.Transparent
             )
             .hoverable(interactionSource = interactionSource)
             .clickable(onClick = onClick),
@@ -323,7 +308,7 @@ private fun NotificationsButton(
         Icon(
             imageVector = Icons.Default.Notifications,
             contentDescription = "Notifications",
-            tint = if (isHovered) KlarityColors.TextPrimary else KlarityColors.TextSecondary,
+            tint = if (isHovered) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.size(20.dp)
         )
     }
@@ -341,7 +326,7 @@ private fun UserAvatar(
     val isHovered by interactionSource.collectIsHoveredAsState()
     
     val ringColor by animateColorAsState(
-        targetValue = if (isHovered) KlarityColors.AccentPrimary else Color.Transparent,
+        targetValue = if (isHovered) MaterialTheme.colorScheme.primary else Color.Transparent,
         animationSpec = tween(durationMillis = 200)
     )
     
@@ -352,7 +337,7 @@ private fun UserAvatar(
             .background(ringColor)
             .padding(2.dp)
             .clip(CircleShape)
-            .background(KlarityColors.BgTertiary)
+            .background(MaterialTheme.colorScheme.surface)
             .hoverable(interactionSource = interactionSource)
             .clickable(onClick = onClick),
         contentAlignment = Alignment.Center
@@ -360,7 +345,7 @@ private fun UserAvatar(
         Icon(
             imageVector = Icons.Default.Person,
             contentDescription = "User Profile",
-            tint = KlarityColors.TextSecondary,
+            tint = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.size(24.dp)
         )
     }

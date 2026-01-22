@@ -1,7 +1,6 @@
 package com.example.klarity.presentation.components
 
 import androidx.compose.animation.*
-import androidx.compose.animation.core.*
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -10,23 +9,19 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.interaction.collectIsHoveredAsState
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.SolidColor
@@ -35,13 +30,9 @@ import androidx.compose.ui.input.key.*
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.klarity.presentation.theme.KlarityColors
 import com.example.klarity.presentation.theme.KlarityMotion
-import com.example.klarity.presentation.theme.KlarityTheme
 
 // ══════════════════════════════════════════════════════════════════════════════
 // M3 SEARCH BAR
@@ -73,8 +64,8 @@ fun KlaritySearchBar(
 
     val borderColor by animateColorAsState(
         targetValue = when {
-            isFocused -> KlarityColors.AccentPrimary
-            isHovered -> KlarityColors.BorderSecondary
+            isFocused -> MaterialTheme.colorScheme.primary
+            isHovered -> MaterialTheme.colorScheme.outlineVariant
             else -> Color.Transparent
         },
         animationSpec = KlarityMotion.standardEnter(),
@@ -83,9 +74,9 @@ fun KlaritySearchBar(
 
     val bgColor by animateColorAsState(
         targetValue = when {
-            isFocused -> KlarityColors.BgElevated
-            isHovered -> KlarityColors.BgTertiary
-            else -> KlarityColors.BgSecondary
+            isFocused -> MaterialTheme.colorScheme.surfaceContainerHigh
+            isHovered -> MaterialTheme.colorScheme.surfaceVariant
+            else -> MaterialTheme.colorScheme.surface
         },
         animationSpec = KlarityMotion.standardEnter(),
         label = "bgColor"
@@ -115,7 +106,7 @@ fun KlaritySearchBar(
                 imageVector = leadingIcon,
                 contentDescription = null,
                 modifier = Modifier.size(20.dp),
-                tint = if (isFocused) KlarityColors.AccentPrimary else KlarityColors.TextTertiary
+                tint = if (isFocused) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
             )
 
             // Search input
@@ -140,10 +131,10 @@ fun KlaritySearchBar(
                 enabled = enabled,
                 singleLine = true,
                 textStyle = TextStyle(
-                    color = KlarityColors.TextPrimary,
+                    color = MaterialTheme.colorScheme.onSurface,
                     fontSize = 14.sp
                 ),
-                cursorBrush = SolidColor(KlarityColors.AccentPrimary),
+                cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
                 interactionSource = interactionSource,
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
                 keyboardActions = KeyboardActions(onSearch = { onSearch(query) }),
@@ -155,7 +146,7 @@ fun KlaritySearchBar(
                             Text(
                                 text = placeholder,
                                 style = TextStyle(
-                                    color = KlarityColors.TextMuted,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
                                     fontSize = 14.sp
                                 )
                             )
@@ -169,14 +160,14 @@ fun KlaritySearchBar(
             if (keyboardShortcutHint != null && query.isEmpty() && !isFocused) {
                 Surface(
                     shape = RoundedCornerShape(6.dp),
-                    color = KlarityColors.BgTertiary,
-                    border = BorderStroke(1.dp, KlarityColors.BorderPrimary)
+                    color = MaterialTheme.colorScheme.surfaceVariant,
+                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline)
                 ) {
                     Text(
                         text = keyboardShortcutHint,
                         modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
                         style = TextStyle(
-                            color = KlarityColors.TextTertiary,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                             fontSize = 11.sp,
                             fontWeight = FontWeight.Medium
                         )
@@ -198,7 +189,7 @@ fun KlaritySearchBar(
                         imageVector = Icons.Default.Close,
                         contentDescription = "Clear search",
                         modifier = Modifier.size(16.dp),
-                        tint = KlarityColors.TextTertiary
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
             }
@@ -213,7 +204,7 @@ fun KlaritySearchBar(
                         imageVector = trailingIcon,
                         contentDescription = null,
                         modifier = Modifier.size(20.dp),
-                        tint = KlarityColors.TextTertiary
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
             }
@@ -288,21 +279,21 @@ fun <T> KlaritySegmentedButtonRow(
             .clip(RoundedCornerShape(20.dp))
             .border(
                 width = 1.dp,
-                color = KlarityColors.BorderPrimary,
+                color = MaterialTheme.colorScheme.outline,
                 shape = RoundedCornerShape(20.dp)
             )
-            .background(KlarityColors.BgSecondary),
+            .background(MaterialTheme.colorScheme.surface),
         horizontalArrangement = Arrangement.Center
     ) {
         options.forEachIndexed { index, option ->
             val isSelected = option == selectedOption
             val bgColor by animateColorAsState(
-                targetValue = if (isSelected) KlarityColors.AccentPrimary.copy(alpha = 0.2f) else Color.Transparent,
+                targetValue = if (isSelected) MaterialTheme.colorScheme.primaryContainer else Color.Transparent,
                 animationSpec = KlarityMotion.standardEnter(),
                 label = "segmentBg"
             )
             val textColor by animateColorAsState(
-                targetValue = if (isSelected) KlarityColors.AccentPrimary else KlarityColors.TextSecondary,
+                targetValue = if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant,
                 animationSpec = KlarityMotion.standardEnter(),
                 label = "segmentText"
             )
@@ -352,7 +343,7 @@ fun <T> KlaritySegmentedButtonRow(
                         .width(1.dp)
                         .fillMaxHeight()
                         .padding(vertical = 8.dp)
-                        .background(KlarityColors.BorderPrimary)
+                        .background(MaterialTheme.colorScheme.outline)
                 )
             }
         }
@@ -405,15 +396,15 @@ fun KlarityFilterChip(
         } else null,
         colors = FilterChipDefaults.filterChipColors(
             containerColor = Color.Transparent,
-            labelColor = KlarityColors.TextSecondary,
-            iconColor = KlarityColors.TextSecondary,
-            selectedContainerColor = KlarityColors.AccentPrimary.copy(alpha = 0.2f),
-            selectedLabelColor = KlarityColors.AccentPrimary,
-            selectedLeadingIconColor = KlarityColors.AccentPrimary
+            labelColor = MaterialTheme.colorScheme.onSurfaceVariant,
+            iconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+            selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
+            selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer,
+            selectedLeadingIconColor = MaterialTheme.colorScheme.onPrimaryContainer
         ),
         border = FilterChipDefaults.filterChipBorder(
-            borderColor = KlarityColors.BorderPrimary,
-            selectedBorderColor = KlarityColors.AccentPrimary.copy(alpha = 0.5f),
+            borderColor = MaterialTheme.colorScheme.outline,
+            selectedBorderColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f),
             borderWidth = 1.dp,
             selectedBorderWidth = 1.dp,
             enabled = enabled,
@@ -432,7 +423,7 @@ fun KlarityInputChip(
     onDismiss: () -> Unit,
     modifier: Modifier = Modifier,
     leadingIcon: ImageVector? = null,
-    color: Color = KlarityColors.AccentPrimary
+    color: Color = MaterialTheme.colorScheme.primary
 ) {
     InputChip(
         selected = false,
@@ -606,7 +597,7 @@ fun KlarityLinearProgress(
                     Text(
                         text = label,
                         style = MaterialTheme.typography.labelMedium,
-                        color = KlarityColors.TextSecondary
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
                 if (showPercentage) {
@@ -652,7 +643,7 @@ fun KlarityElevatedCard(
             modifier = modifier,
             shape = RoundedCornerShape(16.dp),
             colors = CardDefaults.elevatedCardColors(
-                containerColor = KlarityColors.BgCard
+                containerColor = MaterialTheme.colorScheme.surfaceContainer
             ),
             elevation = CardDefaults.elevatedCardElevation(
                 defaultElevation = 2.dp,
@@ -666,7 +657,7 @@ fun KlarityElevatedCard(
             modifier = modifier,
             shape = RoundedCornerShape(16.dp),
             colors = CardDefaults.elevatedCardColors(
-                containerColor = KlarityColors.BgCard
+                containerColor = MaterialTheme.colorScheme.surfaceContainer
             ),
             elevation = CardDefaults.elevatedCardElevation(
                 defaultElevation = 2.dp
@@ -687,7 +678,7 @@ fun KlarityOutlinedCard(
     content: @Composable ColumnScope.() -> Unit
 ) {
     val borderColor by animateColorAsState(
-        targetValue = if (selected) KlarityColors.AccentPrimary else KlarityColors.BorderPrimary,
+        targetValue = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline,
         animationSpec = KlarityMotion.standardEnter(),
         label = "cardBorder"
     )
@@ -698,7 +689,7 @@ fun KlarityOutlinedCard(
             modifier = modifier,
             shape = RoundedCornerShape(12.dp),
             colors = CardDefaults.outlinedCardColors(
-                containerColor = if (selected) KlarityColors.BgSelected else KlarityColors.BgSecondary
+                containerColor = if (selected) MaterialTheme.colorScheme.surfaceContainerHighest else MaterialTheme.colorScheme.surface
             ),
             border = BorderStroke(1.dp, borderColor),
             content = content
@@ -708,7 +699,7 @@ fun KlarityOutlinedCard(
             modifier = modifier,
             shape = RoundedCornerShape(12.dp),
             colors = CardDefaults.outlinedCardColors(
-                containerColor = if (selected) KlarityColors.BgSelected else KlarityColors.BgSecondary
+                containerColor = if (selected) MaterialTheme.colorScheme.surfaceContainerHighest else MaterialTheme.colorScheme.surface
             ),
             border = BorderStroke(1.dp, borderColor),
             content = content
@@ -735,7 +726,7 @@ fun KlarityListItem(
     onClick: (() -> Unit)? = null
 ) {
     val bgColor by animateColorAsState(
-        targetValue = if (selected) KlarityColors.BgSelected else Color.Transparent,
+        targetValue = if (selected) MaterialTheme.colorScheme.surfaceContainerHighest else Color.Transparent,
         animationSpec = KlarityMotion.standardEnter(),
         label = "listItemBg"
     )
@@ -753,11 +744,11 @@ fun KlarityListItem(
         trailingContent = trailingContent,
         colors = ListItemDefaults.colors(
             containerColor = Color.Transparent,
-            headlineColor = KlarityColors.TextPrimary,
-            supportingColor = KlarityColors.TextSecondary,
-            overlineColor = KlarityColors.TextTertiary,
-            leadingIconColor = KlarityColors.TextSecondary,
-            trailingIconColor = KlarityColors.TextTertiary
+            headlineColor = MaterialTheme.colorScheme.onSurface,
+            supportingColor = MaterialTheme.colorScheme.onSurfaceVariant,
+            overlineColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+            leadingIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+            trailingIconColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
         )
     )
 }

@@ -75,7 +75,7 @@ fun EditorPanel(
     Box(
         modifier = modifier
             .fillMaxHeight()
-            .background(KlarityColors.BgPrimary)
+            .background(MaterialTheme.colorScheme.background)
             .onKeyEvent { keyEvent ->
                 if (keyEvent.type == KeyEventType.KeyDown && keyEvent.isCtrlPressed) {
                     when (keyEvent.key) {
@@ -205,8 +205,8 @@ fun EditorToolbar(
             .fillMaxWidth()
             .padding(horizontal = 24.dp, vertical = 16.dp),
         shape = RoundedCornerShape(8.dp),
-        color = KlarityColors.BgPrimary.copy(alpha = 0.5f),
-        border = BorderStroke(1.dp, KlarityColors.BorderPrimary)
+        color = MaterialTheme.colorScheme.surface.copy(alpha = 0.5f),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline)
     ) {
         Row(
             modifier = Modifier.padding(6.dp).fillMaxWidth(),
@@ -225,7 +225,7 @@ fun EditorToolbar(
                     modifier = Modifier
                         .width(1.dp)
                         .height(16.dp)
-                        .background(KlarityColors.BorderPrimary)
+                        .background(MaterialTheme.colorScheme.outline)
                 )
 
                 ToolbarButton("✨", isActive = true, isPrimary = true, onClick = onSlashMenu, tooltip = "Commands (Ctrl+/)")
@@ -235,7 +235,7 @@ fun EditorToolbar(
                     modifier = Modifier
                         .width(1.dp)
                         .height(16.dp)
-                        .background(KlarityColors.BorderPrimary)
+                        .background(MaterialTheme.colorScheme.outline)
                 )
                 
                 // Preview toggle
@@ -331,7 +331,7 @@ fun ToolbarButton(
         Surface(
             modifier = Modifier.size(32.dp),
             shape = RoundedCornerShape(6.dp),
-            color = if (isActive || isHovered) KlarityColors.BgElevated.copy(alpha = 0.5f) else Color.Transparent
+            color = if (isActive || isHovered) MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f) else Color.Transparent
         ) {
             Box(contentAlignment = Alignment.Center) {
                 Text(
@@ -339,9 +339,9 @@ fun ToolbarButton(
                     fontSize = 14.sp,
                     fontWeight = if (isBold) FontWeight.Bold else FontWeight.Normal,
                     color = when {
-                        isPrimary -> KlarityColors.AccentAI
-                        isActive -> Color.White
-                        else -> KlarityColors.TextTertiary
+                        isPrimary -> MaterialTheme.colorScheme.tertiary
+                        isActive -> MaterialTheme.colorScheme.onSurface
+                        else -> MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
                     }
                 )
             }
@@ -387,8 +387,9 @@ fun getStatusLabel(status: NoteStatus): String = when (status) {
     NoteStatus.ARCHIVED -> "Archived"
 }
 
+@Composable
 fun getStatusColor(status: NoteStatus): Color = when (status) {
-    NoteStatus.NONE -> KlarityColors.TextTertiary
+    NoteStatus.NONE -> MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
     NoteStatus.IN_PROGRESS -> Color(0xFF38BDF8)
     NoteStatus.COMPLETED -> Color(0xFF34D399)
     NoteStatus.ON_HOLD -> Color(0xFFFBBF24)
@@ -536,10 +537,10 @@ fun EditableEditorContent(
             textStyle = TextStyle(
                 fontSize = 30.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color.White,
+                color = MaterialTheme.colorScheme.onSurface,
                 lineHeight = 40.sp
             ),
-            cursorBrush = SolidColor(KlarityColors.AccentAI),
+            cursorBrush = SolidColor(MaterialTheme.colorScheme.tertiary),
             modifier = Modifier.fillMaxWidth(),
             decorationBox = { innerTextField ->
                 Box {
@@ -548,7 +549,7 @@ fun EditableEditorContent(
                             "Untitled",
                             fontSize = 30.sp,
                             fontWeight = FontWeight.Bold,
-                            color = KlarityColors.TextTertiary.copy(alpha = 0.5f),
+                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
                             lineHeight = 40.sp
                         )
                     }
@@ -565,10 +566,10 @@ fun EditableEditorContent(
             },
             textStyle = TextStyle(
                 fontSize = 16.sp,
-                color = KlarityColors.TextSecondary,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 lineHeight = 28.sp
             ),
-            cursorBrush = SolidColor(KlarityColors.AccentAI),
+            cursorBrush = SolidColor(MaterialTheme.colorScheme.tertiary),
             modifier = Modifier
                 .fillMaxWidth()
                 .defaultMinSize(minHeight = 300.dp),
@@ -578,22 +579,22 @@ fun EditableEditorContent(
                         Row(verticalAlignment = Alignment.Top) {
                             Text(
                                 "Start typing your note, or press ",
-                                color = KlarityColors.TextTertiary,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
                                 fontSize = 16.sp
                             )
                             Surface(
                                 shape = RoundedCornerShape(4.dp),
-                                color = KlarityColors.AccentAI.copy(alpha = 0.1f)
+                                color = MaterialTheme.colorScheme.tertiaryContainer
                             ) {
                                 Text(
                                     "Ctrl+/",
-                                    color = KlarityColors.AccentAI,
+                                    color = MaterialTheme.colorScheme.tertiary,
                                     fontSize = 16.sp,
                                     fontFamily = FontFamily.Monospace,
                                     modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
                                 )
                             }
-                            Text(" for commands...", color = KlarityColors.TextTertiary, fontSize = 16.sp)
+                            Text(" for commands...", color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f), fontSize = 16.sp)
                         }
                     }
                     innerTextField()
@@ -637,8 +638,8 @@ fun MarkdownPreviewContent(
 fun EditorFooter(wordCount: Int) {
     Surface(
         modifier = Modifier.fillMaxWidth(),
-        color = KlarityColors.BgPrimary,
-        border = BorderStroke(1.dp, KlarityColors.BorderPrimary)
+        color = MaterialTheme.colorScheme.surface,
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline)
     ) {
         Row(
             modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp, vertical = 8.dp),
@@ -648,13 +649,13 @@ fun EditorFooter(wordCount: Int) {
             Text(
                 "Word Count: $wordCount",
                 fontSize = 12.sp,
-                color = KlarityColors.TextTertiary
+                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
             )
             Row(
                 horizontalArrangement = Arrangement.spacedBy(16.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text("Graph Mapping: On", fontSize = 12.sp, color = KlarityColors.TextTertiary)
+                Text("Graph Mapping: On", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f))
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(6.dp)
@@ -664,7 +665,7 @@ fun EditorFooter(wordCount: Int) {
                             .size(8.dp)
                             .background(Color(0xFF10B981), androidx.compose.foundation.shape.CircleShape)
                     )
-                    Text("Saved", fontSize = 12.sp, color = KlarityColors.TextTertiary)
+                    Text("Saved", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f))
                 }
             }
         }
@@ -693,20 +694,20 @@ private fun EmptyEditorState(
             Text(
                 text = "📝",
                 fontSize = 72.sp,
-                color = KlarityColors.TextTertiary.copy(alpha = 0.2f)
+                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f)
             )
             
             // Main message
             Text(
                 text = "Ready to capture your thoughts",
-                color = KlarityColors.TextSecondary,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Medium
             )
             
             Text(
                 text = "Select a note from the list or create a new one",
-                color = KlarityColors.TextTertiary,
+                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
                 fontSize = 14.sp
             )
             
@@ -739,7 +740,7 @@ private fun EmptyEditorState(
             
             // Keyboard Shortcuts Hint
             Surface(
-                color = KlarityColors.BgTertiary.copy(alpha = 0.5f),
+                color = MaterialTheme.colorScheme.surface.copy(alpha = 0.5f),
                 shape = RoundedCornerShape(12.dp)
             ) {
                 Column(
@@ -749,7 +750,7 @@ private fun EmptyEditorState(
                 ) {
                     Text(
                         text = "Quick Shortcuts",
-                        color = KlarityColors.TextTertiary,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
                         fontSize = 11.sp,
                         fontWeight = FontWeight.Medium
                     )
@@ -784,8 +785,8 @@ private fun QuickActionButton(
         color = when {
             isPrimary && isHovered -> accentColor.copy(alpha = 0.2f)
             isPrimary -> accentColor.copy(alpha = 0.12f)
-            isHovered -> KlarityColors.BgElevated
-            else -> KlarityColors.BgTertiary.copy(alpha = 0.7f)
+            isHovered -> MaterialTheme.colorScheme.surfaceVariant
+            else -> MaterialTheme.colorScheme.surface.copy(alpha = 0.7f)
         },
         shape = RoundedCornerShape(10.dp),
         modifier = Modifier
@@ -801,19 +802,19 @@ private fun QuickActionButton(
             
             Text(
                 text = label,
-                color = if (isPrimary) accentColor else KlarityColors.TextPrimary,
+                color = if (isPrimary) accentColor else MaterialTheme.colorScheme.onSurface,
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Medium,
                 modifier = Modifier.weight(1f)
             )
             
             Surface(
-                color = KlarityColors.BgElevated,
+                color = MaterialTheme.colorScheme.surfaceVariant,
                 shape = RoundedCornerShape(4.dp)
             ) {
                 Text(
                     text = shortcut,
-                    color = KlarityColors.TextTertiary,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
                     fontSize = 10.sp,
                     modifier = Modifier.padding(horizontal = 6.dp, vertical = 3.dp)
                 )
@@ -832,12 +833,12 @@ private fun ShortcutHint(
         verticalAlignment = Alignment.CenterVertically
     ) {
         Surface(
-            color = KlarityColors.BgElevated,
+            color = MaterialTheme.colorScheme.surfaceVariant,
             shape = RoundedCornerShape(4.dp)
         ) {
             Text(
                 text = shortcut,
-                color = KlarityColors.TextSecondary,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 fontSize = 10.sp,
                 fontWeight = FontWeight.Medium,
                 modifier = Modifier.padding(horizontal = 5.dp, vertical = 2.dp)
@@ -845,7 +846,7 @@ private fun ShortcutHint(
         }
         Text(
             text = action,
-            color = KlarityColors.TextTertiary,
+            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
             fontSize = 10.sp
         )
     }

@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.ClickableText
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -22,7 +23,6 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.klarity.presentation.theme.KlarityColors
 
 // Wiki link annotation tag
 private const val WIKI_LINK_TAG = "wiki_link"
@@ -174,7 +174,7 @@ fun MarkdownParagraph(
         text = annotatedString,
         style = androidx.compose.ui.text.TextStyle(
             fontSize = 15.sp,
-            color = KlarityColors.TextSecondary,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
             lineHeight = 24.sp
         ),
         onClick = { offset ->
@@ -200,14 +200,14 @@ fun MarkdownListItem(
         Text(
             if (isOrdered) "•" else "•",
             fontSize = 15.sp,
-            color = KlarityColors.AccentAI
+            color = MaterialTheme.colorScheme.tertiary
         )
         val annotatedString = parseInlineMarkdownWithWikiLinks(text)
         ClickableText(
             text = annotatedString,
             style = androidx.compose.ui.text.TextStyle(
                 fontSize = 15.sp,
-                color = KlarityColors.TextSecondary,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 lineHeight = 24.sp
             ),
             onClick = { offset ->
@@ -232,14 +232,14 @@ fun MarkdownCheckbox(
         Text(
             if (checked) "☑" else "☐",
             fontSize = 15.sp,
-            color = if (checked) KlarityColors.AccentAI else KlarityColors.TextTertiary
+            color = if (checked) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
         )
         val annotatedString = parseInlineMarkdownWithWikiLinks(text)
         ClickableText(
             text = annotatedString,
             style = androidx.compose.ui.text.TextStyle(
                 fontSize = 15.sp,
-                color = if (checked) KlarityColors.TextTertiary else KlarityColors.TextSecondary,
+                color = if (checked) MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f) else MaterialTheme.colorScheme.onSurfaceVariant,
                 lineHeight = 24.sp
             ),
             onClick = { offset ->
@@ -259,7 +259,7 @@ fun MarkdownBlockquote(
 ) {
     Surface(
         modifier = Modifier.fillMaxWidth(),
-        color = KlarityColors.BgElevated.copy(alpha = 0.3f),
+        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
         shape = RoundedCornerShape(4.dp)
     ) {
         Row {
@@ -267,7 +267,7 @@ fun MarkdownBlockquote(
                 modifier = Modifier
                     .width(3.dp)
                     .fillMaxHeight()
-                    .background(KlarityColors.AccentAI)
+                    .background(MaterialTheme.colorScheme.tertiary)
             )
             val annotatedString = parseInlineMarkdownWithWikiLinks(text)
             ClickableText(
@@ -275,7 +275,7 @@ fun MarkdownBlockquote(
                 style = androidx.compose.ui.text.TextStyle(
                     fontSize = 15.sp,
                     fontStyle = FontStyle.Italic,
-                    color = KlarityColors.TextSecondary
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 ),
                 modifier = Modifier.padding(12.dp),
                 onClick = { offset ->
@@ -296,7 +296,7 @@ fun MarkdownHorizontalRule() {
             .fillMaxWidth()
             .padding(vertical = 16.dp)
             .height(1.dp)
-            .background(KlarityColors.BorderPrimary)
+            .background(MaterialTheme.colorScheme.outline)
     )
 }
 
@@ -307,7 +307,7 @@ fun CodeBlock(code: String, language: String) {
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(8.dp),
         color = Color(0xFF0D1117),
-        border = BorderStroke(1.dp, KlarityColors.BorderPrimary)
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline)
     ) {
         Column {
             // Language header
@@ -319,7 +319,7 @@ fun CodeBlock(code: String, language: String) {
                     Text(
                         language,
                         fontSize = 11.sp,
-                        color = KlarityColors.TextTertiary,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
                         modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
                     )
                 }
@@ -399,7 +399,7 @@ fun parseInlineMarkdown(text: String): androidx.compose.ui.text.AnnotatedString 
                     val urlEnd = remaining.indexOf(")", urlStart)
                     if (textEnd > 1 && urlStart == textEnd + 1 && urlEnd > urlStart) {
                         val linkText = remaining.substring(1, textEnd)
-                        withStyle(SpanStyle(color = KlarityColors.AccentAI)) {
+                        withStyle(SpanStyle(color = Color(0xFF1FDBC8))) { // Use primary teal color
                             append(linkText)
                         }
                         remaining = remaining.substring(urlEnd + 1)
@@ -507,7 +507,7 @@ fun parseInlineMarkdownWithWikiLinks(text: String): androidx.compose.ui.text.Ann
                     if (textEnd > 1 && urlStart == textEnd + 1 && urlEnd > urlStart) {
                         val linkText = remaining.substring(1, textEnd)
                         withStyle(SpanStyle(
-                            color = KlarityColors.AccentAI,
+                            color = Color(0xFF1FDBC8), // Luminous Teal
                             textDecoration = TextDecoration.Underline
                         )) {
                             append(linkText)

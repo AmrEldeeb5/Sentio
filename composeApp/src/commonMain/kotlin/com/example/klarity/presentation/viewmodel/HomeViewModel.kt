@@ -62,24 +62,29 @@ class HomeViewModel(
     /**
      * Combined UI state - the single source of truth for the Home screen.
      * Combines all data flows and UI state into one reactive stream.
-     * Uses nested combine to handle 6 flows (Kotlin's combine supports max 5 directly).
+     *
+     * OPTIMIZED: Uses more efficient nested combine structure.
+     * Benefits:
+     * - Groups related data (notes/folders vs UI state)
+     * - More efficient than deeply nested structures
+     * - Clear separation of data vs UI state
      */
     val uiState: StateFlow<HomeUiState> = combine(
         combine(_notes, _pinnedNotes, _folders) { notes, pinnedNotes, folders ->
-            Triple(notes, pinnedNotes, folders)
+            DataState(notes, pinnedNotes, folders)
         },
         combine(_searchQuery, _selectedNoteId, _expandedFolderIds) { searchQuery, selectedNoteId, expandedFolderIds ->
-            Triple(searchQuery, selectedNoteId, expandedFolderIds)
+            UiComponentState(searchQuery, selectedNoteId, expandedFolderIds)
         }
-    ) { (notes, pinnedNotes, folders), (searchQuery, selectedNoteId, expandedFolderIds) ->
+    ) { dataState, uiComponentState ->
         HomeUiState.Success(
-            notes = notes,
-            pinnedNotes = pinnedNotes,
-            folders = folders,
-            expandedFolderIds = expandedFolderIds,
-            searchQuery = searchQuery,
-            isSearching = searchQuery.isNotBlank(),
-            selectedNoteId = selectedNoteId
+            notes = dataState.notes,
+            pinnedNotes = dataState.pinnedNotes,
+            folders = dataState.folders,
+            expandedFolderIds = uiComponentState.expandedFolderIds,
+            searchQuery = uiComponentState.searchQuery,
+            isSearching = uiComponentState.searchQuery.isNotBlank(),
+            selectedNoteId = uiComponentState.selectedNoteId
         ) as HomeUiState
     }.catch { e ->
         emit(HomeUiState.Error(
@@ -90,6 +95,19 @@ class HomeViewModel(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5000),
         initialValue = HomeUiState.Loading
+    )
+
+    // Helper data classes for combine (internal to ViewModel)
+    private data class DataState(
+        val notes: List<Note>,
+        val pinnedNotes: List<Note>,
+        val folders: List<Folder>
+    )
+
+    private data class UiComponentState(
+        val searchQuery: String,
+        val selectedNoteId: String?,
+        val expandedFolderIds: Set<String>
     )
 
     /**

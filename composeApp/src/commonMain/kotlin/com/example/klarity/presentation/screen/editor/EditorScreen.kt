@@ -47,6 +47,7 @@ import com.example.klarity.presentation.state.EditorUiEvent
 import com.example.klarity.presentation.state.EditorUiState
 import com.example.klarity.presentation.state.EditorViewMode
 import com.example.klarity.presentation.theme.KlarityColors
+import com.example.klarity.presentation.theme.LocalExtendedColors
 import com.example.klarity.presentation.viewmodel.EditorViewModel
 import org.koin.compose.viewmodel.koinViewModel
 
@@ -79,7 +80,7 @@ fun EditorScreen(
 
     Surface(
         modifier = Modifier.fillMaxSize(),
-        color = KlarityColors.BgPrimary
+        color = MaterialTheme.colorScheme.background
     ) {
         Column(modifier = Modifier.fillMaxSize()) {
             // Editor Header with view mode toggles
@@ -206,7 +207,7 @@ private fun EditorHeader(
     onToggleFavorite: () -> Unit
 ) {
     Surface(
-        color = KlarityColors.BgSecondary,
+        color = MaterialTheme.colorScheme.surface,
         tonalElevation = 2.dp
     ) {
         Row(
@@ -228,7 +229,7 @@ private fun EditorHeader(
                     Icon(
                         Icons.AutoMirrored.Filled.ArrowBack,
                         contentDescription = "Back",
-                        tint = KlarityColors.TextSecondary
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
                 
@@ -240,19 +241,19 @@ private fun EditorHeader(
                     Box(
                         modifier = Modifier
                             .size(24.dp)
-                            .background(KlarityColors.AccentPrimary, RoundedCornerShape(6.dp)),
+                            .background(MaterialTheme.colorScheme.primary, RoundedCornerShape(6.dp)),
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
                             text = "K",
-                            color = KlarityColors.BgPrimary,
+                            color = MaterialTheme.colorScheme.onPrimary,
                             fontWeight = FontWeight.Bold,
                             fontSize = 14.sp
                         )
                     }
                     Text(
                         text = "Klarity",
-                        color = KlarityColors.TextPrimary,
+                        color = MaterialTheme.colorScheme.onSurface,
                         fontWeight = FontWeight.SemiBold,
                         fontSize = 16.sp
                     )
@@ -262,7 +263,7 @@ private fun EditorHeader(
             // Center - View mode toggles
             Row(
                 modifier = Modifier
-                    .background(KlarityColors.BgTertiary, RoundedCornerShape(8.dp))
+                    .background(MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(8.dp))
                     .padding(4.dp),
                 horizontalArrangement = Arrangement.spacedBy(2.dp)
             ) {
@@ -304,7 +305,7 @@ private fun EditorHeader(
                     Icon(
                         if (isPinned) Icons.Filled.Star else Icons.Outlined.Star,
                         contentDescription = "Pin",
-                        tint = if (isPinned) KlarityColors.AccentPrimary else KlarityColors.TextSecondary,
+                        tint = if (isPinned) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.size(20.dp)
                     )
                 }
@@ -315,7 +316,7 @@ private fun EditorHeader(
                     Icon(
                         if (isFavorite) Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder,
                         contentDescription = "Favorite",
-                        tint = if (isFavorite) KlarityColors.Error else KlarityColors.TextSecondary,
+                        tint = if (isFavorite) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.size(20.dp)
                     )
                 }
@@ -330,7 +331,7 @@ private fun EditorHeader(
                     Icon(
                         Icons.Filled.Menu,
                         contentDescription = "Toggle sidebar",
-                        tint = if (showRightSidebar) KlarityColors.AccentPrimary else KlarityColors.TextSecondary,
+                        tint = if (showRightSidebar) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.size(20.dp)
                     )
                 }
@@ -339,7 +340,7 @@ private fun EditorHeader(
                 Button(
                     onClick = { /* Share */ },
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = KlarityColors.AccentPrimary
+                        containerColor = MaterialTheme.colorScheme.primary
                     ),
                     shape = RoundedCornerShape(8.dp),
                     contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)
@@ -364,9 +365,9 @@ private fun ViewModeButton(
     isSelected: Boolean,
     onClick: () -> Unit
 ) {
-    val bgColor = if (isSelected) KlarityColors.AccentPrimary else Color.Transparent
-    val contentColor = if (isSelected) KlarityColors.BgPrimary else KlarityColors.TextSecondary
-    
+    val bgColor = if (isSelected) MaterialTheme.colorScheme.primary else Color.Transparent
+    val contentColor = if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant
+
     Surface(
         onClick = onClick,
         color = bgColor,
@@ -603,8 +604,8 @@ private fun EditorPane(
 
             // Title
             val customSelectionColors = TextSelectionColors(
-                handleColor = KlarityColors.AccentPrimary,
-                backgroundColor = KlarityColors.EditorSelection
+                handleColor = MaterialTheme.colorScheme.primary,
+                backgroundColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.3f)
             )
             
             CompositionLocalProvider(LocalTextSelectionColors provides customSelectionColors) {
@@ -612,18 +613,18 @@ private fun EditorPane(
                     value = titleValue,
                     onValueChange = { titleValue = it },
                     textStyle = MaterialTheme.typography.headlineLarge.copy(
-                        color = KlarityColors.TextPrimary,
+                        color = MaterialTheme.colorScheme.onSurface,
                         fontWeight = FontWeight.Bold,
                         fontSize = if (isZenMode) 36.sp else 32.sp
                     ),
-                    cursorBrush = SolidColor(KlarityColors.EditorCursor),
+                    cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
                     decorationBox = { innerTextField ->
                         Box {
                             if (titleValue.text.isEmpty()) {
                                 Text(
                                     "Untitled",
                                     style = MaterialTheme.typography.headlineLarge.copy(
-                                        color = KlarityColors.TextTertiary,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
                                         fontWeight = FontWeight.Bold,
                                         fontSize = if (isZenMode) 36.sp else 32.sp
                                     )
@@ -642,18 +643,18 @@ private fun EditorPane(
                     value = contentValue,
                     onValueChange = { contentValue = it },
                     textStyle = MaterialTheme.typography.bodyLarge.copy(
-                        color = KlarityColors.TextPrimary,
+                        color = MaterialTheme.colorScheme.onSurface,
                         lineHeight = 28.sp,
                         fontSize = if (isZenMode) 18.sp else 16.sp
                     ),
-                    cursorBrush = SolidColor(KlarityColors.EditorCursor),
+                    cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
                     decorationBox = { innerTextField ->
                         Box {
                             if (contentValue.text.isEmpty()) {
                                 Text(
                                     "Start writing your thoughts...",
                                     style = MaterialTheme.typography.bodyLarge.copy(
-                                        color = KlarityColors.TextTertiary,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
                                         lineHeight = 28.sp,
                                         fontSize = if (isZenMode) 18.sp else 16.sp
                                     )
@@ -685,7 +686,7 @@ private fun EditorToolbar(
     onCodeBlock: () -> Unit
 ) {
     Surface(
-        color = KlarityColors.BgSecondary,
+        color = MaterialTheme.colorScheme.surface,
         modifier = Modifier.fillMaxWidth()
     ) {
         Row(
@@ -722,7 +723,7 @@ private fun EditorToolbar(
                 modifier = Modifier
                     .height(20.dp)
                     .padding(horizontal = 8.dp),
-                color = KlarityColors.BorderPrimary
+                color = MaterialTheme.colorScheme.outlineVariant
             )
             
             TextToolbarButton(
@@ -734,9 +735,10 @@ private fun EditorToolbar(
             Spacer(Modifier.weight(1f))
             
             // AI Sparkles button
+            val extendedColors = LocalExtendedColors.current
             Surface(
                 onClick = { /* AI Actions */ },
-                color = KlarityColors.AccentAI.copy(alpha = 0.15f),
+                color = extendedColors.accentAIContainer,
                 shape = RoundedCornerShape(6.dp)
             ) {
                 Row(
@@ -750,7 +752,7 @@ private fun EditorToolbar(
                     )
                     Text(
                         "AI",
-                        color = KlarityColors.AccentAI,
+                        color = extendedColors.accentAI,
                         fontSize = 13.sp,
                         fontWeight = FontWeight.Medium
                     )
@@ -773,7 +775,7 @@ private fun TextToolbarButton(
     
     Surface(
         onClick = onClick,
-        color = if (isHovered) KlarityColors.BgTertiary else Color.Transparent,
+        color = if (isHovered) MaterialTheme.colorScheme.surfaceVariant else Color.Transparent,
         shape = RoundedCornerShape(6.dp),
         interactionSource = interactionSource,
         modifier = Modifier.hoverable(interactionSource)
@@ -786,7 +788,7 @@ private fun TextToolbarButton(
         ) {
             Text(
                 text = text,
-                color = if (isHovered) KlarityColors.TextPrimary else KlarityColors.TextSecondary,
+                color = if (isHovered) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant,
                 fontSize = 14.sp,
                 fontWeight = if (isBold) FontWeight.Bold else FontWeight.Normal,
                 fontStyle = if (isItalic) androidx.compose.ui.text.font.FontStyle.Italic else androidx.compose.ui.text.font.FontStyle.Normal
@@ -806,7 +808,7 @@ private fun ToolbarButton(
     
     Surface(
         onClick = onClick,
-        color = if (isHovered) KlarityColors.BgTertiary else Color.Transparent,
+        color = if (isHovered) MaterialTheme.colorScheme.surfaceVariant else Color.Transparent,
         shape = RoundedCornerShape(6.dp),
         interactionSource = interactionSource,
         modifier = Modifier.hoverable(interactionSource)
@@ -818,7 +820,7 @@ private fun ToolbarButton(
             Icon(
                 icon,
                 contentDescription = label,
-                tint = if (isHovered) KlarityColors.TextPrimary else KlarityColors.TextSecondary,
+                tint = if (isHovered) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.size(18.dp)
             )
         }
@@ -870,7 +872,7 @@ private fun BreadcrumbItem(
 ) {
     Text(
         text = text,
-        color = if (isCurrent) KlarityColors.TextPrimary else KlarityColors.TextTertiary,
+        color = if (isCurrent) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
         fontSize = 13.sp,
         fontWeight = if (isCurrent) FontWeight.Medium else FontWeight.Normal,
         maxLines = 1,
@@ -883,7 +885,7 @@ private fun BreadcrumbItem(
 private fun BreadcrumbSeparator() {
     Text(
         text = "/",
-        color = KlarityColors.TextTertiary.copy(alpha = 0.5f),
+        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.35f),
         fontSize = 13.sp
     )
 }
@@ -896,10 +898,11 @@ private fun BreadcrumbSeparator() {
 private fun AISuggestionCard(
     onDismiss: () -> Unit
 ) {
+    val extendedColors = LocalExtendedColors.current
     Surface(
-        color = KlarityColors.AccentAIGlow,
+        color = extendedColors.accentAIContainer.copy(alpha = 0.5f),
         shape = RoundedCornerShape(12.dp),
-        border = BorderStroke(1.dp, KlarityColors.AccentAI.copy(alpha = 0.3f))
+        border = BorderStroke(1.dp, extendedColors.accentAI.copy(alpha = 0.3f))
     ) {
         Row(
             modifier = Modifier
@@ -916,7 +919,7 @@ private fun AISuggestionCard(
                 Box(
                     modifier = Modifier
                         .size(36.dp)
-                        .background(KlarityColors.AccentAI.copy(alpha = 0.2f), CircleShape),
+                        .background(extendedColors.accentAIContainer, CircleShape),
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
@@ -927,13 +930,13 @@ private fun AISuggestionCard(
                 Column {
                     Text(
                         "AI Suggestion Available",
-                        color = KlarityColors.TextPrimary,
+                        color = MaterialTheme.colorScheme.onSurface,
                         fontWeight = FontWeight.Medium,
                         fontSize = 14.sp
                     )
                     Text(
                         "Type /ai or press Ctrl+J to ask AI for help with your writing",
-                        color = KlarityColors.TextSecondary,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                         fontSize = 13.sp
                     )
                 }
@@ -946,7 +949,7 @@ private fun AISuggestionCard(
                 Icon(
                     Icons.Outlined.Close,
                     contentDescription = "Dismiss",
-                    tint = KlarityColors.TextTertiary,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
                     modifier = Modifier.size(16.dp)
                 )
             }
@@ -967,8 +970,9 @@ private fun EditorFooter(
     createdAt: kotlinx.datetime.Instant,
     updatedAt: kotlinx.datetime.Instant
 ) {
+    val extendedColors = LocalExtendedColors.current
     Surface(
-        color = KlarityColors.BgSecondary,
+        color = MaterialTheme.colorScheme.surface,
         modifier = Modifier.fillMaxWidth()
     ) {
         Row(
@@ -985,32 +989,32 @@ private fun EditorFooter(
             ) {
                 Text(
                     text = "Created: ${formatDate(createdAt)}",
-                    color = KlarityColors.TextTertiary,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
                     fontSize = 12.sp
                 )
                 Text(
                     text = "•",
-                    color = KlarityColors.TextTertiary.copy(alpha = 0.5f),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.35f),
                     fontSize = 12.sp
                 )
                 Text(
                     text = "Updated: ${formatDate(updatedAt)}",
-                    color = KlarityColors.TextTertiary,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
                     fontSize = 12.sp
                 )
                 Text(
                     text = "•",
-                    color = KlarityColors.TextTertiary.copy(alpha = 0.5f),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.35f),
                     fontSize = 12.sp
                 )
                 Text(
                     text = "$wordCount words",
-                    color = KlarityColors.TextTertiary,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
                     fontSize = 12.sp
                 )
                 Text(
                     text = "${(wordCount / 200).coerceAtLeast(1)} min read",
-                    color = KlarityColors.TextTertiary,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
                     fontSize = 12.sp
                 )
             }
@@ -1023,11 +1027,11 @@ private fun EditorFooter(
                 Box(
                     modifier = Modifier
                         .size(6.dp)
-                        .background(KlarityColors.AccentPrimary, CircleShape)
+                        .background(MaterialTheme.colorScheme.primary, CircleShape)
                 )
                 Text(
                     text = "Graph mapped",
-                    color = KlarityColors.TextTertiary,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
                     fontSize = 12.sp
                 )
             }
@@ -1042,11 +1046,11 @@ private fun EditorFooter(
                         CircularProgressIndicator(
                             modifier = Modifier.size(12.dp),
                             strokeWidth = 2.dp,
-                            color = KlarityColors.AccentPrimary
+                            color = MaterialTheme.colorScheme.primary
                         )
                         Text(
                             text = "Saving...",
-                            color = KlarityColors.TextTertiary,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
                             fontSize = 12.sp
                         )
                     }
@@ -1054,11 +1058,11 @@ private fun EditorFooter(
                         Box(
                             modifier = Modifier
                                 .size(6.dp)
-                                .background(KlarityColors.Warning, CircleShape)
+                                .background(extendedColors.warning, CircleShape)
                         )
                         Text(
                             text = "Unsaved changes",
-                            color = KlarityColors.Warning,
+                            color = extendedColors.warning,
                             fontSize = 12.sp
                         )
                     }
@@ -1066,12 +1070,12 @@ private fun EditorFooter(
                         Icon(
                             Icons.Filled.Check,
                             contentDescription = null,
-                            tint = KlarityColors.Success,
+                            tint = extendedColors.success,
                             modifier = Modifier.size(14.dp)
                         )
                         Text(
                             text = "All changes saved",
-                            color = KlarityColors.TextTertiary,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
                             fontSize = 12.sp
                         )
                     }
@@ -1124,7 +1128,7 @@ private fun RightSidebar(
     }
 
     Surface(
-        color = KlarityColors.BgSecondary,
+        color = MaterialTheme.colorScheme.surface,
         modifier = modifier
     ) {
         Column(
@@ -1135,7 +1139,7 @@ private fun RightSidebar(
         ) {
             // Search Bar
             Surface(
-                color = KlarityColors.BgTertiary,
+                color = MaterialTheme.colorScheme.surfaceVariant,
                 shape = RoundedCornerShape(8.dp)
             ) {
                 Row(
@@ -1148,7 +1152,7 @@ private fun RightSidebar(
                     Icon(
                         Icons.Outlined.Search,
                         contentDescription = null,
-                        tint = KlarityColors.TextTertiary,
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
                         modifier = Modifier.size(18.dp)
                     )
                     BasicTextField(
@@ -1156,16 +1160,16 @@ private fun RightSidebar(
                         onValueChange = onSearchQueryChange,
                         singleLine = true,
                         textStyle = TextStyle(
-                            color = KlarityColors.TextPrimary,
+                            color = MaterialTheme.colorScheme.onSurface,
                             fontSize = 14.sp
                         ),
-                        cursorBrush = SolidColor(KlarityColors.AccentPrimary),
+                        cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
                         modifier = Modifier.weight(1f),
                         decorationBox = { innerTextField ->
                             if (searchQuery.isEmpty()) {
                                 Text(
                                     text = "Search notes...",
-                                    color = KlarityColors.TextTertiary,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
                                     fontSize = 14.sp
                                 )
                             }
@@ -1176,7 +1180,7 @@ private fun RightSidebar(
                         Icon(
                             Icons.Default.Close,
                             contentDescription = "Clear search",
-                            tint = KlarityColors.TextTertiary,
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
                             modifier = Modifier
                                 .size(16.dp)
                                 .clickable { onSearchQueryChange("") }
@@ -1206,7 +1210,7 @@ private fun RightSidebar(
                 if (recentNotes.isEmpty()) {
                     Text(
                         text = if (searchQuery.isNotBlank()) "No matching notes" else "No recent notes",
-                        color = KlarityColors.TextTertiary,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
                         fontSize = 13.sp,
                         modifier = Modifier.padding(8.dp)
                     )
@@ -1226,7 +1230,7 @@ private fun RightSidebar(
             // All notes count
             Text(
                 text = "${allNotes.size} notes total",
-                color = KlarityColors.TextTertiary,
+                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
                 fontSize = 12.sp,
                 modifier = Modifier.padding(8.dp)
             )
@@ -1242,7 +1246,7 @@ private fun SidebarSection(
     Column {
         Text(
             text = title,
-            color = KlarityColors.TextTertiary,
+            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
             fontSize = 12.sp,
             fontWeight = FontWeight.SemiBold,
             modifier = Modifier.padding(bottom = 8.dp)
@@ -1262,7 +1266,7 @@ private fun SidebarNoteCard(
     
     Surface(
         onClick = onClick,
-        color = if (isHovered) KlarityColors.BgTertiary else Color.Transparent,
+        color = if (isHovered) MaterialTheme.colorScheme.surfaceVariant else Color.Transparent,
         shape = RoundedCornerShape(8.dp),
         interactionSource = interactionSource,
         modifier = Modifier
@@ -1276,7 +1280,7 @@ private fun SidebarNoteCard(
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = note.title.ifBlank { "Untitled Note" },
-                    color = KlarityColors.TextPrimary,
+                    color = MaterialTheme.colorScheme.onSurface,
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Medium,
                     maxLines = 1,
@@ -1285,7 +1289,7 @@ private fun SidebarNoteCard(
                 Spacer(Modifier.height(4.dp))
                 Text(
                     text = note.content.take(100).replace("\n", " "),
-                    color = KlarityColors.TextTertiary,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
                     fontSize = 12.sp,
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis
@@ -1326,7 +1330,7 @@ private fun LinkDialog(
     AlertDialog(
         onDismissRequest = onDismiss,
         title = {
-            Text("Insert Link", color = KlarityColors.TextPrimary)
+            Text("Insert Link", color = MaterialTheme.colorScheme.onSurface)
         },
         text = {
             OutlinedTextField(
@@ -1337,8 +1341,8 @@ private fun LinkDialog(
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth(),
                 colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = KlarityColors.AccentPrimary,
-                    cursorColor = KlarityColors.AccentPrimary
+                    focusedBorderColor = MaterialTheme.colorScheme.primary,
+                    cursorColor = MaterialTheme.colorScheme.primary
                 )
             )
         },
@@ -1347,15 +1351,15 @@ private fun LinkDialog(
                 onClick = { onConfirm(url) },
                 enabled = url.isNotBlank()
             ) {
-                Text("Insert", color = KlarityColors.AccentPrimary)
+                Text("Insert", color = MaterialTheme.colorScheme.primary)
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("Cancel", color = KlarityColors.TextSecondary)
+                Text("Cancel", color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         },
-        containerColor = KlarityColors.BgSecondary
+        containerColor = MaterialTheme.colorScheme.surface
     )
 }
 
@@ -1369,7 +1373,7 @@ private fun LoadingState() {
         modifier = Modifier.fillMaxSize(),
         contentAlignment = Alignment.Center
     ) {
-        CircularProgressIndicator(color = KlarityColors.AccentPrimary)
+        CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
     }
 }
 
@@ -1390,7 +1394,7 @@ private fun ErrorState(
             Spacer(Modifier.height(16.dp))
             Text(
                 text = message,
-                color = KlarityColors.Error,
+                color = MaterialTheme.colorScheme.error,
                 fontSize = 16.sp
             )
             retryAction?.let { retry ->
@@ -1398,7 +1402,7 @@ private fun ErrorState(
                 Button(
                     onClick = retry,
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = KlarityColors.AccentPrimary
+                        containerColor = MaterialTheme.colorScheme.primary
                     )
                 ) {
                     Text("Retry")
