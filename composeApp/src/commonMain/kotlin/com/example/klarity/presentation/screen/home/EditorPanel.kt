@@ -47,6 +47,23 @@ import com.example.klarity.domain.models.Folder
 import com.example.klarity.domain.models.Note
 import com.example.klarity.domain.models.NoteStatus
 import com.example.klarity.presentation.theme.KlarityColors
+import com.example.klarity.presentation.theme.KlarityTheme
+import com.example.klarity.presentation.theme.KlarityMotion
+import com.example.klarity.presentation.components.organicPulsingGlow
+import androidx.compose.animation.core.animateFloatAsState
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+
+/**
+ * Inline AI Suggestion Data Structure
+ * Represents a GitHub Copilot-style suggestion
+ */
+data class InlineAISuggestion(
+    val text: String,           // The suggested completion text
+    val cursorPosition: Int,    // Where to insert the suggestion
+    val confidence: Float       // 0.0 to 1.0
+)
 
 /**
  * Editor Panel - Main content area for editing notes
@@ -56,6 +73,8 @@ import com.example.klarity.presentation.theme.KlarityColors
  * - Ctrl+I : Italic
  * - Ctrl+E : Code
  * - Ctrl+K : Link
+ * - Tab : Accept AI suggestion
+ * - Escape : Dismiss AI suggestion
  */
 @Composable
 fun EditorPanel(
@@ -435,6 +454,11 @@ fun EditableEditorContent(
         mutableStateOf(androidx.compose.ui.text.input.TextFieldValue(note.content)) 
     }
 
+    // AI Suggestion state
+    var currentSuggestion by remember { mutableStateOf<InlineAISuggestion?>(null) }
+    var isLoadingSuggestion by remember { mutableStateOf(false) }
+    var suggestionJob by remember { mutableStateOf<Job?>(null) }
+
     // Debounced save - only save after user stops typing
     LaunchedEffect(titleValue.text) {
         if (titleValue.text != note.title) {
@@ -448,6 +472,59 @@ fun EditableEditorContent(
             kotlinx.coroutines.delay(500)
             onContentChange(contentValue.text)
         }
+    }
+
+    // Debounced AI suggestion request
+    LaunchedEffect(contentValue.text, contentValue.selection) {
+        // Cancel previous request
+        suggestionJob?.cancel()
+        currentSuggestion = null
+        isLoadingSuggestion = false
+        
+        // Only request if there's content and cursor is at end of some text
+        if (contentValue.text.isNotEmpty() && contentValue.selection.collapsed) {
+            suggestionJob = this.launch {
+                delay(500) // Debounce
+                isLoadingSuggestion = true
+                
+                // Simulate AI suggestion (replace with actual API call)
+                delay(300) // Simulate network request
+                
+                // Mock suggestion logic - only suggest after punctuation or line breaks
+                val cursorPos = contentValue.selection.start
+                if (cursorPos > 0 && cursorPos == contentValue.text.length) {
+                    val lastChar = contentValue.text.getOrNull(cursorPos - 1)
+                    if (lastChar in listOf('.', '!', '?', '\n', ':', ',')) {
+                        currentSuggestion = InlineAISuggestion(
+                            text = " This is an AI suggestion to continue your thought.",
+                            cursorPosition = cursorPos,
+                            confidence = 0.87f
+                        )
+                    }
+                }
+                
+                isLoadingSuggestion = false
+            }
+        }
+    }
+
+    // Accept suggestion handler
+    fun acceptSuggestion(suggestion: InlineAISuggestion) {
+        val newText = contentValue.text.substring(0, suggestion.cursorPosition) +
+                suggestion.text +
+                contentValue.text.substring(suggestion.cursorPosition)
+        contentValue = contentValue.copy(
+            text = newText,
+            selection = androidx.compose.ui.text.TextRange(
+                suggestion.cursorPosition + suggestion.text.length
+            )
+        )
+        currentSuggestion = null
+    }
+
+    // Dismiss suggestion handler
+    fun dismissSuggestion() {
+        currentSuggestion = null
     }
 
     // Format text helper
@@ -524,48 +601,160 @@ fun EditableEditorContent(
             }
         )
 
-        // Editable Content with keyboard shortcuts
-        BasicTextField(
-            value = contentValue,
-            onValueChange = { newValue ->
-                contentValue = newValue
-            },
-            textStyle = TextStyle(
-                fontSize = 16.sp,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                lineHeight = 28.sp
-            ),
-            cursorBrush = SolidColor(MaterialTheme.colorScheme.tertiary),
-            modifier = Modifier
-                .fillMaxWidth()
-                .defaultMinSize(minHeight = 300.dp),
-            decorationBox = { innerTextField ->
-                Box {
-                    if (contentValue.text.isEmpty()) {
-                        Row(verticalAlignment = Alignment.Top) {
-                            Text(
-                                "Start typing your note, or press ",
-                                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
-                                fontSize = 16.sp
-                            )
-                            Surface(
-                                shape = RoundedCornerShape(4.dp),
-                                color = MaterialTheme.colorScheme.tertiaryContainer
-                            ) {
-                                Text(
-                                    "Ctrl+/",
-                                    color = MaterialTheme.colorScheme.tertiary,
-                                    fontSize = 16.sp,
-                                    fontFamily = FontFamily.Monospace,
-                                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
-                                )
+        // Editable Content with keyboard shortcuts and AI suggestions
+        Box(modifier = Modifier.fillMaxWidth()) {
+            BasicTextField(
+                value = contentValue,
+                onValueChange = { newValue ->
+                    contentValue = newValue
+                    // Dismiss suggestion on any edit
+                    if (currentSuggestion != null) {
+                        dismissSuggestion()
+                    }
+                },
+                textStyle = TextStyle(
+                    fontSize = 16.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    lineHeight = 28.sp
+                ),
+                cursorBrush = SolidColor(MaterialTheme.colorScheme.tertiary),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .defaultMinSize(minHeight = 300.dp)
+                    .onKeyEvent { keyEvent ->
+                        when {
+                            // Tab: Accept suggestion
+                            keyEvent.key == Key.Tab && keyEvent.type == KeyEventType.KeyDown && currentSuggestion != null -> {
+                                acceptSuggestion(currentSuggestion!!)
+                                true
                             }
-                            Text(" for commands...", color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f), fontSize = 16.sp)
+                            // Escape: Dismiss suggestion
+                            keyEvent.key == Key.Escape && keyEvent.type == KeyEventType.KeyDown && currentSuggestion != null -> {
+                                dismissSuggestion()
+                                true
+                            }
+                            else -> false
                         }
                     }
-                    innerTextField()
+                    .semantics {
+                        if (currentSuggestion != null) {
+                            contentDescription = "AI suggestion available. Press Tab to accept, Escape to dismiss"
+                        }
+                    },
+                decorationBox = { innerTextField ->
+                    Box {
+                        if (contentValue.text.isEmpty()) {
+                            Row(verticalAlignment = Alignment.Top) {
+                                Text(
+                                    "Start typing your note, or press ",
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+                                    fontSize = 16.sp
+                                )
+                                Surface(
+                                    shape = RoundedCornerShape(4.dp),
+                                    color = MaterialTheme.colorScheme.tertiaryContainer
+                                ) {
+                                    Text(
+                                        "Ctrl+/",
+                                        color = MaterialTheme.colorScheme.tertiary,
+                                        fontSize = 16.sp,
+                                        fontFamily = FontFamily.Monospace,
+                                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                                    )
+                                }
+                                Text(" for commands...", color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f), fontSize = 16.sp)
+                            }
+                        }
+                        
+                        // Main text field
+                        innerTextField()
+                        
+                        // Ghost text suggestion overlay
+                        currentSuggestion?.let { suggestion ->
+                            GhostTextSuggestion(
+                                suggestion = suggestion,
+                                textStyle = TextStyle(
+                                    fontSize = 16.sp,
+                                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f),
+                                    lineHeight = 28.sp
+                                ),
+                                contentText = contentValue.text,
+                                cursorPosition = contentValue.selection.start
+                            )
+                        }
+                        
+                        // Loading indicator
+                        if (isLoadingSuggestion) {
+                            Box(
+                                modifier = Modifier
+                                    .align(Alignment.BottomEnd)
+                                    .padding(8.dp)
+                            ) {
+                                Text(
+                                    "⋯",
+                                    fontSize = 14.sp,
+                                    color = KlarityTheme.extendedColors.accentAI.copy(alpha = 0.6f),
+                                    modifier = Modifier.organicPulsingGlow(
+                                        color = KlarityTheme.extendedColors.accentAI,
+                                        intensity = 0.3f,
+                                        pulseSpeed = 1000
+                                    )
+                                )
+                            }
+                        }
+                    }
                 }
-            }
+            )
+        }
+    }
+}
+
+/**
+ * Ghost Text Suggestion Component
+ * Renders AI suggestions as inline ghost text with fade-in animation
+ */
+@Composable
+private fun GhostTextSuggestion(
+    suggestion: InlineAISuggestion,
+    textStyle: TextStyle,
+    contentText: String,
+    cursorPosition: Int
+) {
+    // Fade-in animation
+    var visible by remember { mutableStateOf(false) }
+    LaunchedEffect(suggestion) {
+        visible = true
+    }
+    
+    val alpha by animateFloatAsState(
+        targetValue = if (visible) 1f else 0f,
+        animationSpec = KlarityMotion.springGentle(),
+        label = "ghostTextFadeIn"
+    )
+    
+    // Measure text to position ghost text correctly
+    androidx.compose.foundation.layout.BoxWithConstraints {
+        val ghostTextModifier = if (suggestion.confidence > 0.85f) {
+            Modifier.organicPulsingGlow(
+                color = KlarityTheme.extendedColors.accentAI,
+                intensity = 0.15f,
+                pulseSpeed = 2000
+            )
+        } else {
+            Modifier
+        }
+        
+        // Render ghost text inline at cursor position
+        Text(
+            text = buildString {
+                // Add spaces to position at cursor
+                append(contentText.substring(0, cursorPosition))
+                append(suggestion.text)
+            },
+            style = textStyle.copy(
+                color = textStyle.color.copy(alpha = alpha * 0.4f)
+            ),
+            modifier = ghostTextModifier
         )
     }
 }

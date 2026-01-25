@@ -18,7 +18,9 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.klarity.domain.models.Note
+import com.example.klarity.presentation.components.*
 import com.example.klarity.presentation.screen.home.util.formatRelativeTime
+import com.example.klarity.presentation.theme.KlarityTheme
 import kotlinx.datetime.*
 
 /**
@@ -295,73 +297,63 @@ private fun RecentNoteItem(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .clickable(onClick = onClick)
-            .padding(horizontal = 20.dp, vertical = 12.dp),
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
-        verticalAlignment = Alignment.Top
-    ) {
-        // Icon
-        Box(
-            modifier = Modifier
-                .size(32.dp)
-                .clip(RoundedCornerShape(8.dp))
-                .background(MaterialTheme.colorScheme.primaryContainer),
-            contentAlignment = Alignment.Center
-        ) {
-            Text(
-                text = if (note.isPinned) "📌" else "📝",
-                fontSize = 14.sp
-            )
-        }
-        
-        // Content
-        Column(
-            modifier = Modifier.weight(1f),
-            verticalArrangement = Arrangement.spacedBy(4.dp)
-        ) {
+    KlarityListItem(
+        headlineContent = {
             Text(
                 text = note.title.ifEmpty { "Untitled" },
-                style = MaterialTheme.typography.bodyMedium,
-                fontWeight = FontWeight.Medium,
-                color = MaterialTheme.colorScheme.onSurface,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
-            if (note.content.isNotEmpty()) {
+        },
+        modifier = modifier,
+        supportingContent = {
+            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                if (note.content.isNotEmpty()) {
+                    Text(
+                        text = note.content.take(80),
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
                 Text(
-                    text = note.content.take(80),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis
+                    text = formatRelativeTime(note.updatedAt),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
                 )
             }
-            Text(
-                text = formatRelativeTime(note.updatedAt),
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
-            )
-        }
-        
-        // Tags indicator
-        if (note.tags.isNotEmpty()) {
+        },
+        leadingContent = {
             Box(
                 modifier = Modifier
-                    .clip(CircleShape)
-                    .background(MaterialTheme.colorScheme.secondaryContainer)
-                    .padding(horizontal = 8.dp, vertical = 4.dp)
+                    .size(40.dp)
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(MaterialTheme.colorScheme.primaryContainer),
+                contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = "${note.tags.size}",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSecondaryContainer
+                    text = if (note.isPinned) "📌" else "📝",
+                    fontSize = 14.sp
                 )
             }
-        }
-    }
+        },
+        trailingContent = if (note.tags.isNotEmpty()) {
+            {
+                Box(
+                    modifier = Modifier
+                        .clip(CircleShape)
+                        .background(MaterialTheme.colorScheme.secondaryContainer)
+                        .padding(horizontal = 8.dp, vertical = 4.dp)
+                ) {
+                    Text(
+                        text = "${note.tags.size}",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSecondaryContainer
+                    )
+                }
+            }
+        } else null,
+        onClick = onClick
+    )
 }
 
 @Composable
@@ -376,42 +368,33 @@ private fun RecentItemCard(
         RecentItemType.FOLDER -> "📁" to MaterialTheme.colorScheme.onSurfaceVariant
     }
     
-    Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .clickable(onClick = onClick)
-            .padding(horizontal = 20.dp, vertical = 12.dp),
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Box(
-            modifier = Modifier
-                .size(32.dp)
-                .clip(RoundedCornerShape(8.dp))
-                .background(tint.copy(alpha = 0.15f)),
-            contentAlignment = Alignment.Center
-        ) {
-            Text(text = emoji, fontSize = 14.sp)
-        }
-        
-        Column(
-            modifier = Modifier.weight(1f),
-            verticalArrangement = Arrangement.spacedBy(2.dp)
-        ) {
+    KlarityListItem(
+        headlineContent = {
             Text(
                 text = item.title,
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurface,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
+        },
+        modifier = modifier,
+        supportingContent = {
             Text(
-                text = formatRelativeTime(item.lastModified),
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                text = formatRelativeTime(item.lastModified)
             )
-        }
-    }
+        },
+        leadingContent = {
+            Box(
+                modifier = Modifier
+                    .size(40.dp)
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(tint.copy(alpha = 0.15f)),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(text = emoji, fontSize = 14.sp)
+            }
+        },
+        onClick = onClick
+    )
 }
 
 // ============================================================================
@@ -563,14 +546,10 @@ private fun FocusProgressCard(
     val completedItems = focusItems.count { it.isCompleted }
     val progress = if (totalItems > 0) completedItems.toFloat() / totalItems else 0f
     
-    Card(
+    KlarityElevatedCard(
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = 20.dp, vertical = 12.dp),
-        shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.secondaryContainer
-        )
+            .padding(horizontal = 20.dp, vertical = 12.dp)
     ) {
         Column(
             modifier = Modifier.padding(16.dp),
@@ -583,25 +562,19 @@ private fun FocusProgressCard(
             ) {
                 Text(
                     text = "Today's Progress",
-                    style = MaterialTheme.typography.labelLarge,
-                    color = MaterialTheme.colorScheme.onSecondaryContainer
+                    style = MaterialTheme.typography.labelLarge
                 )
                 Text(
                     text = "$completedItems / $totalItems",
                     style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onSecondaryContainer
+                    fontWeight = FontWeight.Bold
                 )
             }
             
-            LinearProgressIndicator(
-                progress = { progress },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(8.dp)
-                    .clip(RoundedCornerShape(4.dp)),
-                color = MaterialTheme.colorScheme.secondary,
-                trackColor = MaterialTheme.colorScheme.surfaceVariant,
+            KlarityLinearProgress(
+                progress = progress,
+                showPercentage = false,
+                color = MaterialTheme.colorScheme.secondary
             )
         }
     }
@@ -621,52 +594,44 @@ private fun FocusTaskItem(
         Priority.LOW -> MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
     }
     
-    Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .clickable(onClick = onClick)
-            .padding(horizontal = 20.dp, vertical = 10.dp),
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Checkbox(
-            checked = item.isCompleted,
-            onCheckedChange = { onToggle() },
-            colors = CheckboxDefaults.colors(
-                checkedColor = MaterialTheme.colorScheme.secondary,
-                uncheckedColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
-                checkmarkColor = MaterialTheme.colorScheme.onSecondary
-            )
-        )
-        
-        Column(
-            modifier = Modifier.weight(1f),
-            verticalArrangement = Arrangement.spacedBy(2.dp)
-        ) {
+    KlarityListItem(
+        headlineContent = {
             Text(
                 text = item.title,
-                style = MaterialTheme.typography.bodyMedium,
-                color = if (item.isCompleted) MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f) else MaterialTheme.colorScheme.onSurface,
+                color = if (item.isCompleted) 
+                    MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f) 
+                    else MaterialTheme.colorScheme.onSurface,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
-            if (item.dueTime != null) {
-                Text(
-                    text = item.dueTime,
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
-                )
+        },
+        modifier = modifier,
+        supportingContent = if (item.dueTime != null) {
+            {
+                Text(text = item.dueTime)
             }
-        }
-        
-        // Priority indicator
-        Box(
-            modifier = Modifier
-                .size(8.dp)
-                .clip(CircleShape)
-                .background(priorityColor)
-        )
-    }
+        } else null,
+        leadingContent = {
+            Checkbox(
+                checked = item.isCompleted,
+                onCheckedChange = { onToggle() },
+                colors = CheckboxDefaults.colors(
+                    checkedColor = MaterialTheme.colorScheme.secondary,
+                    uncheckedColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+                    checkmarkColor = MaterialTheme.colorScheme.onSecondary
+                )
+            )
+        },
+        trailingContent = {
+            Box(
+                modifier = Modifier
+                    .size(8.dp)
+                    .clip(CircleShape)
+                    .background(priorityColor)
+            )
+        },
+        onClick = onClick
+    )
 }
 
 @Composable
@@ -676,60 +641,51 @@ private fun FocusGoalItem(
     onToggle: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .clickable(onClick = onClick)
-            .padding(horizontal = 20.dp, vertical = 10.dp),
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Box(
-            modifier = Modifier
-                .size(32.dp)
-                .clip(CircleShape)
-                .background(
-                    if (item.isCompleted) MaterialTheme.colorScheme.secondary
-                    else MaterialTheme.colorScheme.surfaceVariant
-                )
-                .clickable(onClick = onToggle),
-            contentAlignment = Alignment.Center
-        ) {
-            if (item.isCompleted) {
-                Icon(
-                    imageVector = Icons.Default.Check,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onSecondary,
-                    modifier = Modifier.size(18.dp)
-                )
-            }
-        }
-        
-        Column(
-            modifier = Modifier.weight(1f),
-            verticalArrangement = Arrangement.spacedBy(4.dp)
-        ) {
+    KlarityListItem(
+        headlineContent = {
             Text(
                 text = item.title,
-                style = MaterialTheme.typography.bodyMedium,
-                color = if (item.isCompleted) MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f) else MaterialTheme.colorScheme.onSurface,
+                color = if (item.isCompleted) 
+                    MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f) 
+                    else MaterialTheme.colorScheme.onSurface,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
-            
-            if (item.progress != null) {
-                LinearProgressIndicator(
-                    progress = { item.progress },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(4.dp)
-                        .clip(RoundedCornerShape(2.dp)),
-                    color = MaterialTheme.colorScheme.secondary,
-                    trackColor = MaterialTheme.colorScheme.surfaceVariant,
+        },
+        modifier = modifier,
+        supportingContent = if (item.progress != null) {
+            {
+                KlarityLinearProgress(
+                    progress = item.progress,
+                    showPercentage = false,
+                    color = MaterialTheme.colorScheme.secondary
                 )
             }
-        }
-    }
+        } else null,
+        leadingContent = {
+            Box(
+                modifier = Modifier
+                    .size(40.dp)
+                    .clip(CircleShape)
+                    .background(
+                        if (item.isCompleted) MaterialTheme.colorScheme.secondary
+                        else MaterialTheme.colorScheme.surfaceVariant
+                    )
+                    .clickable(onClick = onToggle),
+                contentAlignment = Alignment.Center
+            ) {
+                if (item.isCompleted) {
+                    Icon(
+                        imageVector = Icons.Default.Check,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onSecondary,
+                        modifier = Modifier.size(18.dp)
+                    )
+                }
+            }
+        },
+        onClick = onClick
+    )
 }
 
 @Composable
@@ -739,41 +695,35 @@ private fun FocusScheduleItem(
     modifier: Modifier = Modifier
 ) {
     Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .clickable(onClick = onClick)
-            .padding(horizontal = 20.dp, vertical = 10.dp),
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
-        verticalAlignment = Alignment.CenterVertically
+        modifier = modifier.fillMaxWidth()
     ) {
-        // Time indicator
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier.width(48.dp)
-        ) {
-            Text(
-                text = item.dueTime ?: "--:--",
-                style = MaterialTheme.typography.labelMedium,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.primary
-            )
-        }
-        
+        // Vertical colored bar
         Box(
             modifier = Modifier
                 .width(3.dp)
-                .height(32.dp)
+                .height(56.dp)
                 .clip(RoundedCornerShape(2.dp))
                 .background(MaterialTheme.colorScheme.primary)
         )
         
-        Text(
-            text = item.title,
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurface,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
-            modifier = Modifier.weight(1f)
+        KlarityListItem(
+            headlineContent = {
+                Text(
+                    text = item.title,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+            },
+            modifier = Modifier.weight(1f),
+            overlineContent = {
+                Text(
+                    text = item.dueTime ?: "--:--",
+                    style = MaterialTheme.typography.labelMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.primary
+                )
+            },
+            onClick = onClick
         )
     }
 }
@@ -785,49 +735,45 @@ private fun FocusHabitItem(
     onToggle: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .clickable(onClick = onClick)
-            .padding(horizontal = 20.dp, vertical = 10.dp),
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Box(
-            modifier = Modifier
-                .size(32.dp)
-                .clip(RoundedCornerShape(8.dp))
-                .background(
-                    if (item.isCompleted)
-                        MaterialTheme.colorScheme.secondaryContainer
-                    else
-                        MaterialTheme.colorScheme.surfaceVariant
-                )
-                .clickable(onClick = onToggle),
-            contentAlignment = Alignment.Center
-        ) {
+    KlarityListItem(
+        headlineContent = {
             Text(
-                text = if (item.isCompleted) "✓" else "○",
-                fontSize = 14.sp,
+                text = item.title,
                 color = if (item.isCompleted)
-                    MaterialTheme.colorScheme.onSecondaryContainer
+                    MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
                 else
-                    MaterialTheme.colorScheme.onSurfaceVariant
+                    MaterialTheme.colorScheme.onSurface,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
             )
-        }
-        
-        Text(
-            text = item.title,
-            style = MaterialTheme.typography.bodyMedium,
-            color = if (item.isCompleted)
-                MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
-            else
-                MaterialTheme.colorScheme.onSurface,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
-            modifier = Modifier.weight(1f)
-        )
-    }
+        },
+        modifier = modifier,
+        leadingContent = {
+            Box(
+                modifier = Modifier
+                    .size(40.dp)
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(
+                        if (item.isCompleted)
+                            MaterialTheme.colorScheme.secondaryContainer
+                        else
+                            MaterialTheme.colorScheme.surfaceVariant
+                    )
+                    .clickable(onClick = onToggle),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = if (item.isCompleted) "✓" else "○",
+                    fontSize = 14.sp,
+                    color = if (item.isCompleted)
+                        MaterialTheme.colorScheme.onSecondaryContainer
+                    else
+                        MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        },
+        onClick = onClick
+    )
 }
 
 // ============================================================================
