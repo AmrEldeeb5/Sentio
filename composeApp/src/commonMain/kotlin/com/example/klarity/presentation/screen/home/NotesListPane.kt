@@ -27,6 +27,9 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.klarity.domain.models.Note
+import com.example.klarity.presentation.components.*
+import com.example.klarity.presentation.theme.KlarityShapes
+import com.example.klarity.presentation.theme.KlarityTheme
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 
@@ -581,58 +584,52 @@ private fun NoteListItem(
     luminousTeal: Color,
     electricMint: Color
 ) {
-    val interactionSource = remember { MutableInteractionSource() }
-    val isHovered by interactionSource.collectIsHoveredAsState()
-    
-    val bgColor by animateColorAsState(
-        targetValue = when {
-            isSelected -> luminousTeal.copy(alpha = 0.10f)  // Reduced - accent bar now provides emphasis
-            isMultiSelected -> luminousTeal.copy(alpha = 0.08f)
-            isHovered -> MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
-            note.isPinned -> MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.2f)
-            else -> Color.Transparent
-        },
-        animationSpec = KlarityMotion.quickExit(),
-        label = "bgColor"
-    )
-    
-    Surface(
-        onClick = onClick,
-        color = bgColor,
-        shape = RoundedCornerShape(8.dp),
-        modifier = Modifier
-            .fillMaxWidth()
-            .hoverable(interactionSource)
-    ) {
-        // Left accent bar for selected state
-        if (isSelected) {
-            Box(
-                modifier = Modifier
-                    .fillMaxHeight()
-                    .width(3.dp)
-                    .background(
-                        brush = Brush.verticalGradient(
-                            colors = listOf(
-                                luminousTeal.copy(alpha = 0.8f),
-                                luminousTeal
-                            )
-                        )
-                    )
-            )
+    // Auto-generate title from content if empty
+    val displayTitle = remember(note.title, note.content, note.createdAt) {
+        when {
+            note.title.isNotBlank() -> note.title
+            note.content.isNotBlank() -> note.content.lines().firstOrNull()?.take(40)?.trim() ?: "New Note"
+            else -> "New Note • ${formatTime(note.createdAt)}"
         }
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp), // Increased from 14dp for more breathing room
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
-            verticalAlignment = Alignment.Top
-        ) {
-            // Multi-select checkbox (visible in multi-select mode or on hover with Ctrl hint)
-            AnimatedVisibility(
-                visible = showMultiSelectMode || isHovered,
-                enter = fadeIn() + expandHorizontally(),
-                exit = fadeOut() + shrinkHorizontally()
+    }
+    
+    // Note preview text with italic style for empty notes
+    val previewText = if (note.content.isNotEmpty()) {
+        note.content.take(100).replace("\n", " ")
+    } else {
+        null
+    }
+    
+    KlarityNoteListItem(
+        headline = if (note.isPinned) "📌 $displayTitle" else displayTitle,
+        supporting = previewText,
+        metadata = {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
             ) {
+                // Tags
+                Row(horizontalArrangement = Arrangement.spacedBy(KlarityTheme.spacing.extraSmall)) {
+                    note.tags.take(2).forEach { tag ->
+                        Text(
+                            text = "#$tag",
+                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+                            style = MaterialTheme.typography.labelSmall
+                        )
+                    }
+                }
+                
+                // Timestamp
+                Text(
+                    text = formatTime(note.updatedAt),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+                    style = MaterialTheme.typography.labelSmall
+                )
+            }
+        },
+        leading = if (showMultiSelectMode) {
+            {
                 Checkbox(
                     checked = isMultiSelected,
                     onCheckedChange = { onSelect(true, false) },
@@ -643,120 +640,32 @@ private fun NoteListItem(
                     modifier = Modifier.size(20.dp)
                 )
             }
-            
-            // Note content
-            Column(
-                modifier = Modifier.weight(1f),
-                verticalArrangement = Arrangement.spacedBy(6.dp)  // Increased from 4dp
-            ) {
-                // Title row
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(6.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    if (note.isPinned) {
-                        Text(text = "📌", fontSize = 12.sp)
-                    }
-                    
-                    // Auto-generate title from content if empty
-                    val displayTitle = remember(note.title, note.content, note.createdAt) {
-                        when {
-                            note.title.isNotBlank() -> note.title
-                            note.content.isNotBlank() -> note.content.lines().firstOrNull()?.take(40)?.trim() ?: "New Note"
-                            else -> "New Note \u2022 ${formatTime(note.createdAt)}"
-                        }
-                    }
-                    
-                    Text(
-                        text = displayTitle,
-                        color = if (isSelected) luminousTeal else MaterialTheme.colorScheme.onSurface,
-                        fontSize = 15.sp,  // Increased from 14sp
-                        fontWeight = if (isSelected || note.isPinned) FontWeight.SemiBold else FontWeight.Medium,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
-                    )
-                }
-                
-                // Preview - Make it more prominent and informative
-                if (note.content.isNotEmpty()) {
-                    Text(
-                        text = note.content.take(100).replace("\n", " "),
-                        color = if (isSelected) 
-                            MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
-                        else 
-                            MaterialTheme.colorScheme.onSurfaceVariant,
-                        fontSize = 12.sp,
-                        maxLines = 2,
-                        overflow = TextOverflow.Ellipsis,
-                        lineHeight = 17.sp,
-                        fontWeight = FontWeight.Normal
-                    )
-                } else {
-                    // Empty note indicator - warm, inviting tone
-                    Text(
-                        text = "Start writing…",
-                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
-                        fontSize = 12.sp,
-                        fontStyle = androidx.compose.ui.text.font.FontStyle.Italic
-                    )
-                }
-                
-                // Tags and time
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    // Tags
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(4.dp)
-                    ) {
-                        note.tags.take(2).forEach { tag ->
-                            Text(
-                                text = "#$tag",
-                                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
-                                fontSize = 10.sp
-                            )
-                        }
-                    }
-                    
-                    // Time
-                    Text(
-                        text = formatTime(note.updatedAt),
-                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
-                        fontSize = 10.sp
-                    )
-                }
+        } else null,
+        trailing = {
+            Row(horizontalArrangement = Arrangement.spacedBy(KlarityTheme.spacing.extraSmall)) {
+                QuickActionIcon(
+                    icon = if (note.isPinned) "📍" else "📌",
+                    onClick = onTogglePin,
+                    tint = if (note.isPinned) luminousTeal else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                )
+                QuickActionIcon(
+                    icon = "🤖",
+                    onClick = onAskAI,
+                    tint = electricMint
+                )
+                QuickActionIcon(
+                    icon = "🗑️",
+                    onClick = onDelete,
+                    tint = MaterialTheme.colorScheme.error
+                )
             }
-            
-            // Quick actions (progressive disclosure: visible on hover or selection)
-            AnimatedVisibility(
-                visible = isHovered || isSelected,
-                enter = fadeIn() + expandHorizontally(),
-                exit = fadeOut() + shrinkHorizontally()
-            ) {
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(4.dp)
-                ) {
-                    QuickActionIcon(
-                        icon = if (note.isPinned) "📍" else "📌",
-                        onClick = onTogglePin,
-                        tint = if (note.isPinned) luminousTeal else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
-                    )
-                    QuickActionIcon(
-                        icon = "🤖",
-                        onClick = onAskAI,
-                        tint = electricMint
-                    )
-                    QuickActionIcon(
-                        icon = "🗑️",
-                        onClick = onDelete,
-                        tint = MaterialTheme.colorScheme.error
-                    )
-                }
-            }
-        }
-    }
+        },
+        selected = isSelected,
+        multiSelected = isMultiSelected,
+        showCheckbox = showMultiSelectMode,
+        showActionsOnHover = true,
+        onClick = onClick
+    )
 }
 
 @Composable

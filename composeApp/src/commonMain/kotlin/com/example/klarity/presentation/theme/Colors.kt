@@ -77,6 +77,19 @@ object KlarityColors {
     val GlowColor = ElectricMint.copy(alpha = 0.3f)
 
     // ══════════════════════════════════════════════════════════════
+    // SENTIO COLORS - AI-Inspired Accent Palette
+    // ══════════════════════════════════════════════════════════════
+    
+    /** Sentio Purple - AI commands, premium features */
+    val SentioPurple = Color(0xFF8B5CF6)
+    
+    /** Sentio Indigo - links, connections */
+    val SentioIndigo = Color(0xFF6366F1)
+    
+    /** Sentio Rose - alerts, important AI suggestions */
+    val SentioRose = Color(0xFFF43F5E)
+
+    // ══════════════════════════════════════════════════════════════
     // TEXT COLORS - Improved Contrast
     // ══════════════════════════════════════════════════════════════
     
@@ -302,6 +315,22 @@ val AIGradient = GradientColors(
 val CardGradient = GradientColors(
     start = KlarityColors.BgCard,
     end = KlarityColors.BgTertiary
+)
+
+// ══════════════════════════════════════════════════════════════
+// SENTIO GRADIENTS - AI Feature Gradients
+// ══════════════════════════════════════════════════════════════
+
+/** Sentio AI Gradient - for AI-powered features (teal → purple) */
+val SentioGradientAI = GradientColors(
+    start = Color(0xFF2DD4BF), // LuminousTeal
+    end = Color(0xFF8B5CF6)    // SentioPurple
+)
+
+/** Sentio Energy Gradient - for active/energetic states (mint → teal) */
+val SentioGradientEnergy = GradientColors(
+    start = Color(0xFF3DD68C), // ElectricMint
+    end = Color(0xFF2DD4BF)    // LuminousTeal
 )
 
 

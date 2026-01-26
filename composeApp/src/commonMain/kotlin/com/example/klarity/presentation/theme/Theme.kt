@@ -1,6 +1,9 @@
 package com.example.klarity.presentation.theme
 
 import androidx.compose.animation.core.CubicBezierEasing
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.SpringSpec
+import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
@@ -73,6 +76,115 @@ object KlarityMotion {
         durationMillis = Duration.Short2,
         easing = EasingStandard
     )
+
+    // ══════════════════════════════════════════════════════════════════════════════
+    // SPRING PHYSICS SPECS
+    // ══════════════════════════════════════════════════════════════════════════════
+
+    /**
+     * Bouncy spring animation with organic, playful motion.
+     *
+     * Characteristics:
+     * - Medium bounce (damping ratio: 0.5)
+     * - Medium stiffness (1500f)
+     * - Natural, organic feel with visible overshoot
+     *
+     * Recommended use cases:
+     * - Card hover lifts and elevation changes
+     * - Button press feedback
+     * - Interactive UI element responses
+     * - Organic transitions that need personality
+     * - Focus indicators and selection animations
+     *
+     * Example:
+     * ```kotlin
+     * val elevation by animateDpAsState(
+     *     targetValue = if (hovered) 4.dp else 2.dp,
+     *     animationSpec = KlarityMotion.springBouncy()
+     * )
+     * ```
+     *
+     * @param dampingRatio Controls the bounce amount (default: 0.5 = medium bouncy)
+     * @param stiffness Controls animation speed (default: 1500f = medium speed)
+     * @return SpringSpec for use with Compose animation APIs
+     */
+    fun <T> springBouncy(
+        dampingRatio: Float = Spring.DampingRatioMediumBouncy,
+        stiffness: Float = Spring.StiffnessMedium
+    ): SpringSpec<T> = spring(
+        dampingRatio = dampingRatio,
+        stiffness = stiffness
+    )
+
+    /**
+     * Gentle spring animation with smooth, subtle motion.
+     *
+     * Characteristics:
+     * - No bounce (damping ratio: 1.0)
+     * - Low stiffness (200f)
+     * - Smooth, fluid transitions without overshoot
+     *
+     * Recommended use cases:
+     * - Panel slides and drawer animations
+     * - Opacity fade transitions
+     * - Smooth offset animations
+     * - Gentle scale changes
+     * - Background color transitions
+     *
+     * Example:
+     * ```kotlin
+     * val offset by animateFloatAsState(
+     *     targetValue = if (visible) 0f else 1000f,
+     *     animationSpec = KlarityMotion.springGentle()
+     * )
+     * ```
+     *
+     * @param dampingRatio Controls the bounce amount (default: 1.0 = no bounce)
+     * @param stiffness Controls animation speed (default: 200f = gentle speed)
+     * @return SpringSpec for use with Compose animation APIs
+     */
+    fun <T> springGentle(
+        dampingRatio: Float = Spring.DampingRatioNoBouncy,
+        stiffness: Float = Spring.StiffnessLow
+    ): SpringSpec<T> = spring(
+        dampingRatio = dampingRatio,
+        stiffness = stiffness
+    )
+
+    /**
+     * Snappy spring animation with quick, responsive motion.
+     *
+     * Characteristics:
+     * - Low bounce (damping ratio: 0.25)
+     * - High stiffness (10000f)
+     * - Quick, energetic response with minimal overshoot
+     *
+     * Recommended use cases:
+     * - Toggle switches and checkboxes
+     * - Quick action feedback
+     * - Snappy UI responses
+     * - Interactive controls
+     * - Rapid state changes
+     *
+     * Example:
+     * ```kotlin
+     * val color by animateColorAsState(
+     *     targetValue = if (checked) primary else outline,
+     *     animationSpec = KlarityMotion.springSnappy()
+     * )
+     * ```
+     *
+     * @param dampingRatio Controls the bounce amount (default: 0.25 = low bouncy)
+     * @param stiffness Controls animation speed (default: 10000f = very fast)
+     * @return SpringSpec for use with Compose animation APIs
+     */
+    fun <T> springSnappy(
+        dampingRatio: Float = Spring.DampingRatioLowBouncy,
+        stiffness: Float = Spring.StiffnessHigh
+    ): SpringSpec<T> = spring(
+        dampingRatio = dampingRatio,
+        stiffness = stiffness
+    )
 }
 
 // ══════════════════════════════════════════════════════════════════════════════
@@ -101,7 +213,16 @@ data class ExtendedColors(
     val surfaceGlow: Color,
     val borderSelected: Color,
     val textTertiary: Color,
-    val textMuted: Color
+    val textMuted: Color,
+    // Accent colors
+    val luminousTeal: Color,
+    val electricMint: Color,
+    // Sentio colors
+    val sentioPurple: Color,
+    val sentioIndigo: Color,
+    val sentioRose: Color,
+    val sentioGradientAI: Pair<Color, Color>,
+    val sentioGradientEnergy: Pair<Color, Color>
 )
 
 private val KlarityExtendedColors = ExtendedColors(
@@ -121,7 +242,16 @@ private val KlarityExtendedColors = ExtendedColors(
     surfaceGlow = KlarityColors.GlowColor,
     borderSelected = KlarityColors.BorderSelected,
     textTertiary = KlarityColors.TextTertiary,
-    textMuted = KlarityColors.TextMuted
+    textMuted = KlarityColors.TextMuted,
+    // Accent colors
+    luminousTeal = KlarityColors.LuminousTeal,
+    electricMint = KlarityColors.ElectricMint,
+    // Sentio colors
+    sentioPurple = KlarityColors.SentioPurple,
+    sentioIndigo = KlarityColors.SentioIndigo,
+    sentioRose = KlarityColors.SentioRose,
+    sentioGradientAI = SentioGradientAI.start to SentioGradientAI.end,
+    sentioGradientEnergy = SentioGradientEnergy.start to SentioGradientEnergy.end
 )
 
 val LocalExtendedColors = staticCompositionLocalOf { KlarityExtendedColors }
@@ -300,3 +430,28 @@ val ColorScheme.success: Color
 
 val ColorScheme.warning: Color
     get() = KlarityColors.Warning
+
+// ══════════════════════════════════════════════════════════════════════════════
+// SENTIO COLOR SCHEME EXTENSIONS
+// ══════════════════════════════════════════════════════════════════════════════
+
+val ColorScheme.sentioPurple: Color
+    @Composable
+    get() = KlarityTheme.extendedColors.sentioPurple
+
+val ColorScheme.sentioIndigo: Color
+    @Composable
+    get() = KlarityTheme.extendedColors.sentioIndigo
+
+val ColorScheme.sentioRose: Color
+    @Composable
+    get() = KlarityTheme.extendedColors.sentioRose
+
+val ColorScheme.sentioGradientAI: Pair<Color, Color>
+    @Composable
+    get() = KlarityTheme.extendedColors.sentioGradientAI
+
+val ColorScheme.sentioGradientEnergy: Pair<Color, Color>
+    @Composable
+    get() = KlarityTheme.extendedColors.sentioGradientEnergy
+
