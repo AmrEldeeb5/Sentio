@@ -46,7 +46,8 @@ enum class PaneType {
     NOTES_LIST,
     EDITOR,
     GRAPH,
-    TASKS
+    TASKS,
+    FILE_EXPLORER
 }
 
 /**
@@ -68,16 +69,19 @@ data class WorkspaceConfig(
  */
 object WorkspacePresets {
     val notesDefault = WorkspaceConfig(
-        mode = WorkspaceLayoutMode.DUAL_PANE,
-        leftPane = PaneType.NOTES_LIST,
+        mode = WorkspaceLayoutMode.TRI_PANE,
+        leftPane = PaneType.FILE_EXPLORER,
         centerPane = PaneType.EDITOR,
-        leftPaneWidth = 280.dp
+        rightPane = PaneType.NOTES_LIST,
+        leftPaneWidth = 260.dp,
+        rightPaneWidth = 320.dp
     )
     
     val notesDual = WorkspaceConfig(
         mode = WorkspaceLayoutMode.DUAL_PANE,
-        leftPane = PaneType.NOTES_LIST,
-        centerPane = PaneType.EDITOR
+        centerPane = PaneType.EDITOR,
+        rightPane = PaneType.NOTES_LIST,
+        rightPaneWidth = 320.dp
     )
     
     val notesFocus = WorkspaceConfig(
@@ -87,8 +91,9 @@ object WorkspacePresets {
     
     val tasksWithNotes = WorkspaceConfig(
         mode = WorkspaceLayoutMode.DUAL_PANE,
-        leftPane = PaneType.TASKS,
-        centerPane = PaneType.EDITOR
+        centerPane = PaneType.EDITOR,
+        rightPane = PaneType.TASKS,
+        rightPaneWidth = 320.dp
     )
     
     val tasksFull = WorkspaceConfig(
