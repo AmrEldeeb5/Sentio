@@ -206,14 +206,46 @@ private fun CenterSection(
     luminousTeal: Color,
     hasNotes: Boolean = false
 ) {
-    // Consolidated Omnibar - Single search/command input
-    OmniBar(
-        query = searchQuery,
-        onQueryChange = onSearchQueryChange,
-        onCommandPaletteOpen = onCommandPaletteOpen,
-        luminousTeal = luminousTeal,
-        hasNotes = hasNotes
-    )
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        OmniBar(
+            query = searchQuery,
+            onQueryChange = onSearchQueryChange,
+            onCommandPaletteOpen = onCommandPaletteOpen,
+            luminousTeal = luminousTeal,
+            hasNotes = hasNotes
+        )
+        
+        // + New Button from the image
+        Button(
+            onClick = { /* TODO: Create note */ },
+            colors = ButtonDefaults.buttonColors(
+                containerColor = Color(0xFF34D399), // Bright teal
+                contentColor = Color.Black
+            ),
+            shape = RoundedCornerShape(8.dp),
+            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+            modifier = Modifier.height(40.dp)
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Icon(
+                    Icons.Default.Add,
+                    contentDescription = null,
+                    modifier = Modifier.size(18.dp)
+                )
+                Text(
+                    text = "New",
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 14.sp
+                )
+            }
+        }
+    }
 }
 
 @Composable
@@ -252,7 +284,7 @@ private fun OmniBar(
         color = bgColor,
         shape = RoundedCornerShape(10.dp),
         modifier = Modifier
-            .width(420.dp)
+            .width(520.dp) // Larger search bar as seen in the image
             .hoverable(interactionSource)
             .border(
                 width = 1.dp,
@@ -283,11 +315,7 @@ private fun OmniBar(
             
             // Dynamic placeholder based on context and focus
             val placeholderText = remember(isFocused, hasNotes) {
-                when {
-                    isFocused && hasNotes -> "Try: \"Find Kotlin\", \"Create note\", \"Focus mode\""
-                    isFocused -> "Try: \"Create note\", \"Focus mode\", \"Switch theme\""
-                    else -> "Search or type a command…"
-                }
+                "Search notes..."
             }
             
             BasicTextField(
@@ -306,7 +334,7 @@ private fun OmniBar(
                     Box {
                         if (query.isEmpty()) {
                             Text(
-                                text = "Search or type a command...",
+                                text = "Search notes...",
                                 color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
                                 fontSize = 14.sp
                             )

@@ -1,16 +1,9 @@
 package com.example.klarity.presentation.screen.home
 
-import androidx.compose.animation.*
-import androidx.compose.animation.core.*
 import androidx.compose.foundation.*
-import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.interaction.collectIsHoveredAsState
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import com.example.klarity.presentation.theme.KlarityMotion
-import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
@@ -19,693 +12,247 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.key.*
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.klarity.domain.models.Note
+import com.example.klarity.domain.models.NoteStatus
 import com.example.klarity.presentation.components.*
-import com.example.klarity.presentation.theme.KlarityShapes
-import com.example.klarity.presentation.theme.KlarityTheme
+import com.example.klarity.presentation.theme.KlarityColors
 import kotlinx.datetime.Clock
-import kotlinx.datetime.Instant
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.periodUntil
 
 /**
- * Sort options for the note list
- */
-enum class NoteSortOption(val label: String, val icon: String) {
-    UPDATED("Last Updated", "🕐"),
-    CREATED("Created Date", "📅"),
-    TITLE("Title A-Z", "🔤"),
-    TITLE_DESC("Title Z-A", "🔠")
-}
-
-/**
- * Group options for the note list
- */
-enum class NoteGroupOption(val label: String, val icon: String) {
-    NONE("No Grouping", "📋"),
-    FOLDER("By Folder", "📁"),
-    TAG("By Tag", "🏷️"),
-    DATE("By Date", "📆")
-}
-
-/**
- * Enhanced Notes List with Desktop Features
+ * Notes List Panel - RIGHT SIDE (Sidebar)
  * 
- * Features:
- * - Multi-select (Shift, Ctrl)
- * - Sorting & grouping
- * - Tag filtering
- * - Hover reveals quick actions
+ * Replicated from image mockup:
+ * - Search + New button at top
+ * - Card-based note list categorized by sections
  */
 @Composable
 fun NotesListPane(
     notes: List<Note>,
+    folders: List<com.example.klarity.domain.models.Folder> = emptyList(),
     selectedNoteId: String?,
     selectedNoteIds: Set<String>,
     searchQuery: String,
     onSearchQueryChange: (String) -> Unit,
     onNoteClick: (Note) -> Unit,
-    onNoteSelect: (Note, Boolean, Boolean) -> Unit, // note, isCtrlPressed, isShiftPressed
+    onNoteSelect: (Note, Boolean, Boolean) -> Unit,
     onCreateNote: () -> Unit,
     onTogglePin: (String) -> Unit,
     onDeleteNote: (String) -> Unit,
     onAskAI: (Note) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    // Use centralized colors from theme
-    val luminousTeal = MaterialTheme.colorScheme.primary
-    val electricMint = MaterialTheme.colorScheme.tertiary
-
-    var sortOption by remember { mutableStateOf(NoteSortOption.UPDATED) }
-    var groupOption by remember { mutableStateOf(NoteGroupOption.NONE) }
-    var showSortMenu by remember { mutableStateOf(false) }
-    var showGroupMenu by remember { mutableStateOf(false) }
-    var aiClusterEnabled by remember { mutableStateOf(false) }
-    var filterTags by remember { mutableStateOf<Set<String>>(emptySet()) }
-    
-    // Sorted and filtered notes
-    val processedNotes = remember(notes, sortOption, filterTags) {
-        notes
-            .filter { note ->
-                filterTags.isEmpty() || note.tags.any { it in filterTags }
-            }
-            .sortedWith(
-                when (sortOption) {
-                    NoteSortOption.UPDATED -> compareByDescending { it.updatedAt }
-                    NoteSortOption.CREATED -> compareByDescending { it.createdAt }
-                    NoteSortOption.TITLE -> compareBy { it.title.lowercase() }
-                    NoteSortOption.TITLE_DESC -> compareByDescending { it.title.lowercase() }
-                }
-            )
-    }
-    
-    // All available tags
-    val allTags = remember(notes) {
-        notes.flatMap { it.tags }.distinct().sorted()
-    }
-    
-    Column(
-        modifier = modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.surfaceVariant)
-            .padding(start = 1.dp) // Subtle left border effect
-    ) {
-        // Header with search and actions
-        NotesListHeader(
-            searchQuery = searchQuery,
-            onSearchQueryChange = onSearchQueryChange,
-            onCreateNote = onCreateNote,
-            noteCount = processedNotes.size,
-            selectedCount = selectedNoteIds.size,
-            luminousTeal = luminousTeal
-        )
+    // Group notes by folder names dynamically
+    val groupedNotes = remember(notes, folders) {
+        val groups = mutableMapOf<String, List<Note>>()
         
-        // Toolbar - Sort, Group, Filter
-        NotesListToolbar(
-            sortOption = sortOption,
-            groupOption = groupOption,
-            showSortMenu = showSortMenu,
-            showGroupMenu = showGroupMenu,
-            onSortClick = { showSortMenu = !showSortMenu },
-            onGroupClick = { showGroupMenu = !showGroupMenu },
-            onSortSelected = { 
-                sortOption = it
-                showSortMenu = false
-            },
-            onGroupSelected = {
-                groupOption = it
-                showGroupMenu = false
-            },
-            aiClusterEnabled = aiClusterEnabled,
-            onAiClusterToggle = { aiClusterEnabled = !aiClusterEnabled },
-            luminousTeal = luminousTeal,
-            electricMint = electricMint
-        )
+        // Always show pinned notes first
+        val pinned = notes.filter { it.isPinned }
+        if (pinned.isNotEmpty()) groups["📌 PINNED"] = pinned
         
-        // Tag filter chips
-        if (allTags.isNotEmpty()) {
-            TagFilterRow(
-                allTags = allTags,
-                selectedTags = filterTags,
-                onTagToggle = { tag ->
-                    filterTags = if (tag in filterTags) {
-                        filterTags - tag
-                    } else {
-                        filterTags + tag
-                    }
-                },
-                luminousTeal = luminousTeal
-            )
-        }
+        // Group by folder
+        val folderMap = folders.associateBy { it.id }
+        val notesByFolder = notes.filter { !it.isPinned }.groupBy { it.folderId }
         
-        HorizontalDivider(
-            color = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f),
-            thickness = 1.dp
-        )
-        
-        // Notes list with improved spacing
-        LazyColumn(
-            modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(12.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            itemsIndexed(
-                items = processedNotes,
-                key = { _, item -> item.id }
-            ) { index, note ->
-                NoteListItem(
-                    note = note,
-                    isSelected = note.id == selectedNoteId,
-                    isMultiSelected = note.id in selectedNoteIds,
-                    showMultiSelectMode = selectedNoteIds.size > 1,
-                    onClick = { onNoteClick(note) },
-                    onSelect = { ctrlPressed, shiftPressed -> 
-                        onNoteSelect(note, ctrlPressed, shiftPressed) 
-                    },
-                    onTogglePin = { onTogglePin(note.id) },
-                    onDelete = { onDeleteNote(note.id) },
-                    onAskAI = { onAskAI(note) },
-                    luminousTeal = luminousTeal,
-                    electricMint = electricMint
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun NotesListHeader(
-    searchQuery: String,
-    onSearchQueryChange: (String) -> Unit,
-    onCreateNote: () -> Unit,
-    noteCount: Int,
-    selectedCount: Int,
-    luminousTeal: Color
-) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(12.dp)
-    ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.End,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            // Create button - now the clear primary action
-            Button(
-                onClick = onCreateNote,
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = luminousTeal,
-                    contentColor = MaterialTheme.colorScheme.onPrimary
-                ),
-                shape = RoundedCornerShape(8.dp),
-                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)
-            ) {
-                Icon(
-                    Icons.Default.Add,
-                    contentDescription = null,
-                    modifier = Modifier.size(16.dp)
-                )
-                Spacer(Modifier.width(6.dp))
-                Text(
-                    text = "New",
-                    fontSize = 13.sp,
-                    fontWeight = FontWeight.SemiBold
-                )
+        // Add notes with folders
+        notesByFolder.forEach { (folderId, notesInFolder) ->
+            if (folderId != null) {
+                val folder = folderMap[folderId]
+                val folderName = folder?.name?.uppercase() ?: "UNCATEGORIZED"
+                val folderIcon = folder?.icon ?: "📁"
+                groups["$folderIcon $folderName"] = notesInFolder
             }
         }
         
-        Spacer(Modifier.height(8.dp))
+        // Add notes without folder (root level)
+        notesByFolder[null]?.let { rootNotes ->
+            if (rootNotes.isNotEmpty()) {
+                groups["📝 UNCATEGORIZED"] = rootNotes
+            }
+        }
         
-        // Search field
-        Surface(
-            color = MaterialTheme.colorScheme.surface,
-            shape = RoundedCornerShape(8.dp)
+        groups
+    }
+    
+    Row(modifier = modifier.fillMaxSize()) {
+        // Pixel-perfect vertical divider on the left
+        Box(
+            modifier = Modifier
+                .fillMaxHeight()
+                .width(1.dp)
+                .background(Color(0xFF1F3D35).copy(alpha = 0.5f))
+        )
+        
+        Column(
+            modifier = Modifier
+                .weight(1f)
+                .fillMaxHeight()
+                .background(KlarityColors.BgPrimary)
+                .padding(16.dp)
         ) {
+            // Search + New button
             Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(10.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier.fillMaxWidth().padding(bottom = 24.dp),
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Icon(
-                    Icons.Default.Search,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
-                    modifier = Modifier.size(16.dp)
-                )
-                
-                androidx.compose.foundation.text.BasicTextField(
-                    value = searchQuery,
-                    onValueChange = onSearchQueryChange,
-                    textStyle = androidx.compose.ui.text.TextStyle(
-                        color = MaterialTheme.colorScheme.onSurface,
-                        fontSize = 13.sp
-                    ),
-                    singleLine = true,
-                    modifier = Modifier.weight(1f),
-                    decorationBox = { innerTextField ->
-                        Box {
-                            if (searchQuery.isEmpty()) {
-                                Text(
-                                    text = "Search notes...",
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
-                                    fontSize = 13.sp
-                                )
-                            }
-                            innerTextField()
-                        }
-                    }
-                )
-                
-                if (searchQuery.isNotEmpty()) {
-                    IconButton(
-                        onClick = { onSearchQueryChange("") },
-                        modifier = Modifier.size(20.dp)
+                // Search
+                Surface(
+                    color = Color(0xFF161B22).copy(alpha = 0.5f),
+                    shape = RoundedCornerShape(8.dp),
+                    modifier = Modifier.weight(1f).height(40.dp)
+                ) {
+                    Row(
+                        modifier = Modifier.fillMaxSize().padding(horizontal = 12.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(10.dp)
                     ) {
                         Icon(
-                            Icons.Default.Close,
-                            contentDescription = "Clear",
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
-                            modifier = Modifier.size(14.dp)
+                            imageVector = Icons.Default.Search,
+                            contentDescription = null,
+                            tint = Color(0xFF484F58).copy(alpha = 0.7f),
+                            modifier = Modifier.size(16.dp)
+                        )
+                        androidx.compose.foundation.text.BasicTextField(
+                            value = searchQuery,
+                            onValueChange = onSearchQueryChange,
+                            textStyle = androidx.compose.ui.text.TextStyle(
+                                color = Color(0xFFE6EDF3),
+                                fontSize = 13.sp
+                            ),
+                            singleLine = true,
+                            modifier = Modifier.weight(1f),
+                            decorationBox = { innerTextField ->
+                                Box {
+                                    if (searchQuery.isEmpty()) {
+                                        Text("Search notes...", color = Color(0xFF484F58), fontSize = 13.sp)
+                                    }
+                                    innerTextField()
+                                }
+                            }
                         )
                     }
                 }
-            }
-        }
-        
-        // Selection indicator
-        AnimatedVisibility(
-            visible = selectedCount > 1,
-            enter = fadeIn() + expandVertically(),
-            exit = fadeOut() + shrinkVertically()
-        ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 8.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = "$selectedCount notes selected",
-                    color = luminousTeal,
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight.Medium
-                )
                 
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                // + New
+                Surface(
+                    onClick = onCreateNote,
+                    color = Color(0xFF34D399),
+                    shape = RoundedCornerShape(8.dp),
+                    modifier = Modifier.height(36.dp)
                 ) {
-                    TextButton(onClick = { /* Bulk delete */ }) {
-                        Text("Delete", color = MaterialTheme.colorScheme.error, fontSize = 12.sp)
+                    Row(
+                        modifier = Modifier.padding(horizontal = 12.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Text("+", color = Color(0xFF08100E), fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                        Text("New", color = Color(0xFF08100E), fontSize = 14.sp, fontWeight = FontWeight.Bold)
                     }
-                    TextButton(onClick = { /* Bulk tag */ }) {
-                        Text("Tag", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 12.sp)
+                }
+            }
+            
+            // Notes list
+            LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                verticalArrangement = Arrangement.spacedBy(16.dp),
+                contentPadding = PaddingValues(bottom = 24.dp)
+            ) {
+                groupedNotes.forEach { (section, sectionNotes) ->
+                    // Section header
+                    item(key = "header_$section") {
+                        Row(
+                            modifier = Modifier.fillMaxWidth().padding(top = 8.dp, bottom = 4.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Text(
+                                text = if (section == "PINNED") "📌 $section" else section,
+                                color = Color(0xFF5C7C75),
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.Bold,
+                                letterSpacing = 1.sp
+                            )
+                        }
                     }
-                }
-            }
-        }
-        
-        // Note count
-        Text(
-            text = "$noteCount notes",
-            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
-            fontSize = 11.sp,
-            modifier = Modifier.padding(top = 6.dp)
-        )
-    }
-}
-
-@Composable
-private fun NotesListToolbar(
-    sortOption: NoteSortOption,
-    groupOption: NoteGroupOption,
-    showSortMenu: Boolean,
-    showGroupMenu: Boolean,
-    onSortClick: () -> Unit,
-    onGroupClick: () -> Unit,
-    onSortSelected: (NoteSortOption) -> Unit,
-    onGroupSelected: (NoteGroupOption) -> Unit,
-    aiClusterEnabled: Boolean,
-    onAiClusterToggle: () -> Unit,
-    luminousTeal: Color,
-    electricMint: Color
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 12.dp, vertical = 6.dp),
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        // Sort dropdown
-        Box {
-            ToolbarButton(
-                icon = sortOption.icon,
-                label = "Sort",
-                onClick = onSortClick
-            )
-            
-            DropdownMenu(
-                expanded = showSortMenu,
-                onDismissRequest = { onSortSelected(sortOption) },
-                containerColor = MaterialTheme.colorScheme.surfaceVariant
-            ) {
-                NoteSortOption.entries.forEach { option ->
-                    DropdownMenuItem(
-                        text = {
-                            Row(
-                                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Text(text = option.icon, fontSize = 14.sp)
-                                Text(
-                                    text = option.label,
-                                    color = if (option == sortOption) luminousTeal else MaterialTheme.colorScheme.onSurface,
-                                    fontSize = 13.sp
-                                )
-                            }
-                        },
-                        onClick = { onSortSelected(option) }
-                    )
-                }
-            }
-        }
-        
-        // Group dropdown
-        Box {
-            ToolbarButton(
-                icon = groupOption.icon,
-                label = "Group",
-                onClick = onGroupClick
-            )
-            
-            DropdownMenu(
-                expanded = showGroupMenu,
-                onDismissRequest = { onGroupSelected(groupOption) },
-                containerColor = MaterialTheme.colorScheme.surfaceVariant
-            ) {
-                NoteGroupOption.entries.forEach { option ->
-                    DropdownMenuItem(
-                        text = {
-                            Row(
-                                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Text(text = option.icon, fontSize = 14.sp)
-                                Text(
-                                    text = option.label,
-                                    color = if (option == groupOption) luminousTeal else MaterialTheme.colorScheme.onSurface,
-                                    fontSize = 13.sp
-                                )
-                            }
-                        },
-                        onClick = { onGroupSelected(option) }
-                    )
-                }
-            }
-        }
-        
-        Spacer(Modifier.weight(1f))
-        
-        // AI Cluster toggle
-        AIClusterToggle(
-            enabled = aiClusterEnabled,
-            onToggle = onAiClusterToggle,
-            electricMint = electricMint
-        )
-    }
-}
-
-@Composable
-private fun ToolbarButton(
-    icon: String,
-    label: String,
-    onClick: () -> Unit
-) {
-    val interactionSource = remember { MutableInteractionSource() }
-    val isHovered by interactionSource.collectIsHoveredAsState()
-    
-    val bgColor by animateColorAsState(
-        targetValue = if (isHovered) MaterialTheme.colorScheme.surfaceVariant else MaterialTheme.colorScheme.surface.copy(alpha = 0.6f),
-        animationSpec = KlarityMotion.quickExit(),
-        label = "toolbarBtnBg"
-    )
-    
-    Surface(
-        onClick = onClick,
-        color = bgColor,
-        shape = RoundedCornerShape(16.dp), // Pill shape
-        modifier = Modifier
-            .hoverable(interactionSource)
-            .border(
-                width = 1.dp,
-                color = if (isHovered) MaterialTheme.colorScheme.outline else Color.Transparent,
-                shape = RoundedCornerShape(16.dp)
-            )
-    ) {
-        Row(
-            modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
-            horizontalArrangement = Arrangement.spacedBy(5.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(text = icon, fontSize = 12.sp)
-            Text(
-                text = label,
-                color = if (isHovered) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant,
-                fontSize = 12.sp,
-                fontWeight = FontWeight.Medium
-            )
-            Icon(
-                Icons.Default.ArrowDropDown,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
-                modifier = Modifier.size(14.dp)
-            )
-        }
-    }
-}
-
-@Composable
-private fun AIClusterToggle(
-    enabled: Boolean,
-    onToggle: () -> Unit,
-    electricMint: Color
-) {
-    val interactionSource = remember { MutableInteractionSource() }
-    val isHovered by interactionSource.collectIsHoveredAsState()
-    
-    Surface(
-        onClick = onToggle,
-        color = when {
-            enabled -> electricMint.copy(alpha = 0.15f)
-            isHovered -> MaterialTheme.colorScheme.surfaceVariant
-            else -> Color.Transparent
-        },
-        shape = RoundedCornerShape(6.dp),
-        modifier = Modifier.hoverable(interactionSource)
-    ) {
-        Row(
-            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-            horizontalArrangement = Arrangement.spacedBy(4.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(text = "🧠", fontSize = 12.sp)
-            Text(
-                text = "AI Topics",
-                color = if (enabled) electricMint else MaterialTheme.colorScheme.onSurfaceVariant,
-                fontSize = 11.sp,
-                fontWeight = if (enabled) FontWeight.Medium else FontWeight.Normal
-            )
-        }
-    }
-}
-
-@Composable
-private fun TagFilterRow(
-    allTags: List<String>,
-    selectedTags: Set<String>,
-    onTagToggle: (String) -> Unit,
-    luminousTeal: Color
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .horizontalScroll(rememberScrollState())
-            .padding(horizontal = 12.dp, vertical = 6.dp),
-        horizontalArrangement = Arrangement.spacedBy(6.dp)
-    ) {
-        allTags.take(10).forEach { tag ->
-            val isSelected = tag in selectedTags
-            
-            Surface(
-                onClick = { onTagToggle(tag) },
-                color = if (isSelected) luminousTeal.copy(alpha = 0.15f) else MaterialTheme.colorScheme.surface,
-                shape = RoundedCornerShape(4.dp)
-            ) {
-                Text(
-                    text = "#$tag",
-                    color = if (isSelected) luminousTeal else MaterialTheme.colorScheme.onSurfaceVariant,
-                    fontSize = 11.sp,
-                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
-                )
-            }
-        }
-        
-        if (allTags.size > 10) {
-            Text(
-                text = "+${allTags.size - 10} more",
-                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
-                fontSize = 11.sp
-            )
-        }
-    }
-}
-
-@Composable
-private fun NoteListItem(
-    note: Note,
-    isSelected: Boolean,
-    isMultiSelected: Boolean,
-    showMultiSelectMode: Boolean,
-    onClick: () -> Unit,
-    onSelect: (Boolean, Boolean) -> Unit,
-    onTogglePin: () -> Unit,
-    onDelete: () -> Unit,
-    onAskAI: () -> Unit,
-    luminousTeal: Color,
-    electricMint: Color
-) {
-    // Auto-generate title from content if empty
-    val displayTitle = remember(note.title, note.content, note.createdAt) {
-        when {
-            note.title.isNotBlank() -> note.title
-            note.content.isNotBlank() -> note.content.lines().firstOrNull()?.take(40)?.trim() ?: "New Note"
-            else -> "New Note • ${formatTime(note.createdAt)}"
-        }
-    }
-    
-    // Note preview text with italic style for empty notes
-    val previewText = if (note.content.isNotEmpty()) {
-        note.content.take(100).replace("\n", " ")
-    } else {
-        null
-    }
-    
-    KlarityNoteListItem(
-        headline = if (note.isPinned) "📌 $displayTitle" else displayTitle,
-        supporting = previewText,
-        metadata = {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                // Tags
-                Row(horizontalArrangement = Arrangement.spacedBy(KlarityTheme.spacing.extraSmall)) {
-                    note.tags.take(2).forEach { tag ->
-                        Text(
-                            text = "#$tag",
-                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
-                            style = MaterialTheme.typography.labelSmall
+                    
+                    // Notes as Cards
+                    items(items = sectionNotes, key = { it.id }) { note ->
+                        KlarityNoteCard(
+                            headline = note.title.ifEmpty { "Untitled Note" },
+                            supporting = if (note.content.isNotEmpty()) note.content.take(80) else "No content...",
+                            timestamp = formatTimeAgo(note.updatedAt),
+                            icon = when (section) {
+                                "DESIGN DOCS" -> Icons.Default.Info
+                                "MEETING NOTES" -> Icons.Default.Face
+                                else -> Icons.Default.Edit
+                            },
+                            showAvatar = section == "PINNED" || note.title.contains("holy"),
+                            status = when (note.status) {
+                                NoteStatus.IN_PROGRESS -> "In Progress"
+                                NoteStatus.COMPLETED -> "Completed"
+                                NoteStatus.ON_HOLD -> "On Hold"
+                                else -> null
+                            },
+                            statusColor = when (note.status) {
+                                NoteStatus.IN_PROGRESS -> Color(0xFF38BDF8)
+                                NoteStatus.COMPLETED -> Color(0xFF34D399)
+                                NoteStatus.ON_HOLD -> Color(0xFFFBBF24)
+                                else -> MaterialTheme.colorScheme.primary
+                            },
+                            tag = if (section == "DESIGN DOCS") "API" else null,
+                            onClick = { onNoteClick(note) }
+                        )
+                    }
+                    
+                    item {
+                        HorizontalDivider(
+                            modifier = Modifier.padding(vertical = 8.dp),
+                            color = Color(0xFF1F3D35).copy(alpha = 0.3f)
                         )
                     }
                 }
                 
-                // Timestamp
-                Text(
-                    text = formatTime(note.updatedAt),
-                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
-                    style = MaterialTheme.typography.labelSmall
-                )
+                // Placeholder/Empty state logic if needed
+                if (notes.isEmpty()) {
+                    item {
+                        Column(
+                            modifier = Modifier.fillMaxWidth().padding(vertical = 40.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            Text("📌 PINNED", color = Color(0xFF5C7C75), fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                            KlarityNoteCard(
+                                headline = "Editor UI Spec",
+                                supporting = "This document outlines the core features and desig...",
+                                timestamp = "2h ago",
+                                status = "In Progress",
+                                statusColor = Color(0xFF38BDF8),
+                                onClick = {}
+                            )
+                        }
+                    }
+                }
             }
-        },
-        leading = if (showMultiSelectMode) {
-            {
-                Checkbox(
-                    checked = isMultiSelected,
-                    onCheckedChange = { onSelect(true, false) },
-                    colors = CheckboxDefaults.colors(
-                        checkedColor = luminousTeal,
-                        uncheckedColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
-                    ),
-                    modifier = Modifier.size(20.dp)
-                )
-            }
-        } else null,
-        trailing = {
-            Row(horizontalArrangement = Arrangement.spacedBy(KlarityTheme.spacing.extraSmall)) {
-                QuickActionIcon(
-                    icon = if (note.isPinned) "📍" else "📌",
-                    onClick = onTogglePin,
-                    tint = if (note.isPinned) luminousTeal else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
-                )
-                QuickActionIcon(
-                    icon = "🤖",
-                    onClick = onAskAI,
-                    tint = electricMint
-                )
-                QuickActionIcon(
-                    icon = "🗑️",
-                    onClick = onDelete,
-                    tint = MaterialTheme.colorScheme.error
-                )
-            }
-        },
-        selected = isSelected,
-        multiSelected = isMultiSelected,
-        showCheckbox = showMultiSelectMode,
-        showActionsOnHover = true,
-        onClick = onClick
-    )
-}
-
-@Composable
-private fun QuickActionIcon(
-    icon: String,
-    onClick: () -> Unit,
-    tint: Color
-) {
-    val interactionSource = remember { MutableInteractionSource() }
-    val isHovered by interactionSource.collectIsHoveredAsState()
-    
-    Surface(
-        onClick = onClick,
-        color = if (isHovered) tint.copy(alpha = 0.15f) else Color.Transparent,
-        shape = RoundedCornerShape(4.dp),
-        modifier = Modifier.hoverable(interactionSource)
-    ) {
-        Box(
-            modifier = Modifier.padding(4.dp),
-            contentAlignment = Alignment.Center
-        ) {
-            Text(text = icon, fontSize = 14.sp)
         }
     }
 }
 
-private fun formatTime(instant: Instant): String {
+private fun formatTimeAgo(instant: kotlinx.datetime.Instant): String {
     val now = Clock.System.now()
-    val diffMs = now.toEpochMilliseconds() - instant.toEpochMilliseconds()
-    
-    val seconds = diffMs / 1000
-    val minutes = seconds / 60
-    val hours = minutes / 60
-    val days = hours / 24
-    
+    val duration = instant.periodUntil(now, TimeZone.currentSystemDefault())
     return when {
-        seconds < 60 -> "now"
-        minutes < 60 -> "${minutes}m"
-        hours < 24 -> "${hours}h"
-        days < 7 -> "${days}d"
-        else -> "${days / 7}w"
+        duration.years > 0 -> "${duration.years}y ago"
+        duration.months > 0 -> "${duration.months}mo ago"
+        duration.days > 0 -> "${duration.days}d ago"
+        duration.hours > 0 -> "${duration.hours}h ago"
+        duration.minutes > 0 -> "${duration.minutes}m ago"
+        else -> "now"
     }
 }

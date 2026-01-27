@@ -300,53 +300,6 @@ private fun HomeScreenContent(
                     isEditingNote = selectedNote != null,
                     noteCount = notes.size
                 )
-                
-                // Workspace Top Bar - contextual (only show when relevant)
-                // Show layout controls when: editing a note OR in multi-pane mode
-                val showLayoutControls = selectedNote != null || 
-                    workspaceConfig.mode != WorkspaceLayoutMode.SINGLE_PANE ||
-                    currentNavDestination != NavDestination.HOME
-                
-                if (showLayoutControls) {
-                    WorkspaceTopBar(
-                        currentMode = workspaceConfig.mode,
-                        currentDestination = currentNavDestination,
-                        onLayoutModeChange = { mode ->
-                        workspaceConfig = when (mode) {
-                            WorkspaceLayoutMode.SINGLE_PANE -> workspaceConfig.copy(
-                                mode = mode,
-                                leftPane = null,
-                                rightPane = null
-                            )
-                            WorkspaceLayoutMode.DUAL_PANE -> workspaceConfig.copy(
-                                mode = mode,
-                                leftPane = PaneType.NOTES_LIST,
-                                rightPane = null
-                            )
-                            WorkspaceLayoutMode.TRI_PANE -> WorkspacePresets.notesDefault
-                            WorkspaceLayoutMode.FOCUS -> workspaceConfig.copy(
-                                mode = mode,
-                                leftPane = null,
-                                rightPane = null
-                            )
-                        }
-                    },
-                    onToggleLeftPane = {
-                        workspaceConfig = if (workspaceConfig.leftPane != null) {
-                            workspaceConfig.copy(leftPane = null)
-                        } else {
-                            workspaceConfig.copy(leftPane = PaneType.NOTES_LIST)
-                        }
-                    },
-                    onToggleRightPane = {
-                        workspaceConfig = if (workspaceConfig.rightPane != null) {
-                            workspaceConfig.copy(rightPane = null)
-                        } else {
-                            workspaceConfig.copy(rightPane = PaneType.TASKS)
-                        }
-                    }
-                )
-                }
 
                 // Main content area
                 Row(modifier = Modifier.weight(1f)) {
@@ -374,32 +327,29 @@ private fun HomeScreenContent(
                             leftPaneContent = { modifier ->
                                 // Left pane content based on type
                                 when (workspaceConfig.leftPane) {
-                                    PaneType.NOTES_LIST -> NotesListPane(
+                                    PaneType.FILE_EXPLORER -> FileExplorerPanel(
+                                        folders = folders,
                                         notes = notes,
+                                        expandedFolderIds = expandedFolderIds,
                                         selectedNoteId = selectedNoteId,
-                                        selectedNoteIds = selectedNoteIds,
-                                        searchQuery = searchQuery,
-                                        onSearchQueryChange = { viewModel.onEvent(HomeUiEvent.SearchQueryChanged(it)) },
-                                        onNoteClick = { note -> 
-                                            viewModel.onEvent(HomeUiEvent.SelectNote(note.id))
-                                            selectedNoteIds = emptySet()
+                                        projectName = "Klarity",
+                                        onToggleFolder = { folderId ->
+                                            viewModel.onEvent(HomeUiEvent.ToggleFolder(folderId))
                                         },
-                                        onNoteSelect = { note, ctrlPressed, shiftPressed ->
-                                            if (ctrlPressed) {
-                                                selectedNoteIds = if (note.id in selectedNoteIds) {
-                                                    selectedNoteIds - note.id
-                                                } else {
-                                                    selectedNoteIds + note.id
-                                                }
-                                            } else {
-                                                selectedNoteIds = setOf(note.id)
-                                            }
+                                        onNoteSelect = { noteId ->
+                                            viewModel.onEvent(HomeUiEvent.SelectNote(noteId))
                                         },
-                                        onCreateNote = { viewModel.onEvent(HomeUiEvent.CreateNote) },
-                                        onTogglePin = { noteId -> viewModel.onEvent(HomeUiEvent.ToggleNotePin(noteId)) },
-                                        onDeleteNote = { noteId -> viewModel.onEvent(HomeUiEvent.DeleteNote(noteId)) },
-                                        onAskAI = { note ->
-                                            // TODO: Open AI chat with note context
+                                        onCreateFolder = { folderName ->
+                                            viewModel.onEvent(HomeUiEvent.CreateFolder(folderName))
+                                        },
+                                        onRenameFolder = { folderId, newName ->
+                                            viewModel.onEvent(HomeUiEvent.RenameFolder(folderId, newName))
+                                        },
+                                        onDeleteFolder = { folderId ->
+                                            viewModel.onEvent(HomeUiEvent.DeleteFolder(folderId))
+                                        },
+                                        onMoveNoteToFolder = { noteId, folderId ->
+                                            viewModel.onEvent(HomeUiEvent.MoveNoteToFolder(noteId, folderId))
                                         }
                                     )
                                     PaneType.TASKS -> TasksPane(modifier = modifier)
@@ -491,8 +441,36 @@ private fun HomeScreenContent(
                                 }
                             },
                             rightPaneContent = { modifier ->
-                                // Right pane content
+                                // Right pane content - Notes List
                                 when (workspaceConfig.rightPane) {
+                                    PaneType.NOTES_LIST -> NotesListPane(
+                                        notes = notes,
+                                        folders = folders,
+                                        selectedNoteId = selectedNoteId,
+                                        selectedNoteIds = selectedNoteIds,
+                                        searchQuery = searchQuery,
+                                        onSearchQueryChange = { viewModel.onEvent(HomeUiEvent.SearchQueryChanged(it)) },
+                                        onNoteClick = { note -> 
+                                            viewModel.onEvent(HomeUiEvent.SelectNote(note.id))
+                                            selectedNoteIds = emptySet()
+                                        },
+                                        onNoteSelect = { note, ctrlPressed, shiftPressed ->
+                                            if (ctrlPressed) {
+                                                selectedNoteIds = if (note.id in selectedNoteIds) {
+                                                    selectedNoteIds - note.id
+                                                } else {
+                                                    selectedNoteIds + note.id
+                                                }
+                                            } else {
+                                                selectedNoteIds = setOf(note.id)
+                                            }
+                                        },
+                                        onCreateNote = { viewModel.onEvent(HomeUiEvent.CreateNote) },
+                                        onTogglePin = { noteId -> viewModel.onEvent(HomeUiEvent.ToggleNotePin(noteId)) },
+                                        onDeleteNote = { noteId -> viewModel.onEvent(HomeUiEvent.DeleteNote(noteId)) },
+                                        onAskAI = { note -> },
+                                        modifier = modifier
+                                    )
                                     PaneType.TASKS -> TasksPane(modifier = modifier)
                                     else -> {}
                                 }

@@ -13,10 +13,10 @@ object KlarityColors {
     // ══════════════════════════════════════════════════════════════
     
     /** Darkest background - navigation rail, deepest panels */
-    val BgPrimary = Color(0xFF0A1514)
+    val BgPrimary = Color(0xFF08100E)
     
     /** Secondary background - notes list panel */
-    val BgSecondary = Color(0xFF0E1C1A)
+    val BgSecondary = Color(0xFF0A1513)
     
     /** Tertiary background - cards, elevated surfaces */
     val BgTertiary = Color(0xFF142420)
@@ -28,7 +28,7 @@ object KlarityColors {
     val BgElevated = Color(0xFF1A302B)
     
     /** Card backgrounds with subtle transparency */
-    val BgCard = Color(0xFF162B26)
+    val BgCard = Color(0xFF162826)
     
     /** Note list item background - breathable cards */
     val BgNoteCard = Color(0xFF111E1B)
@@ -50,7 +50,7 @@ object KlarityColors {
     // ══════════════════════════════════════════════════════════════
     
     /** Primary accent - buttons, links, active states */
-    val AccentPrimary = Color(0xFF3DD68C)
+    val AccentPrimary = Color(0xFF34D399)
     
     /** Secondary accent - hover states */
     val AccentSecondary = Color(0xFF2FB874)
@@ -332,5 +332,3 @@ val SentioGradientEnergy = GradientColors(
     start = Color(0xFF3DD68C), // ElectricMint
     end = Color(0xFF2DD4BF)    // LuminousTeal
 )
-
-

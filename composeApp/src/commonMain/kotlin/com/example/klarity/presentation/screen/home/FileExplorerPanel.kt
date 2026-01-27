@@ -1,23 +1,18 @@
 package com.example.klarity.presentation.screen.home
 
-import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.core.tween
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.hoverable
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import com.example.klarity.presentation.theme.KlarityMotion
 import androidx.compose.foundation.interaction.collectIsHoveredAsState
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -26,7 +21,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -36,6 +30,7 @@ import androidx.compose.ui.window.Dialog
 import com.example.klarity.domain.models.Folder
 import com.example.klarity.domain.models.Note
 import com.example.klarity.domain.models.NoteStatus
+import androidx.compose.foundation.BorderStroke
 
 /**
  * File Explorer Panel - Shows folder tree structure with full folder management
@@ -58,73 +53,49 @@ fun FileExplorerPanel(
     var showCreateFolderDialog by remember { mutableStateOf(false) }
     var folderToRename by remember { mutableStateOf<Folder?>(null) }
     var folderToDelete by remember { mutableStateOf<Folder?>(null) }
-    var isEditingProjectName by remember { mutableStateOf(false) }
-    var editedProjectName by remember(projectName) { mutableStateOf(projectName) }
 
-    Surface(
-        modifier = Modifier.width(220.dp).fillMaxHeight(),
-        color = Color(0xFF11221F),
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.5f))
+    // Redesigned to match reference - simpler, flatter, darker
+    Box(
+        modifier = Modifier
+            .width(260.dp)
+            .fillMaxHeight()
+            .background(Color(0xFF0A1612)) // Darker teal-gray background
     ) {
-        Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
-            // Header - Editable project name
+        Column(modifier = Modifier.fillMaxSize()) {
+            // Project header with chevron
             Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 12.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                if (isEditingProjectName) {
-                    BasicTextField(
-                        value = editedProjectName,
-                        onValueChange = { editedProjectName = it },
-                        textStyle = TextStyle(
-                            color = Color.White,
-                            fontSize = 14.sp,
-                            fontWeight = FontWeight.SemiBold
-                        ),
-                        singleLine = true,
-                        cursorBrush = SolidColor(MaterialTheme.colorScheme.tertiary),
-                        modifier = Modifier.weight(1f),
-                        decorationBox = { innerTextField ->
-                            Surface(
-                                shape = RoundedCornerShape(4.dp),
-                                color = MaterialTheme.colorScheme.surfaceVariant,
-                                border = BorderStroke(1.dp, MaterialTheme.colorScheme.tertiary)
-                            ) {
-                                Box(Modifier.padding(horizontal = 8.dp, vertical = 4.dp)) {
-                                    innerTextField()
-                                }
-                            }
-                        }
-                    )
-                    Spacer(Modifier.width(4.dp))
-                    SmallIconButton("✓") {
-                        onProjectNameChange(editedProjectName)
-                        isEditingProjectName = false
-                    }
-                } else {
-                    Text(
-                        projectName,
-                        color = Color.White,
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        modifier = Modifier
-                            .weight(1f)
-                            .clickable { isEditingProjectName = true }
-                    )
-                    Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                        SmallIconButton("➕") { showCreateFolderDialog = true }
-                        SmallIconButton("✏️") { isEditingProjectName = true }
-                    }
-                }
+                // Chevron (always expanded in this design)
+                Text(
+                    "▼",
+                    fontSize = 10.sp,
+                    color = Color(0xFF7D8590)
+                )
+                Text(
+                    projectName,
+                    color = Color(0xFFE6EDF3),
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    modifier = Modifier.weight(1f)
+                )
+                // Add folder button
+                Text(
+                    "+",
+                    fontSize = 16.sp,
+                    color = Color(0xFF7D8590),
+                    modifier = Modifier.clickable { showCreateFolderDialog = true }
+                )
             }
-
-            Spacer(Modifier.height(16.dp))
 
             // File Tree
             LazyColumn(
-                modifier = Modifier.weight(1f),
-                verticalArrangement = Arrangement.spacedBy(2.dp)
+                modifier = Modifier.weight(1f).padding(horizontal = 8.dp),
+                verticalArrangement = Arrangement.spacedBy(1.dp)
             ) {
                 // Root folders
                 val rootFolders = folders.filter { it.parentId == null }
@@ -159,25 +130,6 @@ fun FileExplorerPanel(
                         onMoveToFolder = { folderId -> onMoveNoteToFolder(note.id, folderId) }
                     )
                 }
-            }
-
-            // Footer - AI Indexing status
-            Spacer(Modifier.height(8.dp))
-            Row(
-                modifier = Modifier.padding(vertical = 8.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                Box(
-                    modifier = Modifier
-                        .size(8.dp)
-                        .background(MaterialTheme.colorScheme.tertiary, CircleShape)
-                )
-                Text(
-                    "AI Indexing active...",
-                    fontSize = 11.sp,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
-                )
             }
         }
     }
@@ -242,63 +194,53 @@ fun FolderTreeItem(
     val isHovered by interactionSource.collectIsHoveredAsState()
     var showContextMenu by remember { mutableStateOf(false) }
 
-    val bgColor by animateColorAsState(
-        targetValue = when {
-            isDropTarget -> MaterialTheme.colorScheme.tertiary.copy(alpha = 0.2f)
-            isHovered -> MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f)
-            else -> Color.Transparent
-        },
-        animationSpec = KlarityMotion.standardExit()
-    )
-
     Column {
-        // Folder row
+        // Folder row - flat design
         Box {
-            Surface(
+            Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clickable(interactionSource = interactionSource, indication = null) { onToggleFolder(folder.id) }
-                    .hoverable(interactionSource),
-                shape = RoundedCornerShape(6.dp),
-                color = bgColor,
-                border = if (isDropTarget) BorderStroke(1.dp, MaterialTheme.colorScheme.tertiary) else null
-            ) {
-                Row(
-                    modifier = Modifier
-                        .padding(start = (depth * 12).dp, end = 8.dp)
-                        .padding(vertical = 6.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(6.dp)
-                ) {
-                    // Chevron
-                    Text(
-                        if (isExpanded) "▼" else "▶",
-                        fontSize = 8.sp,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                    .height(28.dp)
+                    .background(
+                        if (isHovered) Color(0xFF1A3B34) else Color.Transparent,
+                        RoundedCornerShape(4.dp)
                     )
-                    // Folder icon
-                    Text(
-                        folder.icon ?: "📁",
-                        fontSize = 14.sp
-                    )
-                    // Folder name
-                    Text(
-                        folder.name,
-                        fontSize = 13.sp,
-                        color = if (isHovered || isDropTarget) Color.White else MaterialTheme.colorScheme.onSurfaceVariant,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                        modifier = Modifier.weight(1f)
-                    )
-                    // Context menu button (visible on hover)
-                    if (isHovered) {
-                        Text(
-                            "⋯",
-                            fontSize = 12.sp,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
-                            modifier = Modifier.clickable { showContextMenu = true }
-                        )
+                    .clickable(interactionSource = interactionSource, indication = null) { 
+                        onToggleFolder(folder.id) 
                     }
+                    .hoverable(interactionSource)
+                    .padding(start = (depth * 16 + 8).dp, end = 8.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                // Chevron
+                Text(
+                    if (isExpanded) "▼" else "▶",
+                    fontSize = 9.sp,
+                    color = Color(0xFF7D8590)
+                )
+                // Folder icon (using emoji)
+                Text(
+                    folder.icon ?: "📁",
+                    fontSize = 16.sp
+                )
+                // Folder name
+                Text(
+                    folder.name,
+                    fontSize = 13.sp,
+                    color = if (isHovered) Color(0xFFE6EDF3) else Color(0xFFADBAC7),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.weight(1f)
+                )
+                // Context menu button (visible on hover)
+                if (isHovered) {
+                    Text(
+                        "⋯",
+                        fontSize = 14.sp,
+                        color = Color(0xFF7D8590),
+                        modifier = Modifier.clickable { showContextMenu = true }
+                    )
                 }
             }
 
@@ -308,14 +250,14 @@ fun FolderTreeItem(
                 onDismissRequest = { showContextMenu = false }
             ) {
                 androidx.compose.material3.DropdownMenuItem(
-                    text = { Text("✏️ Rename", fontSize = 13.sp) },
+                    text = { Text("Rename", fontSize = 13.sp) },
                     onClick = {
                         showContextMenu = false
                         onRenameFolder(folder)
                     }
                 )
                 androidx.compose.material3.DropdownMenuItem(
-                    text = { Text("🗑️ Delete", fontSize = 13.sp, color = Color(0xFFF43F5E)) },
+                    text = { Text("Delete", fontSize = 13.sp, color = Color(0xFFF43F5E)) },
                     onClick = {
                         showContextMenu = false
                         onDeleteFolder(folder)
@@ -358,16 +300,6 @@ fun FolderTreeItem(
 }
 
 @Composable
-fun FileTreeNoteItem(
-    note: Note,
-    isSelected: Boolean,
-    depth: Int,
-    onClick: () -> Unit
-) {
-    DraggableNoteItem(note, isSelected, depth, onClick)
-}
-
-@Composable
 fun DraggableNoteItem(
     note: Note,
     isSelected: Boolean,
@@ -380,59 +312,52 @@ fun DraggableNoteItem(
     val isHovered by interactionSource.collectIsHoveredAsState()
     var showMoveMenu by remember { mutableStateOf(false) }
 
-    val bgColor by animateColorAsState(
-        targetValue = when {
-            isSelected -> MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.8f)
-            isHovered -> MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f)
-            else -> Color.Transparent
-        },
-        animationSpec = KlarityMotion.standardExit()
-    )
-
     Box {
-        Surface(
+        Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .clickable(interactionSource = interactionSource, indication = null, onClick = onClick)
-                .hoverable(interactionSource),
-            shape = RoundedCornerShape(6.dp),
-            color = bgColor
-        ) {
-            Row(
-                modifier = Modifier
-                    .padding(start = (depth * 12 + 14).dp, end = 8.dp)
-                    .padding(vertical = 6.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(6.dp)
-            ) {
-                Text(
-                    "📄",
-                    fontSize = 14.sp,
-                    color = if (isSelected) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
-                )
-                Text(
-                    note.title.ifBlank { "Untitled" },
-                    fontSize = 13.sp,
-                    color = when {
-                        isSelected -> Color.White
-                        isHovered -> Color.White
-                        else -> MaterialTheme.colorScheme.onSurfaceVariant
+                .height(28.dp)
+                .background(
+                    when {
+                        isSelected -> Color(0xFF1A3B34) // Teal selection
+                        isHovered -> Color(0xFF1A3B34).copy(alpha = 0.6f)
+                        else -> Color.Transparent
                     },
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier.weight(1f)
+                    RoundedCornerShape(4.dp)
                 )
-                // Move button (visible on hover)
-                if (isHovered && folders.isNotEmpty()) {
-                    Text(
-                        "📁",
-                        fontSize = 12.sp,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
-                        modifier = Modifier.clickable { showMoveMenu = true }
-                    )
-                }
-                // Status badge
-                NoteStatusBadge(note.status)
+                .clickable(interactionSource = interactionSource, indication = null, onClick = onClick)
+                .hoverable(interactionSource)
+                .padding(start = (depth * 16 + 24).dp, end = 8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            // Document icon (using emoji)
+            Text(
+                "📄",
+                fontSize = 14.sp,
+                color = if (isSelected) Color(0xFF2DD4BF) else Color(0xFF7D8590)
+            )
+            // Note title
+            Text(
+                note.title.ifBlank { "Untitled" },
+                fontSize = 13.sp,
+                color = when {
+                    isSelected -> Color(0xFFE6EDF3)
+                    isHovered -> Color(0xFFE6EDF3)
+                    else -> Color(0xFFADBAC7)
+                },
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.weight(1f)
+            )
+            // Move button (visible on hover)
+            if (isHovered && folders.isNotEmpty()) {
+                Text(
+                    "📁",
+                    fontSize = 12.sp,
+                    color = Color(0xFF7D8590),
+                    modifier = Modifier.clickable { showMoveMenu = true }
+                )
             }
         }
 
@@ -444,7 +369,6 @@ fun DraggableNoteItem(
             androidx.compose.material3.DropdownMenuItem(
                 text = { 
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        Text("📂", fontSize = 14.sp)
                         Text("Uncategorized", fontSize = 13.sp)
                     }
                 },
@@ -472,86 +396,6 @@ fun DraggableNoteItem(
 }
 
 @Composable
-fun NoteStatusBadge(status: NoteStatus) {
-    if (status == NoteStatus.NONE) return
-    
-    val (bgColor, textColor, label) = when (status) {
-        NoteStatus.IN_PROGRESS -> Triple(
-            Color(0xFF0EA5E9).copy(alpha = 0.2f),
-            Color(0xFF38BDF8),
-            "⏳"
-        )
-        NoteStatus.COMPLETED -> Triple(
-            Color(0xFF10B981).copy(alpha = 0.2f),
-            Color(0xFF34D399),
-            "✓"
-        )
-        NoteStatus.ON_HOLD -> Triple(
-            Color(0xFFF59E0B).copy(alpha = 0.2f),
-            Color(0xFFFBBF24),
-            "⏸"
-        )
-        NoteStatus.ARCHIVED -> Triple(
-            Color(0xFF6B7280).copy(alpha = 0.2f),
-            Color(0xFF9CA3AF),
-            "📦"
-        )
-        else -> return
-    }
-    
-    Surface(
-        shape = RoundedCornerShape(4.dp),
-        color = bgColor
-    ) {
-        Text(
-            label,
-            fontSize = 10.sp,
-            color = textColor,
-            modifier = Modifier.padding(horizontal = 4.dp, vertical = 1.dp)
-        )
-    }
-}
-
-@Composable
-fun DropZone(
-    label: String,
-    isActive: Boolean,
-    onDropTargetChange: (Boolean) -> Unit,
-    onNoteDrop: (String) -> Unit
-) {
-    val interactionSource = remember { MutableInteractionSource() }
-    val isHovered by interactionSource.collectIsHoveredAsState()
-    
-    LaunchedEffect(isHovered) {
-        onDropTargetChange(isHovered)
-    }
-
-    Surface(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 4.dp)
-            .hoverable(interactionSource),
-        shape = RoundedCornerShape(6.dp),
-        color = if (isActive) MaterialTheme.colorScheme.tertiary.copy(alpha = 0.1f) else Color.Transparent,
-        border = if (isActive) BorderStroke(1.dp, MaterialTheme.colorScheme.tertiary.copy(alpha = 0.5f)) else null
-    ) {
-        Row(
-            modifier = Modifier.padding(8.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(6.dp)
-        ) {
-            Text("📂", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f))
-            Text(
-                label,
-                fontSize = 11.sp,
-                color = if (isActive) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
-            )
-        }
-    }
-}
-
-// Dialogs for folder management
-@Composable
 fun CreateFolderDialog(
     onDismiss: () -> Unit,
     onCreate: (String) -> Unit
@@ -561,8 +405,8 @@ fun CreateFolderDialog(
     Dialog(onDismissRequest = onDismiss) {
         Surface(
             shape = RoundedCornerShape(12.dp),
-            color = MaterialTheme.colorScheme.surfaceVariant,
-            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline)
+            color = Color(0xFF161B22),
+            border = BorderStroke(1.dp, Color(0xFF30363D))
         ) {
             Column(
                 modifier = Modifier.padding(24.dp).width(300.dp),
@@ -572,25 +416,25 @@ fun CreateFolderDialog(
                     "Create New Folder",
                     fontSize = 18.sp,
                     fontWeight = FontWeight.SemiBold,
-                    color = Color.White
+                    color = Color(0xFFE6EDF3)
                 )
 
                 Surface(
                     modifier = Modifier.fillMaxWidth().height(44.dp),
-                    shape = RoundedCornerShape(8.dp),
-                    color = MaterialTheme.colorScheme.surface,
-                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline)
+                    shape = RoundedCornerShape(6.dp),
+                    color = Color(0xFF0D1117),
+                    border = BorderStroke(1.dp, Color(0xFF30363D))
                 ) {
                     BasicTextField(
                         value = folderName,
                         onValueChange = { folderName = it },
                         modifier = Modifier.fillMaxSize().padding(horizontal = 12.dp, vertical = 10.dp),
                         singleLine = true,
-                        textStyle = TextStyle(color = Color.White, fontSize = 14.sp),
-                        cursorBrush = SolidColor(MaterialTheme.colorScheme.tertiary),
+                        textStyle = TextStyle(color = Color(0xFFE6EDF3), fontSize = 14.sp),
+                        cursorBrush = SolidColor(Color(0xFF2DD4BF)),
                         decorationBox = { innerTextField ->
                             if (folderName.isEmpty()) {
-                                Text("Folder name...", color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f), fontSize = 14.sp)
+                                Text("Folder name...", color = Color(0xFF7D8590), fontSize = 14.sp)
                             }
                             innerTextField()
                         }
@@ -603,18 +447,18 @@ fun CreateFolderDialog(
                 ) {
                     Button(
                         onClick = onDismiss,
-                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.surface),
-                        shape = RoundedCornerShape(8.dp)
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF21262D)),
+                        shape = RoundedCornerShape(6.dp)
                     ) {
-                        Text("Cancel", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Text("Cancel", color = Color(0xFFE6EDF3))
                     }
                     Button(
                         onClick = { if (folderName.isNotBlank()) onCreate(folderName) },
-                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.tertiary),
-                        shape = RoundedCornerShape(8.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF238636)),
+                        shape = RoundedCornerShape(6.dp),
                         enabled = folderName.isNotBlank()
                     ) {
-                        Text("Create", color = MaterialTheme.colorScheme.surfaceVariant)
+                        Text("Create", color = Color.White)
                     }
                 }
             }
@@ -633,8 +477,8 @@ fun RenameFolderDialog(
     Dialog(onDismissRequest = onDismiss) {
         Surface(
             shape = RoundedCornerShape(12.dp),
-            color = MaterialTheme.colorScheme.surfaceVariant,
-            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline)
+            color = Color(0xFF161B22),
+            border = BorderStroke(1.dp, Color(0xFF30363D))
         ) {
             Column(
                 modifier = Modifier.padding(24.dp).width(300.dp),
@@ -644,22 +488,22 @@ fun RenameFolderDialog(
                     "Rename Folder",
                     fontSize = 18.sp,
                     fontWeight = FontWeight.SemiBold,
-                    color = Color.White
+                    color = Color(0xFFE6EDF3)
                 )
 
                 Surface(
                     modifier = Modifier.fillMaxWidth().height(44.dp),
-                    shape = RoundedCornerShape(8.dp),
-                    color = MaterialTheme.colorScheme.surface,
-                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline)
+                    shape = RoundedCornerShape(6.dp),
+                    color = Color(0xFF0D1117),
+                    border = BorderStroke(1.dp, Color(0xFF30363D))
                 ) {
                     BasicTextField(
                         value = folderName,
                         onValueChange = { folderName = it },
                         modifier = Modifier.fillMaxSize().padding(horizontal = 12.dp, vertical = 10.dp),
                         singleLine = true,
-                        textStyle = TextStyle(color = Color.White, fontSize = 14.sp),
-                        cursorBrush = SolidColor(MaterialTheme.colorScheme.tertiary)
+                        textStyle = TextStyle(color = Color(0xFFE6EDF3), fontSize = 14.sp),
+                        cursorBrush = SolidColor(Color(0xFF2DD4BF))
                     )
                 }
 
@@ -669,18 +513,18 @@ fun RenameFolderDialog(
                 ) {
                     Button(
                         onClick = onDismiss,
-                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.surface),
-                        shape = RoundedCornerShape(8.dp)
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF21262D)),
+                        shape = RoundedCornerShape(6.dp)
                     ) {
-                        Text("Cancel", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Text("Cancel", color = Color(0xFFE6EDF3))
                     }
                     Button(
                         onClick = { if (folderName.isNotBlank()) onRename(folderName) },
-                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.tertiary),
-                        shape = RoundedCornerShape(8.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF238636)),
+                        shape = RoundedCornerShape(6.dp),
                         enabled = folderName.isNotBlank()
                     ) {
-                        Text("Rename", color = MaterialTheme.colorScheme.surfaceVariant)
+                        Text("Rename", color = Color.White)
                     }
                 }
             }
@@ -697,8 +541,8 @@ fun DeleteFolderDialog(
     Dialog(onDismissRequest = onDismiss) {
         Surface(
             shape = RoundedCornerShape(12.dp),
-            color = MaterialTheme.colorScheme.surfaceVariant,
-            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline)
+            color = Color(0xFF161B22),
+            border = BorderStroke(1.dp, Color(0xFF30363D))
         ) {
             Column(
                 modifier = Modifier.padding(24.dp).width(300.dp),
@@ -708,13 +552,13 @@ fun DeleteFolderDialog(
                     "Delete Folder?",
                     fontSize = 18.sp,
                     fontWeight = FontWeight.SemiBold,
-                    color = Color.White
+                    color = Color(0xFFE6EDF3)
                 )
 
                 Text(
                     "Are you sure you want to delete \"${folder.name}\"? Notes inside will be moved to Uncategorized.",
                     fontSize = 14.sp,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    color = Color(0xFF7D8590),
                     lineHeight = 20.sp
                 )
 
@@ -724,15 +568,15 @@ fun DeleteFolderDialog(
                 ) {
                     Button(
                         onClick = onDismiss,
-                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.surface),
-                        shape = RoundedCornerShape(8.dp)
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF21262D)),
+                        shape = RoundedCornerShape(6.dp)
                     ) {
-                        Text("Cancel", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Text("Cancel", color = Color(0xFFE6EDF3))
                     }
                     Button(
                         onClick = onConfirm,
-                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error),
-                        shape = RoundedCornerShape(8.dp)
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFDA3633)),
+                        shape = RoundedCornerShape(6.dp)
                     ) {
                         Text("Delete", color = Color.White)
                     }
@@ -741,4 +585,3 @@ fun DeleteFolderDialog(
         }
     }
 }
-
