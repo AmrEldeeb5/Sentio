@@ -21,9 +21,11 @@ import com.example.klarity.domain.models.Note
 import com.example.klarity.domain.models.NoteStatus
 import com.example.klarity.presentation.components.*
 import com.example.klarity.presentation.theme.KlarityColors
+import klarity.composeapp.generated.resources.*
 import kotlinx.datetime.Clock
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.periodUntil
+import org.jetbrains.compose.resources.painterResource
 
 /**
  * Notes List Panel - RIGHT SIDE (Sidebar)
@@ -65,15 +67,15 @@ fun NotesListPane(
             if (folderId != null) {
                 val folder = folderMap[folderId]
                 val folderName = folder?.name?.uppercase() ?: "UNCATEGORIZED"
-                val folderIcon = folder?.icon ?: "📁"
-                groups["$folderIcon $folderName"] = notesInFolder
+                val folderPainter = painterResource(Res.drawable.solar__folder_with_files_bold)
+                groups["FOLDER:$folderName"] = notesInFolder
             }
         }
         
         // Add notes without folder (root level)
         notesByFolder[null]?.let { rootNotes ->
             if (rootNotes.isNotEmpty()) {
-                groups["📝 UNCATEGORIZED"] = rootNotes
+                groups["FOLDER:UNCATEGORIZED"] = rootNotes
             }
         }
         
@@ -172,8 +174,21 @@ fun NotesListPane(
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
+                            if (section.startsWith("FOLDER:")) {
+                                Icon(
+                                    painter = painterResource(Res.drawable.solar__folder_with_files_bold),
+                                    contentDescription = null,
+                                    tint = Color(0xFF5C7C75),
+                                    modifier = Modifier.size(14.dp)
+                                )
+                            } else {
+                                Text(
+                                    text = if (section == "PINNED") "📌" else "",
+                                    fontSize = 11.sp
+                                )
+                            }
                             Text(
-                                text = if (section == "PINNED") "📌 $section" else section,
+                                text = section.removePrefix("FOLDER:"),
                                 color = Color(0xFF5C7C75),
                                 fontSize = 11.sp,
                                 fontWeight = FontWeight.Bold,
@@ -189,9 +204,9 @@ fun NotesListPane(
                             supporting = if (note.content.isNotEmpty()) note.content.take(80) else "No content...",
                             timestamp = formatTimeAgo(note.updatedAt),
                             icon = when (section) {
-                                "DESIGN DOCS" -> Icons.Default.Info
-                                "MEETING NOTES" -> Icons.Default.Face
-                                else -> Icons.Default.Edit
+                                "DESIGN DOCS" -> painterResource(Res.drawable.solar__file_bold)
+                                "MEETING NOTES" -> painterResource(Res.drawable.solar__file_bold)
+                                else -> painterResource(Res.drawable.solar__file_bold)
                             },
                             showAvatar = section == "PINNED" || note.title.contains("holy"),
                             status = when (note.status) {
