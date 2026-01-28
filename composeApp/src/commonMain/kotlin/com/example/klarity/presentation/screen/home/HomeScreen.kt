@@ -169,9 +169,6 @@ private fun HomeScreenContent(
     // Command Palette state
     var showCommandPalette by remember { mutableStateOf(false) }
     
-    // Top command bar state - synced with ViewModel search
-    var currentTheme by remember { mutableStateOf(ThemeMode.DARK) }
-    
     // Multi-select state for notes
     var selectedNoteIds by remember { mutableStateOf<Set<String>>(emptySet()) }
     
@@ -290,15 +287,7 @@ private fun HomeScreenContent(
                         }
                     },
                     onCommandPaletteOpen = { showCommandPalette = true },
-                    syncStatus = SyncStatus.SYNCED,
-                    currentTheme = currentTheme,
-                    onThemeChange = { currentTheme = it },
-                    aiModelName = "GPT-4",
-                    aiTemperature = 0.7f,
-                    // Contextual state
-                    hasNotes = notes.isNotEmpty(),
-                    isEditingNote = selectedNote != null,
-                    noteCount = notes.size
+                    hasNotes = notes.isNotEmpty()
                 )
 
                 // Main content area

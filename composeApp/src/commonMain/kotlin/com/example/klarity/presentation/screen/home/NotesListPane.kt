@@ -67,7 +67,6 @@ fun NotesListPane(
             if (folderId != null) {
                 val folder = folderMap[folderId]
                 val folderName = folder?.name?.uppercase() ?: "UNCATEGORIZED"
-                val folderPainter = painterResource(Res.drawable.solar__folder_with_files_bold)
                 groups["FOLDER:$folderName"] = notesInFolder
             }
         }

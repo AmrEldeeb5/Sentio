@@ -35,31 +35,11 @@ import androidx.compose.ui.unit.sp
 import com.example.klarity.presentation.theme.KlarityColors
 
 /**
- * Sync status indicator
- */
-enum class SyncStatus {
-    SYNCED,
-    SYNCING,
-    OFFLINE,
-    ERROR
-}
-
-/**
- * Theme options
- */
-enum class ThemeMode {
-    DARK,
-    OLED,
-    LIGHT
-}
-
-/**
  * Top Command Bar - Compact Global Navigation
  * 
  * A compact, unified bar containing:
  * - Left: App identifier (Klarity), Breadcrumbs  
  * - Center: Omnibar (Search + Commands)
- * - Right: Status indicators
  */
 @Composable
 fun TopCommandBar(
@@ -67,20 +47,10 @@ fun TopCommandBar(
     searchQuery: String = "",
     onSearchQueryChange: (String) -> Unit = {},
     onCommandPaletteOpen: () -> Unit = {},
-    syncStatus: SyncStatus = SyncStatus.SYNCED,
-    currentTheme: ThemeMode = ThemeMode.DARK,
-    onThemeChange: (ThemeMode) -> Unit = {},
-    aiModelName: String = "GPT-4",
-    aiTemperature: Float = 0.7f,
-    // Contextual state
     hasNotes: Boolean = false,
-    isEditingNote: Boolean = false,
-    noteCount: Int = 0,
     modifier: Modifier = Modifier
 ) {
-    // Use centralized theme colors instead of hardcoded values
     val luminousTeal = MaterialTheme.colorScheme.primary
-    val electricMint = MaterialTheme.colorScheme.tertiary
 
     Surface(
         modifier = modifier.fillMaxWidth(),
@@ -109,16 +79,8 @@ fun TopCommandBar(
                 hasNotes = hasNotes
             )
             
-            // Right Section - Status indicators + Controls
-            RightSection(
-                syncStatus = syncStatus,
-                currentTheme = currentTheme,
-                onThemeChange = onThemeChange,
-                aiModelName = aiModelName,
-                aiTemperature = aiTemperature,
-                luminousTeal = luminousTeal,
-                electricMint = electricMint
-            )
+            // Right Section - Empty as requested
+            Spacer(modifier = Modifier.width(48.dp))
         }
     }
 }
@@ -217,34 +179,6 @@ private fun CenterSection(
             luminousTeal = luminousTeal,
             hasNotes = hasNotes
         )
-        
-        // + New Button from the image
-        Button(
-            onClick = { /* TODO: Create note */ },
-            colors = ButtonDefaults.buttonColors(
-                containerColor = Color(0xFF34D399), // Bright teal
-                contentColor = Color.Black
-            ),
-            shape = RoundedCornerShape(8.dp),
-            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
-            modifier = Modifier.height(40.dp)
-        ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                Icon(
-                    Icons.Default.Add,
-                    contentDescription = null,
-                    modifier = Modifier.size(18.dp)
-                )
-                Text(
-                    text = "New",
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 14.sp
-                )
-            }
-        }
     }
 }
 
@@ -284,7 +218,7 @@ private fun OmniBar(
         color = bgColor,
         shape = RoundedCornerShape(10.dp),
         modifier = Modifier
-            .width(520.dp) // Larger search bar as seen in the image
+            .width(520.dp)
             .hoverable(interactionSource)
             .border(
                 width = 1.dp,
@@ -295,7 +229,6 @@ private fun OmniBar(
                 interactionSource = remember { MutableInteractionSource() },
                 indication = null
             ) {
-                // Clicking anywhere on bar opens command palette if not focused
                 if (!isFocused && query.isEmpty()) {
                     onCommandPaletteOpen()
                 }
@@ -312,11 +245,6 @@ private fun OmniBar(
                 tint = if (isFocused) luminousTeal else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
                 modifier = Modifier.size(18.dp)
             )
-            
-            // Dynamic placeholder based on context and focus
-            val placeholderText = remember(isFocused, hasNotes) {
-                "Search notes..."
-            }
             
             BasicTextField(
                 value = query,
@@ -344,7 +272,6 @@ private fun OmniBar(
                 }
             )
             
-            // Keyboard shortcut badge
             Row(
                 horizontalArrangement = Arrangement.spacedBy(3.dp)
             ) {
@@ -371,221 +298,32 @@ private fun KeyBadge(key: String) {
     }
 }
 
-@Composable
-private fun RightSection(
-    syncStatus: SyncStatus,
-    currentTheme: ThemeMode,
-    onThemeChange: (ThemeMode) -> Unit,
-    aiModelName: String,
-    aiTemperature: Float,
-    luminousTeal: Color,
-    electricMint: Color
-) {
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(12.dp)
-    ) {
-        // AI Model indicator
-        AIModelIndicator(
-            modelName = aiModelName,
-            temperature = aiTemperature,
-            electricMint = electricMint
-        )
-        
-        // Sync status
-        SyncStatusIndicator(
-            status = syncStatus,
-            luminousTeal = luminousTeal
-        )
-        
-        // Theme toggle
-        ThemeToggle(
-            currentTheme = currentTheme,
-            onThemeChange = onThemeChange
-        )
-        
-        // Profile menu
-        ProfileButton()
-    }
-}
-
-@Composable
-private fun AIModelIndicator(
-    modelName: String,
-    temperature: Float,
-    electricMint: Color
-) {
-    val interactionSource = remember { MutableInteractionSource() }
-    val isHovered by interactionSource.collectIsHoveredAsState()
-    
-    Surface(
-        color = if (isHovered) MaterialTheme.colorScheme.surfaceVariant else Color.Transparent,
-        shape = RoundedCornerShape(6.dp),
-        modifier = Modifier.hoverable(interactionSource)
-    ) {
-        Row(
-            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(6.dp)
-        ) {
-            // AI indicator dot
-            Box(
-                modifier = Modifier
-                    .size(6.dp)
-                    .background(electricMint, CircleShape)
-            )
-            
-            Text(
-                text = modelName,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                fontSize = 11.sp,
-                fontWeight = FontWeight.Medium
-            )
-            
-            Text(
-                text = "T:${String.format("%.1f", temperature)}",
-                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
-                fontSize = 10.sp
-            )
-        }
-    }
-}
-
-@Composable
-private fun SyncStatusIndicator(
-    status: SyncStatus,
-    luminousTeal: Color
-) {
-    val statusColor = when (status) {
-        SyncStatus.SYNCED -> luminousTeal
-        SyncStatus.SYNCING -> KlarityColors.StatusSyncing
-        SyncStatus.OFFLINE -> MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
-        SyncStatus.ERROR -> MaterialTheme.colorScheme.error
-    }
-    
-    val statusIcon = when (status) {
-        SyncStatus.SYNCED -> Icons.Default.Check
-        SyncStatus.SYNCING -> Icons.Default.Refresh
-        SyncStatus.OFFLINE -> Icons.Default.Close
-        SyncStatus.ERROR -> Icons.Default.Warning
-    }
-    
-    val scale by animateFloatAsState(
-        targetValue = if (status == SyncStatus.SYNCING) 1.1f else 1f,
-        animationSpec = KlarityMotion.standardEnter(),
-        label = "syncScale"
-    )
-    
-    Icon(
-        statusIcon,
-        contentDescription = status.name,
-        tint = statusColor,
-        modifier = Modifier
-            .size(18.dp)
-            .scale(scale)
-    )
-}
-
-@Composable
-private fun ThemeToggle(
-    currentTheme: ThemeMode,
-    onThemeChange: (ThemeMode) -> Unit
-) {
-    val interactionSource = remember { MutableInteractionSource() }
-    val isHovered by interactionSource.collectIsHoveredAsState()
-    
-    val icon = when (currentTheme) {
-        ThemeMode.DARK -> Icons.Default.Star
-        ThemeMode.OLED -> Icons.Default.Menu
-        ThemeMode.LIGHT -> Icons.Default.Face
-    }
-    
-    val nextTheme = when (currentTheme) {
-        ThemeMode.DARK -> ThemeMode.OLED
-        ThemeMode.OLED -> ThemeMode.LIGHT
-        ThemeMode.LIGHT -> ThemeMode.DARK
-    }
-    
-    Surface(
-        onClick = { onThemeChange(nextTheme) },
-        color = if (isHovered) MaterialTheme.colorScheme.surfaceVariant else Color.Transparent,
-        shape = RoundedCornerShape(6.dp),
-        modifier = Modifier.hoverable(interactionSource)
-    ) {
-        Box(
-            modifier = Modifier.padding(6.dp),
-            contentAlignment = Alignment.Center
-        ) {
-            Icon(
-                icon,
-                contentDescription = "Toggle theme",
-                tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.size(18.dp)
-            )
-        }
-    }
-}
-
-@Composable
-private fun ProfileButton() {
-    val interactionSource = remember { MutableInteractionSource() }
-    val isHovered by interactionSource.collectIsHoveredAsState()
-    
-    Surface(
-        onClick = { /* Open profile menu */ },
-        color = if (isHovered) MaterialTheme.colorScheme.surfaceVariant else MaterialTheme.colorScheme.surface,
-        shape = CircleShape,
-        modifier = Modifier.hoverable(interactionSource)
-    ) {
-        Box(
-            modifier = Modifier
-                .size(28.dp)
-                .padding(2.dp),
-            contentAlignment = Alignment.Center
-        ) {
-            Text(
-                text = "👤",
-                fontSize = 14.sp
-            )
-        }
-    }
-}
-
 // ══════════════════════════════════════════════════════════════════════════════
 // COMMAND PALETTE DIALOG
 // ══════════════════════════════════════════════════════════════════════════════
 
-/**
- * Command types for the palette
- */
 sealed class CommandItem(
     val icon: String,
     val title: String,
     val shortcut: String? = null,
     val category: String = "General"
 ) {
-    // Navigation commands
     object GoToHome : CommandItem("🏠", "Go to Home", "Ctrl+H", "Navigation")
     object GoToNotes : CommandItem("📝", "Go to Notes", "Ctrl+N", "Navigation")
     object GoToTasks : CommandItem("🧩", "Go to Tasks", "Ctrl+T", "Navigation")
     object GoToSettings : CommandItem("⚙️", "Settings", "Ctrl+,", "Navigation")
     
-    // Note commands
     object CreateNote : CommandItem("➕", "Create New Note", "Ctrl+Shift+N", "Notes")
     object QuickCapture : CommandItem("⚡", "Quick Capture", "Ctrl+Shift+C", "Notes")
     object SearchNotes : CommandItem("🔍", "Search All Notes", "Ctrl+F", "Notes")
     object RecentNotes : CommandItem("🕐", "Recent Notes", null, "Notes")
     
-    // View commands
     object ToggleSidebar : CommandItem("◧", "Toggle Left Panel", "Ctrl+B", "View")
     object ToggleRightPanel : CommandItem("◨", "Toggle Right Panel", "Ctrl+Shift+B", "View")
     object ZenMode : CommandItem("🧘", "Enter Zen Mode", "Ctrl+Shift+Z", "View")
     object SplitView : CommandItem("⊟", "Split View", "Ctrl+\\", "View")
 }
 
-/**
- * Command Palette - Keyboard-first command interface
- */
 @Composable
 fun CommandPalette(
     isOpen: Boolean,
@@ -618,7 +356,7 @@ fun CommandPalette(
                     .clickable(
                         interactionSource = remember { MutableInteractionSource() },
                         indication = null,
-                        onClick = {} // Prevent click-through
+                        onClick = {}
                     ),
                 color = MaterialTheme.colorScheme.surfaceVariant,
                 shape = RoundedCornerShape(16.dp),
@@ -670,7 +408,6 @@ private fun CommandPaletteContent(
         }
     }
     
-    // Reset selection when results change
     LaunchedEffect(filteredCommands.size) {
         selectedIndex = 0
     }
@@ -678,7 +415,6 @@ private fun CommandPaletteContent(
     Column(
         modifier = Modifier.padding(8.dp)
     ) {
-        // Search input
         Surface(
             color = MaterialTheme.colorScheme.surface,
             shape = RoundedCornerShape(12.dp),
@@ -744,7 +480,6 @@ private fun CommandPaletteContent(
         
         Spacer(Modifier.height(8.dp))
         
-        // Command list grouped by category
         val groupedCommands = filteredCommands.groupBy { it.category }
         var currentIndex = 0
         
@@ -753,7 +488,6 @@ private fun CommandPaletteContent(
                 .heightIn(max = 400.dp)
         ) {
             groupedCommands.forEach { (category, commands) ->
-                // Category header
                 Text(
                     text = category,
                     color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
@@ -762,7 +496,6 @@ private fun CommandPaletteContent(
                     modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)
                 )
                 
-                // Commands in category
                 commands.forEach { command ->
                     val itemIndex = currentIndex++
                     val isSelected = itemIndex == selectedIndex
@@ -831,7 +564,6 @@ private fun CommandItemRow(
                 )
             }
             
-            // Shortcut badge
             command.shortcut?.let { shortcut ->
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(4.dp)
