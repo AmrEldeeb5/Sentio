@@ -111,6 +111,9 @@ object KlarityColors {
     /** Link text color */
     val TextLink = AccentPrimary
 
+    /** Slate Gray - for empty states and muted text */
+    val TextSlate = Color(0xFF64748B)
+
     // ══════════════════════════════════════════════════════════════
     // BORDER COLORS
     // ══════════════════════════════════════════════════════════════

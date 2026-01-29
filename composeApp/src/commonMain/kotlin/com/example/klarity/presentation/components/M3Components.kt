@@ -28,6 +28,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.key.*
 import androidx.compose.ui.semantics.Role
@@ -43,6 +44,9 @@ import androidx.compose.ui.unit.sp
 import com.example.klarity.presentation.theme.KlarityColors
 import com.example.klarity.presentation.theme.KlarityMotion
 import com.example.klarity.presentation.theme.KlarityTheme
+import klarity.composeapp.generated.resources.Res
+import klarity.composeapp.generated.resources.solar__file_bold
+import org.jetbrains.compose.resources.painterResource
 
 // ══════════════════════════════════════════════════════════════════════════════
 // M3 SEARCH BAR
@@ -928,7 +932,7 @@ fun KlarityNoteCard(
     status: String? = null,
     statusColor: Color = MaterialTheme.colorScheme.primary,
     tag: String? = null,
-    icon: androidx.compose.ui.graphics.vector.ImageVector = Icons.Default.Edit,
+    icon: Any = Icons.Default.Edit,
     showAvatar: Boolean = false,
     avatar: String? = null, // Placeholder for avatar
     onClick: () -> Unit = {}
@@ -949,12 +953,20 @@ fun KlarityNoteCard(
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Icon(
-                    imageVector = icon,
-                    contentDescription = null,
-                    tint = Color(0xFF2DD4BF),
-                    modifier = Modifier.size(20.dp)
-                )
+                when (icon) {
+                    is ImageVector -> Icon(
+                        imageVector = icon,
+                        contentDescription = null,
+                        tint = Color(0xFF2DD4BF),
+                        modifier = Modifier.size(20.dp)
+                    )
+                    is Painter -> Icon(
+                        painter = icon,
+                        contentDescription = null,
+                        tint = Color(0xFF2DD4BF),
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
                 
                 Text(
                     text = headline,

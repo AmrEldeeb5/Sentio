@@ -15,8 +15,11 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -35,7 +38,10 @@ import androidx.compose.ui.unit.sp
 import com.example.klarity.domain.models.Folder
 import com.example.klarity.domain.models.Note
 import com.example.klarity.domain.models.NoteStatus
+import com.example.klarity.presentation.screen.home.util.displayTitle
 import com.example.klarity.presentation.screen.home.util.formatRelativeTime
+import klarity.composeapp.generated.resources.*
+import org.jetbrains.compose.resources.painterResource
 
 /**
  * Notes Tree Sidebar - Right sidebar showing notes organized in tree structure
@@ -83,7 +89,12 @@ fun NotesTreeSidebar(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        Text("🔍", fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Icon(
+                            imageVector = Icons.Default.Search,
+                            contentDescription = null,
+                            modifier = Modifier.size(14.dp),
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
                         BasicTextField(
                             value = searchQuery,
                             onValueChange = onSearchQueryChange,
@@ -137,7 +148,7 @@ fun NotesTreeSidebar(
                     item {
                         TreeSectionHeader(
                             title = "PINNED",
-                            icon = "📌",
+                            icon = painterResource(Res.drawable.solar__file_bold), // Use file icon for pinned notes too or keep pin?
                             iconColor = Color(0xFFF43F5E),
                             isExpanded = pinnedSectionExpanded,
                             onToggle = onTogglePinnedSection
@@ -178,7 +189,7 @@ fun NotesTreeSidebar(
                     item {
                         TreeSectionHeader(
                             title = "UNCATEGORIZED",
-                            icon = "📄",
+                            icon = painterResource(Res.drawable.solar__file_bold),
                             isExpanded = true,
                             onToggle = { }
                         )
@@ -211,7 +222,7 @@ fun NotesTreeSidebar(
 @Composable
 fun TreeSectionHeader(
     title: String,
-    icon: String,
+    icon: Any,
     iconColor: Color = MaterialTheme.colorScheme.onSurfaceVariant,
     isExpanded: Boolean,
     onToggle: () -> Unit
@@ -233,7 +244,15 @@ fun TreeSectionHeader(
             fontSize = 8.sp,
             color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
         )
-        Text(icon, fontSize = 12.sp, color = iconColor)
+        when (icon) {
+            is String -> Text(icon, fontSize = 12.sp, color = iconColor)
+            is androidx.compose.ui.graphics.painter.Painter -> Icon(
+                painter = icon,
+                contentDescription = null,
+                modifier = Modifier.size(16.dp),
+                tint = iconColor
+            )
+        }
         Text(
             title,
             fontSize = 11.sp,
@@ -262,7 +281,7 @@ fun TreeFolderSection(
         // Folder header
         TreeSectionHeader(
             title = folder.name.uppercase(),
-            icon = folder.icon ?: "📁",
+            icon = painterResource(Res.drawable.solar__folder_with_files_bold),
             isExpanded = isExpanded,
             onToggle = { onToggleFolder(folder.id) }
         )
@@ -351,15 +370,16 @@ fun TreeNoteCard(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     modifier = Modifier.weight(1f)
                 ) {
-                    Text(
-                        "📄",
-                        fontSize = 14.sp,
-                        color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
+                    Icon(
+                        painter = painterResource(Res.drawable.solar__file_bold),
+                        contentDescription = null,
+                        modifier = Modifier.size(16.dp),
+                        tint = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Text(
-                        note.title.ifBlank { "Untitled" },
+                        note.displayTitle(),
                         fontSize = 14.sp,
-                        fontWeight = FontWeight.Medium,
+                        fontWeight = FontWeight.Normal, // Lighter weight as requested
                         color = if (isSelected || isHovered) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
@@ -376,7 +396,7 @@ fun TreeNoteCard(
             Text(
                 note.preview(),
                 fontSize = 12.sp,
-                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f), // Faded preview
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis,
                 lineHeight = 18.sp,

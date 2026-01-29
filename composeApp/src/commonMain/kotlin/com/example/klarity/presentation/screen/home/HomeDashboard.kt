@@ -18,10 +18,14 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.klarity.domain.models.Note
+import com.example.klarity.presentation.screen.home.util.displayTitle
 import com.example.klarity.presentation.components.*
 import com.example.klarity.presentation.screen.home.util.formatRelativeTime
 import com.example.klarity.presentation.theme.KlarityTheme
+import com.example.klarity.presentation.theme.KlarityColors
+import klarity.composeapp.generated.resources.*
 import kotlinx.datetime.*
+import org.jetbrains.compose.resources.painterResource
 
 /**
  * HomeDashboard - 2-Column Dashboard
@@ -300,7 +304,7 @@ private fun RecentNoteItem(
     KlarityListItem(
         headlineContent = {
             Text(
-                text = note.title.ifEmpty { "Untitled" },
+                text = note.displayTitle(),
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
@@ -330,9 +334,11 @@ private fun RecentNoteItem(
                     .background(MaterialTheme.colorScheme.primaryContainer),
                 contentAlignment = Alignment.Center
             ) {
-                Text(
-                    text = if (note.isPinned) "📌" else "📝",
-                    fontSize = 14.sp
+                Icon(
+                    painter = if (note.isPinned) painterResource(Res.drawable.solar__file_bold) else painterResource(Res.drawable.solar__file_bold),
+                    contentDescription = null,
+                    modifier = Modifier.size(20.dp),
+                    tint = MaterialTheme.colorScheme.primary
                 )
             }
         },
@@ -362,10 +368,10 @@ private fun RecentItemCard(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val (emoji, tint) = when (item.type) {
-        RecentItemType.NOTE -> "📝" to MaterialTheme.colorScheme.primary
-        RecentItemType.TASK -> "✅" to MaterialTheme.colorScheme.secondary
-        RecentItemType.FOLDER -> "📁" to MaterialTheme.colorScheme.onSurfaceVariant
+    val (painter, tint) = when (item.type) {
+        RecentItemType.NOTE -> painterResource(Res.drawable.solar__file_bold) to MaterialTheme.colorScheme.primary
+        RecentItemType.TASK -> painterResource(Res.drawable.solar__file_bold) to MaterialTheme.colorScheme.secondary
+        RecentItemType.FOLDER -> painterResource(Res.drawable.solar__folder_with_files_bold) to MaterialTheme.colorScheme.onSurfaceVariant
     }
     
     KlarityListItem(
@@ -390,7 +396,12 @@ private fun RecentItemCard(
                     .background(tint.copy(alpha = 0.15f)),
                 contentAlignment = Alignment.Center
             ) {
-                Text(text = emoji, fontSize = 14.sp)
+                Icon(
+                    painter = painter,
+                    contentDescription = null,
+                    modifier = Modifier.size(20.dp),
+                    tint = tint
+                )
             }
         },
         onClick = onClick
@@ -792,23 +803,45 @@ private fun EmptyStateCard(
             .fillMaxWidth()
             .padding(32.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(12.dp)
+        verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
+        // Muted emoji/icon
         Text(
             text = emoji,
-            fontSize = 40.sp
+            fontSize = 32.sp,
+            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
         )
+        
+        // Muted title
         Text(
             text = title,
             style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.onSurface
+            fontWeight = FontWeight.Medium,
+            color = KlarityColors.TextSlate
         )
-        Text(
-            text = description,
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            textAlign = androidx.compose.ui.text.style.TextAlign.Center
-        )
+        
+        Spacer(modifier = Modifier.height(8.dp))
+        
+        // Quick Actions Row
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            KlarityTonalButton(
+                onClick = { /* Template logic */ },
+                text = "New Note",
+                icon = Icons.Default.Add,
+                containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                contentColor = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            
+            KlarityTonalButton(
+                onClick = { /* Connect calendar logic */ },
+                text = "Connect Calendar",
+                icon = Icons.Default.CalendarToday,
+                containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                contentColor = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
     }
 }

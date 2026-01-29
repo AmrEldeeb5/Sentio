@@ -31,6 +31,8 @@ import com.example.klarity.domain.models.Folder
 import com.example.klarity.domain.models.Note
 import com.example.klarity.domain.models.NoteStatus
 import androidx.compose.foundation.BorderStroke
+import klarity.composeapp.generated.resources.*
+import org.jetbrains.compose.resources.painterResource
 
 /**
  * File Explorer Panel - Shows folder tree structure with full folder management
@@ -219,10 +221,12 @@ fun FolderTreeItem(
                     fontSize = 9.sp,
                     color = Color(0xFF7D8590)
                 )
-                // Folder icon (using emoji)
-                Text(
-                    folder.icon ?: "📁",
-                    fontSize = 16.sp
+                // Folder icon
+                Icon(
+                    painter = painterResource(Res.drawable.solar__folder_with_files_bold),
+                    contentDescription = null,
+                    modifier = Modifier.size(16.dp),
+                    tint = if (isHovered) Color(0xFFE6EDF3) else Color(0xFF7D8590)
                 )
                 // Folder name
                 Text(
@@ -331,11 +335,12 @@ fun DraggableNoteItem(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            // Document icon (using emoji)
-            Text(
-                "📄",
-                fontSize = 14.sp,
-                color = if (isSelected) Color(0xFF2DD4BF) else Color(0xFF7D8590)
+            // Document icon
+            Icon(
+                painter = painterResource(Res.drawable.solar__file_bold),
+                contentDescription = null,
+                modifier = Modifier.size(16.dp),
+                tint = if (isSelected) Color(0xFF2DD4BF) else Color(0xFF7D8590)
             )
             // Note title
             Text(
@@ -381,7 +386,12 @@ fun DraggableNoteItem(
                 androidx.compose.material3.DropdownMenuItem(
                     text = { 
                         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                            Text(folder.icon ?: "📁", fontSize = 14.sp)
+                            Icon(
+                                painter = painterResource(Res.drawable.solar__folder_with_files_bold),
+                                contentDescription = null,
+                                modifier = Modifier.size(14.dp),
+                                tint = Color(0xFF7D8590)
+                            )
                             Text(folder.name, fontSize = 13.sp)
                         }
                     },

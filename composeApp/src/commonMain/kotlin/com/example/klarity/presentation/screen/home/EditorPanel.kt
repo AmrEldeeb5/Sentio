@@ -1,6 +1,18 @@
 package com.example.klarity.presentation.screen.home
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.outlined.*
+import androidx.compose.material3.Icon
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.TooltipBox
+import androidx.compose.material3.TooltipDefaults
+import androidx.compose.material3.PlainTooltip
+import androidx.compose.material3.rememberTooltipState
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
@@ -15,6 +27,7 @@ import androidx.compose.foundation.interaction.collectIsHoveredAsState
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
@@ -149,51 +162,77 @@ fun EditorPanel(
                 onSlashMenu = onToggleSlashMenu
             )
 
+            // Divider below toolbar
+            androidx.compose.material3.HorizontalDivider(
+                modifier = Modifier.fillMaxWidth(),
+                color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f)
+            )
+
             // Scrollable Content
-            Column(
+            Box(
                 modifier = Modifier
-                    .fillMaxSize()
                     .weight(1f)
-                    .verticalScroll(rememberScrollState())
+                    .fillMaxWidth(),
+                contentAlignment = Alignment.TopStart
             ) {
-                if (selectedNote != null) {
-                    val folder = folders.find { it.id == selectedNote.folderId }
+                Column(
+                    modifier = Modifier
+                        .widthIn(max = 850.dp) // Zen mode cleaning constraint
+                        .fillMaxSize()
+                        .verticalScroll(rememberScrollState())
+                        .padding(horizontal = 48.dp) // Increased horizontal padding
+                ) {
+                    if (selectedNote != null) {
+                        val folder = folders.find { it.id == selectedNote.folderId }
 
-                    // Breadcrumbs
-                    Breadcrumbs(
-                        projectName = "Klarity",
-                        folderName = folder?.name ?: "Uncategorized",
-                        noteName = selectedNote.title.ifBlank { "Untitled" }
-                    )
+                        // Breadcrumbs
+                        Box(modifier = Modifier.padding(top = 16.dp, bottom = 8.dp)) {
+                            Breadcrumbs(
+                                projectName = "Klarity",
+                                folderName = folder?.name ?: "Uncategorized",
+                                noteName = selectedNote.title.ifBlank { "Untitled" }
+                            )
+                        }
 
-                    // Editor Content (editable or preview)
-                    if (isPreviewMode) {
-                        MarkdownPreviewContent(
-                            note = selectedNote,
-                            onWikiLinkClick = onWikiLinkClick
-                        )
+                        // Editor Content (editable or preview)
+                        if (isPreviewMode) {
+                            MarkdownPreviewContent(
+                                note = selectedNote,
+                                onWikiLinkClick = onWikiLinkClick
+                            )
+                        } else {
+                            EditableEditorContent(
+                                note = selectedNote,
+                                onTitleChange = onTitleChange,
+                                onContentChange = onContentChange,
+                                onToggleSlashMenu = onToggleSlashMenu,
+                                formatBoldTrigger = formatBoldTrigger,
+                                formatItalicTrigger = formatItalicTrigger,
+                                formatCodeTrigger = formatCodeTrigger,
+                                formatLinkTrigger = formatLinkTrigger
+                            )
+                        }
+                        
+                        // Footer padding
+                        Spacer(modifier = Modifier.height(300.dp))
                     } else {
-                        EditableEditorContent(
-                            note = selectedNote,
-                            onTitleChange = onTitleChange,
-                            onContentChange = onContentChange,
-                            onToggleSlashMenu = onToggleSlashMenu,
-                            formatBoldTrigger = formatBoldTrigger,
-                            formatItalicTrigger = formatItalicTrigger,
-                            formatCodeTrigger = formatCodeTrigger,
-                            formatLinkTrigger = formatLinkTrigger
+                        // Instant Editor - Click anywhere to start writing
+                        InstantEditorState(
+                            onCreateNote = onCreateNote
                         )
                     }
-                } else {
-                    // Instant Editor - Click anywhere to start writing
-                    InstantEditorState(
-                        onCreateNote = onCreateNote
-                    )
                 }
             }
 
-            // Footer
-            EditorFooter(wordCount = selectedNote?.wordCount() ?: 0)
+            // Footer (Fixed at bottom)
+            Surface(
+                modifier = Modifier.fillMaxWidth(),
+                color = MaterialTheme.colorScheme.surface,
+                tonalElevation = 2.dp,
+                shadowElevation = 8.dp
+            ) {
+                 EditorFooter(wordCount = selectedNote?.wordCount() ?: 0)
+            }
         }
 
         // Slash Menu (floating)
@@ -208,6 +247,7 @@ fun EditorPanel(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EditorToolbar(
     isPinned: Boolean = false,
@@ -225,98 +265,141 @@ fun EditorToolbar(
     onSlashMenu: () -> Unit = {}
 ) {
     var showStatusMenu by remember { mutableStateOf(false) }
-    
-    // Material 3 Toolbar with IconButtons
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween
+    var showMoreMenu by remember { mutableStateOf(false) }
+
+    // Premium Toolbar: clean surface, subtle borders
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        color = MaterialTheme.colorScheme.surface.copy(alpha = 0.95f),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f))
     ) {
-            // Left: Formatting buttons (Material 3 IconButtons)
-            Row(horizontalArrangement = Arrangement.spacedBy(4.dp), verticalAlignment = Alignment.CenterVertically) {
-                IconButton(onClick = onBold) {
-                    Text(
-                        "B",
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 14.sp,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-                IconButton(onClick = onItalic) {
-                    Text(
-                        "I",
-                        fontStyle = androidx.compose.ui.text.font.FontStyle.Italic,
-                        fontSize = 14.sp,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-                IconButton(onClick = onCode) {
-                    Text(
-                        "</>",
-                        fontSize = 12.sp,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-                IconButton(onClick = onLink) {
-                    Text(
-                        "🔗",
-                        fontSize = 14.sp
-                    )
-                }
-
-                // Vertical divider
-                androidx.compose.material3.VerticalDivider(
-                    modifier = Modifier.height(24.dp),
-                    color = MaterialTheme.colorScheme.outlineVariant
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 20.dp, vertical = 6.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            // Left: Formatting Tools (Three-Group Architecture)
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(2.dp)
+            ) {
+                // Group 1: Content Modification (Bold/Italic/Code)
+                ToolbarIconButton(
+                    icon = Icons.Default.FormatBold,
+                    tooltip = "Bold (Cmd+B)",
+                    contentDescription = "Bold, Keyboard shortcut Command B",
+                    onClick = onBold
+                )
+                ToolbarIconButton(
+                    icon = Icons.Default.FormatItalic,
+                    tooltip = "Italic (Cmd+I)",
+                    contentDescription = "Italic, Keyboard shortcut Command I",
+                    onClick = onItalic
+                )
+                ToolbarIconButton(
+                    icon = Icons.Default.Code,
+                    tooltip = "Code (Cmd+E)",
+                    contentDescription = "Code Block, Keyboard shortcut Command E",
+                    onClick = onCode
                 )
 
-                FilledTonalIconButton(
-                    onClick = onSlashMenu,
-                    colors = androidx.compose.material3.IconButtonDefaults.filledTonalIconButtonColors(
-                        containerColor = MaterialTheme.colorScheme.tertiaryContainer
-                    )
-                ) {
-                    Text("✨", fontSize = 14.sp)
-                }
-                
-                // Vertical divider
-                androidx.compose.material3.VerticalDivider(
-                    modifier = Modifier.height(24.dp),
-                    color = MaterialTheme.colorScheme.outlineVariant
+                ToolbarDivider()
+
+                // Group 2: Enhancement & External (Link/AI)
+                ToolbarIconButton(
+                    icon = Icons.Default.Link,
+                    tooltip = "Insert Link (Cmd+K)",
+                    contentDescription = "Insert Link, Keyboard shortcut Command K",
+                    onClick = onLink
                 )
                 
-                // Preview toggle
-                IconToggleButton(
-                    checked = isPreviewMode,
-                    onCheckedChange = { onTogglePreview() }
-                ) {
-                    Text(
-                        if (isPreviewMode) "✏️" else "👁",
-                        fontSize = 14.sp
-                    )
+                // AI Button - "Quiet Prominence"
+                ToolbarTooltip(tooltip = "AI Assist (Cmd+/)") {
+                    FilledTonalIconButton(
+                        onClick = onSlashMenu,
+                        modifier = Modifier.size(32.dp).semantics { 
+                            contentDescription = "AI Assist, Keyboard shortcut Command Slash" 
+                        },
+                        colors = IconButtonDefaults.filledTonalIconButtonColors(
+                            containerColor = MaterialTheme.colorScheme.tertiaryContainer,
+                            contentColor = MaterialTheme.colorScheme.onTertiaryContainer
+                        )
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.AutoAwesome,
+                            contentDescription = null,
+                            modifier = Modifier.size(16.dp)
+                        )
+                    }
                 }
-                IconButton(onClick = {}) {
-                    Text("⋯", fontSize = 16.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+
+                ToolbarDivider()
+
+                // Group 3: View State (Preview/More)
+                ToolbarTooltip(tooltip = if (isPreviewMode) "Edit Mode" else "Preview Mode") {
+                    IconToggleButton(
+                        checked = isPreviewMode,
+                        onCheckedChange = { onTogglePreview() },
+                        modifier = Modifier.size(32.dp).semantics {
+                             contentDescription = if (isPreviewMode) "Exit Preview, Keyboard shortcut Command Shift P" else "Enter Preview, Keyboard shortcut Command Shift P"
+                        },
+                        colors = IconButtonDefaults.iconToggleButtonColors(
+                            checkedContainerColor = MaterialTheme.colorScheme.secondaryContainer,
+                            checkedContentColor = MaterialTheme.colorScheme.onSecondaryContainer
+                        )
+                    ) {
+                        Icon(
+                            imageVector = if (isPreviewMode) Icons.Default.Edit else Icons.Default.Visibility,
+                            contentDescription = null,
+                            modifier = Modifier.size(18.dp)
+                        )
+                    }
+                }
+                
+                // More Menu
+                Box {
+                    ToolbarIconButton(
+                        icon = Icons.Default.MoreVert,
+                        tooltip = "More Options",
+                        contentDescription = "More Options",
+                        onClick = { showMoreMenu = true }
+                    )
+                    DropdownMenu(
+                        expanded = showMoreMenu,
+                        onDismissRequest = { showMoreMenu = false }
+                    ) {
+                        DropdownMenuItem(
+                            text = { Text("Word Count") },
+                            onClick = { /* TODO */ showMoreMenu = false }
+                        )
+                        DropdownMenuItem(
+                            text = { Text("Export") },
+                            onClick = { /* TODO */ showMoreMenu = false }
+                        )
+                    }
                 }
             }
 
-            // Right: Status, Pin, Delete, Settings
-            Row(horizontalArrangement = Arrangement.spacedBy(4.dp), verticalAlignment = Alignment.CenterVertically) {
+            // Right: Status & Actions
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
                 if (hasNote) {
-                    // Status selector
                     Box {
                         NoteStatusSelector(
                             currentStatus = noteStatus,
                             onClick = { showStatusMenu = true }
                         )
-                        androidx.compose.material3.DropdownMenu(
+                        DropdownMenu(
                             expanded = showStatusMenu,
-                            onDismissRequest = { showStatusMenu = false }
+                            onDismissRequest = { showStatusMenu = false },
+                            modifier = Modifier.background(MaterialTheme.colorScheme.surface)
                         ) {
                             NoteStatus.entries.forEach { status ->
-                                androidx.compose.material3.DropdownMenuItem(
+                                DropdownMenuItem(
                                     text = {
                                         Row(
                                             horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -335,23 +418,89 @@ fun EditorToolbar(
                         }
                     }
 
-                    IconToggleButton(
-                        checked = isPinned,
-                        onCheckedChange = { onTogglePin() }
-                    ) {
-                        Text(
-                            if (isPinned) "📌" else "📍",
-                            fontSize = 14.sp
-                        )
-                    }
-                    IconButton(onClick = onDelete) {
-                        Text("🗑", fontSize = 14.sp)
-                    }
-                }
-                IconButton(onClick = {}) {
-                    Text("⚙", fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    // Divider for actions
+                    VerticalDivider(modifier = Modifier.height(16.dp))
+
+                    ToolbarIconButton(
+                        icon = if (isPinned) Icons.Filled.PushPin else Icons.Outlined.PushPin,
+                        tooltip = if (isPinned) "Unpin" else "Pin",
+                        contentDescription = if (isPinned) "Unpin Note" else "Pin Note",
+                        onClick = onTogglePin,
+                        tint = if (isPinned) KlarityColors.AccentPrimary else MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    
+                    ToolbarIconButton(
+                        icon = Icons.Default.DeleteOutline,
+                        tooltip = "Delete",
+                        contentDescription = "Delete Note",
+                        onClick = onDelete,
+                        tint = MaterialTheme.colorScheme.error.copy(alpha = 0.8f)
+                    )
                 }
             }
+        }
+    }
+}
+
+@Composable
+private fun ToolbarIconButton(
+    icon:  androidx.compose.ui.graphics.vector.ImageVector,
+    tooltip: String,
+    contentDescription: String,
+    onClick: () -> Unit,
+    tint: Color = MaterialTheme.colorScheme.onSurfaceVariant
+) {
+    ToolbarTooltip(tooltip = tooltip) {
+        IconButton(
+            onClick = onClick,
+            modifier = Modifier.size(32.dp).semantics { 
+                this.contentDescription = contentDescription 
+            }
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = null, // Handled by parent IconButton semantics
+                tint = tint,
+                modifier = Modifier.size(18.dp)
+            )
+        }
+    }
+}
+
+@Composable
+private fun ToolbarDivider() {
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Spacer(modifier = Modifier.width(4.dp))
+        VerticalDivider(
+            modifier = Modifier.height(16.dp),
+            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f)
+        )
+        Spacer(modifier = Modifier.width(4.dp))
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun ToolbarTooltip(
+    tooltip: String,
+    content: @Composable () -> Unit
+) {
+    TooltipBox(
+        positionProvider = TooltipDefaults.rememberPlainTooltipPositionProvider(),
+        tooltip = {
+            PlainTooltip(
+                containerColor = MaterialTheme.colorScheme.inverseSurface,
+                contentColor = MaterialTheme.colorScheme.inverseOnSurface
+            ) {
+                Text(
+                    text = tooltip,
+                    style = MaterialTheme.typography.labelSmall
+                )
+            }
+        },
+        state = rememberTooltipState()
+    ) {
+        content()
     }
 }
 
@@ -389,28 +538,42 @@ fun NoteStatusSelector(
     val interactionSource = remember { MutableInteractionSource() }
     val isHovered by interactionSource.collectIsHoveredAsState()
     val statusColor = getStatusColor(currentStatus)
-
+    
+    // Modern Pill/Chip styling
     Surface(
         modifier = Modifier
             .clickable(interactionSource = interactionSource, indication = null, onClick = onClick)
             .hoverable(interactionSource),
-        shape = RoundedCornerShape(6.dp),
-        color = if (isHovered) statusColor.copy(alpha = 0.15f) else statusColor.copy(alpha = 0.1f),
-        border = BorderStroke(1.dp, statusColor.copy(alpha = 0.3f))
+        shape = RoundedCornerShape(50), // Fully rounded pill
+        color = statusColor.copy(alpha = if (isHovered) 0.15f else 0.08f),
+        border = BorderStroke(1.dp, statusColor.copy(alpha = if (isHovered) 0.5f else 0.2f))
     ) {
         Row(
-            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+            modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(4.dp)
+            horizontalArrangement = Arrangement.spacedBy(6.dp)
         ) {
-            Text(getStatusIcon(currentStatus), fontSize = 12.sp, color = statusColor)
+            // Status Dot
+            Box(
+                modifier = Modifier
+                    .size(8.dp)
+                    .background(statusColor, CircleShape)
+            )
+            
             Text(
                 getStatusLabel(currentStatus),
-                fontSize = 11.sp,
-                color = statusColor,
-                fontWeight = FontWeight.Medium
+                fontSize = 12.sp,
+                color = statusColor.copy(alpha = 1f), // Ensure fully opaque text
+                fontWeight = FontWeight.SemiBold,
+                fontFamily = FontFamily.SansSerif
             )
-            Text("▼", fontSize = 8.sp, color = statusColor.copy(alpha = 0.6f))
+            
+            Icon(
+                imageVector = Icons.Default.KeyboardArrowDown,
+                contentDescription = null,
+                tint = statusColor.copy(alpha = 0.7f),
+                modifier = Modifier.size(14.dp)
+            )
         }
     }
 }
@@ -568,32 +731,32 @@ fun EditableEditorContent(
 
     Column(
         modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 48.dp)
-            .padding(bottom = 128.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+            .fillMaxWidth(),
+            // removed manual padding, handled by parent column gutters
+        verticalArrangement = Arrangement.spacedBy(24.dp)
     ) {
-        // Editable Title
+        // Editable Title - Pro Max Typography
         BasicTextField(
             value = titleValue,
             onValueChange = { titleValue = it },
             textStyle = TextStyle(
-                fontSize = 30.sp,
-                fontWeight = FontWeight.Bold,
+                fontSize = 40.sp, // Display Large
+                fontWeight = FontWeight.ExtraBold,
                 color = MaterialTheme.colorScheme.onSurface,
-                lineHeight = 40.sp
+                lineHeight = 48.sp,
+                fontFamily = FontFamily.Serif // Optional: use a nice serif if available, or just system default
             ),
-            cursorBrush = SolidColor(MaterialTheme.colorScheme.tertiary),
+            cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
             modifier = Modifier.fillMaxWidth(),
             decorationBox = { innerTextField ->
                 Box {
                     if (titleValue.text.isEmpty()) {
                         Text(
                             "Untitled",
-                            fontSize = 30.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
-                            lineHeight = 40.sp
+                            fontSize = 40.sp,
+                            fontWeight = FontWeight.ExtraBold,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f),
+                            lineHeight = 48.sp
                         )
                     }
                     innerTextField()
@@ -613,14 +776,15 @@ fun EditableEditorContent(
                     }
                 },
                 textStyle = TextStyle(
-                    fontSize = 16.sp,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    lineHeight = 28.sp
+                    fontSize = 18.sp, // Larger body text
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.9f),
+                    lineHeight = 32.sp, // More breathing room
+                    fontWeight = FontWeight.Normal
                 ),
-                cursorBrush = SolidColor(MaterialTheme.colorScheme.tertiary),
+                cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .defaultMinSize(minHeight = 300.dp)
+                    .defaultMinSize(minHeight = 400.dp)
                     .onKeyEvent { keyEvent ->
                         when {
                             // Tab: Accept suggestion
@@ -733,7 +897,7 @@ private fun GhostTextSuggestion(
     )
     
     // Measure text to position ghost text correctly
-    androidx.compose.foundation.layout.BoxWithConstraints {
+    Box {
         val ghostTextModifier = if (suggestion.confidence > 0.85f) {
             Modifier.organicPulsingGlow(
                 color = KlarityTheme.extendedColors.accentAI,
