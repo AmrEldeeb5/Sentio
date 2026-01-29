@@ -18,9 +18,11 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.klarity.domain.models.Note
+import com.example.klarity.presentation.screen.home.util.displayTitle
 import com.example.klarity.presentation.components.*
 import com.example.klarity.presentation.screen.home.util.formatRelativeTime
 import com.example.klarity.presentation.theme.KlarityTheme
+import com.example.klarity.presentation.theme.KlarityColors
 import klarity.composeapp.generated.resources.*
 import kotlinx.datetime.*
 import org.jetbrains.compose.resources.painterResource
@@ -302,7 +304,7 @@ private fun RecentNoteItem(
     KlarityListItem(
         headlineContent = {
             Text(
-                text = note.title.ifEmpty { "Untitled" },
+                text = note.displayTitle(),
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
@@ -801,23 +803,45 @@ private fun EmptyStateCard(
             .fillMaxWidth()
             .padding(32.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(12.dp)
+        verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
+        // Muted emoji/icon
         Text(
             text = emoji,
-            fontSize = 40.sp
+            fontSize = 32.sp,
+            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
         )
+        
+        // Muted title
         Text(
             text = title,
             style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.onSurface
+            fontWeight = FontWeight.Medium,
+            color = KlarityColors.TextSlate
         )
-        Text(
-            text = description,
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            textAlign = androidx.compose.ui.text.style.TextAlign.Center
-        )
+        
+        Spacer(modifier = Modifier.height(8.dp))
+        
+        // Quick Actions Row
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            KlarityTonalButton(
+                onClick = { /* Template logic */ },
+                text = "New Note",
+                icon = Icons.Default.Add,
+                containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                contentColor = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            
+            KlarityTonalButton(
+                onClick = { /* Connect calendar logic */ },
+                text = "Connect Calendar",
+                icon = Icons.Default.CalendarToday,
+                containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                contentColor = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
     }
 }

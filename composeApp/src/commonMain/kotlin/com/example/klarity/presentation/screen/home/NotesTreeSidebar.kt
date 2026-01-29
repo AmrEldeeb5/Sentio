@@ -38,10 +38,10 @@ import androidx.compose.ui.unit.sp
 import com.example.klarity.domain.models.Folder
 import com.example.klarity.domain.models.Note
 import com.example.klarity.domain.models.NoteStatus
+import com.example.klarity.presentation.screen.home.util.displayTitle
 import com.example.klarity.presentation.screen.home.util.formatRelativeTime
 import klarity.composeapp.generated.resources.*
 import org.jetbrains.compose.resources.painterResource
-import androidx.compose.material3.Icon
 
 /**
  * Notes Tree Sidebar - Right sidebar showing notes organized in tree structure
@@ -377,9 +377,9 @@ fun TreeNoteCard(
                         tint = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Text(
-                        note.title.ifBlank { "Untitled" },
+                        note.displayTitle(),
                         fontSize = 14.sp,
-                        fontWeight = FontWeight.Medium,
+                        fontWeight = FontWeight.Normal, // Lighter weight as requested
                         color = if (isSelected || isHovered) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
@@ -396,7 +396,7 @@ fun TreeNoteCard(
             Text(
                 note.preview(),
                 fontSize = 12.sp,
-                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f), // Faded preview
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis,
                 lineHeight = 18.sp,

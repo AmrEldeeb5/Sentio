@@ -265,6 +265,7 @@ fun EditorToolbar(
     onSlashMenu: () -> Unit = {}
 ) {
     var showStatusMenu by remember { mutableStateOf(false) }
+    var showMoreMenu by remember { mutableStateOf(false) }
 
     // Premium Toolbar: clean surface, subtle borders
     Surface(
@@ -279,50 +280,56 @@ fun EditorToolbar(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            // Left: Formatting Tools
+            // Left: Formatting Tools (Three-Group Architecture)
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(2.dp)
             ) {
-                // Group 1: Basics
+                // Group 1: Content Modification (Bold/Italic/Code)
                 ToolbarIconButton(
                     icon = Icons.Default.FormatBold,
                     tooltip = "Bold (Cmd+B)",
+                    contentDescription = "Bold, Keyboard shortcut Command B",
                     onClick = onBold
                 )
                 ToolbarIconButton(
                     icon = Icons.Default.FormatItalic,
                     tooltip = "Italic (Cmd+I)",
+                    contentDescription = "Italic, Keyboard shortcut Command I",
                     onClick = onItalic
                 )
                 ToolbarIconButton(
                     icon = Icons.Default.Code,
                     tooltip = "Code (Cmd+E)",
+                    contentDescription = "Code Block, Keyboard shortcut Command E",
                     onClick = onCode
                 )
 
                 ToolbarDivider()
 
-                // Group 2: Insert / AI
+                // Group 2: Enhancement & External (Link/AI)
                 ToolbarIconButton(
                     icon = Icons.Default.Link,
                     tooltip = "Insert Link (Cmd+K)",
+                    contentDescription = "Insert Link, Keyboard shortcut Command K",
                     onClick = onLink
                 )
                 
-                // AI Button (Special styling)
+                // AI Button - "Quiet Prominence"
                 ToolbarTooltip(tooltip = "AI Assist (Cmd+/)") {
                     FilledTonalIconButton(
                         onClick = onSlashMenu,
-                        modifier = Modifier.size(32.dp),
+                        modifier = Modifier.size(32.dp).semantics { 
+                            contentDescription = "AI Assist, Keyboard shortcut Command Slash" 
+                        },
                         colors = IconButtonDefaults.filledTonalIconButtonColors(
-                            containerColor = KlarityColors.AccentAI.copy(alpha = 0.15f),
-                            contentColor = KlarityColors.AccentAI
+                            containerColor = MaterialTheme.colorScheme.tertiaryContainer,
+                            contentColor = MaterialTheme.colorScheme.onTertiaryContainer
                         )
                     ) {
                         Icon(
                             imageVector = Icons.Default.AutoAwesome,
-                            contentDescription = "AI Assist",
+                            contentDescription = null,
                             modifier = Modifier.size(16.dp)
                         )
                     }
@@ -330,12 +337,14 @@ fun EditorToolbar(
 
                 ToolbarDivider()
 
-                // Group 3: View Mode
+                // Group 3: View State (Preview/More)
                 ToolbarTooltip(tooltip = if (isPreviewMode) "Edit Mode" else "Preview Mode") {
                     IconToggleButton(
                         checked = isPreviewMode,
                         onCheckedChange = { onTogglePreview() },
-                        modifier = Modifier.size(32.dp),
+                        modifier = Modifier.size(32.dp).semantics {
+                             contentDescription = if (isPreviewMode) "Exit Preview, Keyboard shortcut Command Shift P" else "Enter Preview, Keyboard shortcut Command Shift P"
+                        },
                         colors = IconButtonDefaults.iconToggleButtonColors(
                             checkedContainerColor = MaterialTheme.colorScheme.secondaryContainer,
                             checkedContentColor = MaterialTheme.colorScheme.onSecondaryContainer
@@ -345,6 +354,29 @@ fun EditorToolbar(
                             imageVector = if (isPreviewMode) Icons.Default.Edit else Icons.Default.Visibility,
                             contentDescription = null,
                             modifier = Modifier.size(18.dp)
+                        )
+                    }
+                }
+                
+                // More Menu
+                Box {
+                    ToolbarIconButton(
+                        icon = Icons.Default.MoreVert,
+                        tooltip = "More Options",
+                        contentDescription = "More Options",
+                        onClick = { showMoreMenu = true }
+                    )
+                    DropdownMenu(
+                        expanded = showMoreMenu,
+                        onDismissRequest = { showMoreMenu = false }
+                    ) {
+                        DropdownMenuItem(
+                            text = { Text("Word Count") },
+                            onClick = { /* TODO */ showMoreMenu = false }
+                        )
+                        DropdownMenuItem(
+                            text = { Text("Export") },
+                            onClick = { /* TODO */ showMoreMenu = false }
                         )
                     }
                 }
@@ -392,6 +424,7 @@ fun EditorToolbar(
                     ToolbarIconButton(
                         icon = if (isPinned) Icons.Filled.PushPin else Icons.Outlined.PushPin,
                         tooltip = if (isPinned) "Unpin" else "Pin",
+                        contentDescription = if (isPinned) "Unpin Note" else "Pin Note",
                         onClick = onTogglePin,
                         tint = if (isPinned) KlarityColors.AccentPrimary else MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -399,6 +432,7 @@ fun EditorToolbar(
                     ToolbarIconButton(
                         icon = Icons.Default.DeleteOutline,
                         tooltip = "Delete",
+                        contentDescription = "Delete Note",
                         onClick = onDelete,
                         tint = MaterialTheme.colorScheme.error.copy(alpha = 0.8f)
                     )
@@ -412,17 +446,20 @@ fun EditorToolbar(
 private fun ToolbarIconButton(
     icon:  androidx.compose.ui.graphics.vector.ImageVector,
     tooltip: String,
+    contentDescription: String,
     onClick: () -> Unit,
     tint: Color = MaterialTheme.colorScheme.onSurfaceVariant
 ) {
     ToolbarTooltip(tooltip = tooltip) {
         IconButton(
             onClick = onClick,
-            modifier = Modifier.size(32.dp)
+            modifier = Modifier.size(32.dp).semantics { 
+                this.contentDescription = contentDescription 
+            }
         ) {
             Icon(
                 imageVector = icon,
-                contentDescription = tooltip,
+                contentDescription = null, // Handled by parent IconButton semantics
                 tint = tint,
                 modifier = Modifier.size(18.dp)
             )
@@ -860,7 +897,7 @@ private fun GhostTextSuggestion(
     )
     
     // Measure text to position ghost text correctly
-    androidx.compose.foundation.layout.BoxWithConstraints {
+    Box {
         val ghostTextModifier = if (suggestion.confidence > 0.85f) {
             Modifier.organicPulsingGlow(
                 color = KlarityTheme.extendedColors.accentAI,
